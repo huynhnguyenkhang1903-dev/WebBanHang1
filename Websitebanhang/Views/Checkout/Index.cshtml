@@ -1,0 +1,102 @@
+﻿@model List<CartItem>
+
+<div class="container mt-4">
+
+    <h2 class="text-center mb-4">🧾 Checkout</h2>
+
+    @if (Model == null || Model.Count == 0)
+    {
+        <div class="alert alert-warning text-center">
+            Your cart is empty
+        </div>
+
+        <div class="text-center">
+            <a asp-controller="Product" asp-action="Index" class="btn btn-primary">
+                Continue Shopping
+            </a>
+        </div>
+    }
+    else
+    {
+
+        <table class="table table-bordered text-center align-middle">
+
+            <thead class="table-dark">
+                <tr>
+                    <th>Product</th>
+                    <th width="120">Price</th>
+                    <th width="120">Quantity</th>
+                    <th width="150">Total</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                @{
+                    decimal grandTotal = 0;
+                }
+
+                @foreach (var item in Model)
+                {
+                    if (item.Product != null)
+                    {
+                        var total = item.Product.Price * item.Quantity;
+                        grandTotal += total;
+
+                        <tr>
+                            <td>@item.Product.Name</td>
+                            <td>@item.Product.Price.ToString("N0") ₫</td>
+                            <td>@item.Quantity</td>
+                            <td class="text-danger fw-bold">@total.ToString("N0") ₫</td>
+                        </tr>
+                    }
+                }
+
+                <tr class="table-warning fw-bold">
+                    <td colspan="3">Grand Total</td>
+                    <td class="text-danger">@grandTotal.ToString("N0") ₫</td>
+                </tr>
+
+            </tbody>
+
+        </table>
+
+        <hr />
+
+        <h4 class="mb-3">Customer Information</h4>
+
+        <form asp-action="PlaceOrder" method="post">
+
+            <div class="mb-3">
+                <label class="form-label">Full Name</label>
+                <input name="name" class="form-control" required />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Address</label>
+                <input name="address" class="form-control" required />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Phone</label>
+                <input name="phone" class="form-control" required />
+            </div>
+
+            <div class="text-end">
+
+                <a asp-controller="Cart" asp-action="Index"
+                   class="btn btn-secondary">
+                    Back to Cart
+                </a>
+
+                <button type="submit" class="btn btn-success">
+                    Place Order
+                </button>
+
+            </div>
+
+        </form>
+
+    }
+
+</div>

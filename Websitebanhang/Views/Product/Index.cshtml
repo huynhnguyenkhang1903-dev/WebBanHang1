@@ -1,0 +1,124 @@
+﻿@model IEnumerable<Websitebanhang.Models.Product>
+
+<div class="container mt-4">
+
+    <h2 class="text-center mb-4">☕ Shop Premium Coffee</h2>
+
+    <!-- Admin button -->
+    @if (User.IsInRole("Admin"))
+    {
+        <div class="text-end mb-3">
+            <a asp-action="Add" class="btn btn-success">
+                ➕ Create New Product
+            </a>
+        </div>
+    }
+
+    <div class="table-responsive">
+
+        <table class="table table-hover table-bordered align-middle">
+
+            <thead class="table-dark text-center">
+                <tr>
+                    <th width="100">Image</th>
+                    <th width="60">Id</th>
+                    <th>Name</th>
+                    <th width="120">Price</th>
+                    <th>Description</th>
+                    <th width="120">Category</th>
+                    <th width="220">Actions</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                @foreach (var item in Model)
+                {
+                    <tr>
+
+                        <!-- Image -->
+
+                        <td class="text-center">
+
+                            @if (!string.IsNullOrEmpty(item.ImageUrl))
+                            {
+                                <img src="@item.ImageUrl"
+                                     class="img-thumbnail"
+                                     style="width:70px;height:70px;object-fit:cover;" />
+                            }
+                            else
+                            {
+                                <img src="/images/no-image.png"
+                                     class="img-thumbnail"
+                                     style="width:70px;height:70px;" />
+                            }
+
+                        </td>
+
+                        <!-- Id -->
+
+                        <td class="text-center">
+                            @item.Id
+                        </td>
+
+                        <!-- Name -->
+
+                        <td class="fw-semibold">
+                            @item.Name
+                        </td>
+
+                        <!-- Price -->
+
+                        <td class="text-danger fw-bold text-center">
+                            @item.Price.ToString("N0") ₫
+                        </td>
+
+                        <!-- Description -->
+
+                        <td>
+                            @item.Description
+                        </td>
+
+                        <!-- Category -->
+
+                        <td class="text-center">
+                            @item.Category?.Name
+                        </td>
+
+                        <!-- Actions -->
+
+                        <td class="text-center">
+
+                            <a asp-action="Display"
+                               asp-route-id="@item.Id"
+                               class="btn btn-info btn-sm">
+                                Details
+                            </a>
+
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <a asp-action="Update"
+                                   asp-route-id="@item.Id"
+                                   class="btn btn-warning btn-sm">
+                                    Edit
+                                </a>
+
+                                <a asp-action="Delete"
+                                   asp-route-id="@item.Id"
+                                   class="btn btn-danger btn-sm">
+                                    Delete
+                                </a>
+                            }
+
+                        </td>
+
+                    </tr>
+                }
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
