@@ -38,14 +38,14 @@
 
                 @foreach (var item in Model)
                 {
-                    if (item.Product != null)
+                    if (item != null)
                     {
-                        var total = item.Product.Price * item.Quantity;
+                        var total = item.Price * item.Quantity;
                         grandTotal += total;
 
                         <tr>
-                            <td>@item.Product.Name</td>
-                            <td>@item.Product.Price.ToString("N0") ₫</td>
+                            <td>@item.Name</td>
+                            <td>@item.Price.ToString("N0") ₫</td>
                             <td>@item.Quantity</td>
                             <td class="text-danger fw-bold">@total.ToString("N0") ₫</td>
                         </tr>

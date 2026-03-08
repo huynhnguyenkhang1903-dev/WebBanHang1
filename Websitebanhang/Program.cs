@@ -1,21 +1,30 @@
-<<<<<<< HEAD
-﻿using Websitebanhang.Repositores;
-using Websitebanhang.Data;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Identity;
+using Websitebanhang.Data;
+using Websitebanhang.Models;
+using Websitebanhang.Repositores;
 
 var builder = WebApplication.CreateBuilder(args);
 
+
 // ================= MVC =================
+
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
-// ================= Database =================
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// ================= Identity =================
-builder.Services.AddDefaultIdentity<IdentityUser>(options =>
+// ================= DATABASE =================
+
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        sqlOptions => sqlOptions.EnableRetryOnFailure()
+    ));
+
+
+// ================= IDENTITY =================
+
+builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
 {
     options.SignIn.RequireConfirmedAccount = false;
 
@@ -28,7 +37,9 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options =>
 .AddRoles<IdentityRole>()
 .AddEntityFrameworkStores<AppDbContext>();
 
-// ================= Session =================
+
+// ================= SESSION =================
+
 builder.Services.AddDistributedMemoryCache();
 
 builder.Services.AddSession(options =>
@@ -38,88 +49,36 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
-// ================= Repository =================
+
+// ================= REPOSITORY =================
+
 builder.Services.AddScoped<IProductRepository, MockProductRepository>();
 builder.Services.AddScoped<ICategoryRepository, MockCategoryRepository>();
 
+
 var app = builder.Build();
 
 
-// ================= CREATE ROLE + ADMIN =================
-using (var scope = app.Services.CreateScope())
-{
-    var services = scope.ServiceProvider;
+// ================= MIDDLEWARE =================
 
-    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
-    var userManager = services.GetRequiredService<UserManager<IdentityUser>>();
-
-    string[] roles = { "Admin", "User" };
-
-    foreach (var role in roles)
-    {
-        if (!await roleManager.RoleExistsAsync(role))
-        {
-            await roleManager.CreateAsync(new IdentityRole(role));
-        }
-    }
-
-    string adminEmail = "admin@gmail.com";
-    string adminPassword = "Admin@123";
-
-    var adminUser = await userManager.FindByEmailAsync(adminEmail);
-
-    if (adminUser == null)
-    {
-        var user = new IdentityUser
-        {
-            UserName = adminEmail,
-            Email = adminEmail,
-            EmailConfirmed = true
-        };
-
-        var result = await userManager.CreateAsync(user, adminPassword);
-
-        if (result.Succeeded)
-        {
-            await userManager.AddToRoleAsync(user, "Admin");
-        }
-    }
-}
-
-// ================= Middleware =================
-
-=======
-using Websitebanhang.Repositores;
-
-var builder = WebApplication.CreateBuilder(args);
-// Add services to the container.
-builder.Services.AddControllersWithViews();
-builder.Services.AddSingleton<IProductRepository,
-MockProductRepository>();
-builder.Services.AddScoped<ICategoryRepository,
-MockCategoryRepository>();
-var app = builder.Build();
-// Configure the HTTP request pipeline.
->>>>>>> ee325eaf63f2aabb046ebc4c33770f92d4a56eca
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
-<<<<<<< HEAD
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
 
-app.UseSession();
-
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.UseSession();
 
-// ================= Route =================
+
+// ================= ROUTE =================
 
 app.MapControllerRoute(
     name: "default",
@@ -127,14 +86,96 @@ app.MapControllerRoute(
 
 app.MapRazorPages();
 
-=======
-app.UseHttpsRedirection();
-app.UseStaticFiles();
-app.UseRouting();
-app.UseAuthorization();
-app.UseStaticFiles();
-app.MapControllerRoute(
-name: "default",
-pattern: "{controller=Home}/{action=Index}/{id?}");
->>>>>>> ee325eaf63f2aabb046ebc4c33770f92d4a56eca
+
+// ================= SEED DATA =================
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+
+    var context = services.GetRequiredService<AppDbContext>();
+    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+    var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
+
+    // APPLY MIGRATION
+    context.Database.Migrate();
+
+
+    // ===== CREATE ROLES =====
+
+    if (!await roleManager.RoleExistsAsync("Admin"))
+        await roleManager.CreateAsync(new IdentityRole("Admin"));
+
+    if (!await roleManager.RoleExistsAsync("User"))
+        await roleManager.CreateAsync(new IdentityRole("User"));
+
+
+    // ===== CREATE ADMIN ACCOUNT =====
+
+    var adminEmail = "admin@gmail.com";
+
+    if (await userManager.FindByEmailAsync(adminEmail) == null)
+    {
+        var admin = new ApplicationUser
+        {
+            UserName = adminEmail,
+            Email = adminEmail,
+            EmailConfirmed = true,
+            FullName = "Administrator",
+            Address = "System",
+            DateOfBirth = new DateTime(2000, 1, 1)
+        };
+
+        await userManager.CreateAsync(admin, "123456");
+
+        await userManager.AddToRoleAsync(admin, "Admin");
+    }
+
+
+    // ===== CATEGORY SEED =====
+
+    Category category;
+
+    if (!context.Categories.Any())
+    {
+        category = new Category { Name = "Coffee" };
+        context.Categories.Add(category);
+        context.SaveChanges();
+    }
+    else
+    {
+        category = context.Categories.First();
+    }
+
+
+    // ===== PRODUCT SEED =====
+
+    if (!context.Products.Any())
+    {
+        var countries = new[]
+        {
+            "Vietnam",
+            "Brazil",
+            "Colombia",
+            "Ethiopia",
+            "Indonesia"
+        };
+
+        for (int i = 1; i <= 70; i++)
+        {
+            context.Products.Add(new Product
+            {
+                Name = "Coffee " + i,
+                Price = 50000 + (i * 10000),
+                Description = "Coffee product " + i,
+                Country = countries[i % countries.Length],
+                CategoryId = category.Id,
+                ImageUrl = "/images/coffee.jpg"
+            });
+        }
+
+        context.SaveChanges();
+    }
+}
+
 app.Run();

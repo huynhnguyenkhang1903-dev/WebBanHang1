@@ -1,222 +1,212 @@
-﻿using Microsoft.AspNetCore.Mvc;
-<<<<<<< HEAD
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using System.Linq;
 using Websitebanhang.Models;
 using Websitebanhang.Repositores;
+using X.PagedList;
+using X.PagedList.Extensions;
 
 namespace Websitebanhang.Controllers
 {
     public class ProductController : Controller
     {
         private readonly IProductRepository _productRepository;
+        private readonly ICategoryRepository _categoryRepository;
 
-        public ProductController(IProductRepository productRepository)
+        public ProductController(
+            IProductRepository productRepository,
+            ICategoryRepository categoryRepository)
         {
             _productRepository = productRepository;
+            _categoryRepository = categoryRepository;
         }
 
-        // LIST PRODUCT
-        public IActionResult Index()
+        // =====================================
+        // USER PAGE - LIST PRODUCT
+        // =====================================
+        [AllowAnonymous]
+        public IActionResult Index(string search, string price, string country, int page = 1)
         {
-            var products = _productRepository.GetAll();
-            return View(products);
+            var products = _productRepository.GetAll().AsQueryable();
+
+            // search theo tên
+            if (!string.IsNullOrEmpty(search))
+            {
+                products = products.Where(p =>
+                    p.Name.ToLower().Contains(search.ToLower()));
+            }
+
+            // lọc theo giá
+            if (!string.IsNullOrEmpty(price))
+            {
+                switch (price)
+                {
+                    case "low":
+                        products = products.Where(p => p.Price < 100000);
+                        break;
+
+                    case "medium":
+                        products = products.Where(p => p.Price >= 100000 && p.Price <= 300000);
+                        break;
+
+                    case "high":
+                        products = products.Where(p => p.Price > 300000);
+                        break;
+                }
+            }
+
+            // lọc theo quốc gia
+            if (!string.IsNullOrEmpty(country))
+            {
+                products = products.Where(p => p.Country == country);
+            }
+
+            int pageSize = 8;
+
+            return View(products.ToPagedList(page, pageSize));
         }
 
-        // DETAILS
+        // =====================================
+        // USER PAGE - PRODUCT DETAIL
+        // =====================================
+        [AllowAnonymous]
         public IActionResult Display(int id)
         {
             var product = _productRepository.GetById(id);
 
             if (product == null)
-            {
                 return NotFound();
-            }
 
             return View(product);
         }
 
-        // ADD (GET)
+        // =====================================
+        // ADMIN PAGE - MANAGE PRODUCT
+        // =====================================
+        [Authorize(Roles = "Admin")]
+        public IActionResult Manage()
+        {
+            var products = _productRepository.GetAll();
+            return View(products);
+        }
+
+        // =====================================
+        // ADMIN - ADD PRODUCT
+        // =====================================
+        [Authorize(Roles = "Admin")]
         public IActionResult Add()
         {
+            LoadCategories();
             return View();
         }
 
-        // ADD (POST)
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Add(Product product)
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Add(Product product, IFormFile imageFile)
         {
-            if (!ModelState.IsValid)
+            if (ModelState.IsValid)
             {
-                return View(product);
+                if (imageFile != null)
+                {
+                    product.ImageUrl = await SaveImage(imageFile);
+                }
+
+                _productRepository.Add(product);
+
+                return RedirectToAction(nameof(Manage));
             }
 
-            _productRepository.Add(product);
-            return RedirectToAction(nameof(Index));
+            LoadCategories();
+            return View(product);
         }
 
-        // UPDATE (GET)
+        // =====================================
+        // ADMIN - UPDATE PRODUCT
+        // =====================================
+        [Authorize(Roles = "Admin")]
         public IActionResult Update(int id)
         {
             var product = _productRepository.GetById(id);
 
             if (product == null)
-            {
                 return NotFound();
-            }
+
+            LoadCategories();
 
             return View(product);
         }
 
-        // UPDATE (POST)
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Update(Product product)
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Update(Product product, IFormFile imageFile)
         {
-            if (!ModelState.IsValid)
+            if (ModelState.IsValid)
             {
-                return View(product);
+                if (imageFile != null)
+                {
+                    product.ImageUrl = await SaveImage(imageFile);
+                }
+
+                _productRepository.Update(product);
+
+                return RedirectToAction(nameof(Manage));
             }
 
-            _productRepository.Update(product);
-            return RedirectToAction(nameof(Index));
+            LoadCategories();
+            return View(product);
         }
 
-        // DELETE (GET)
+        // =====================================
+        // ADMIN - DELETE PRODUCT
+        // =====================================
+        [Authorize(Roles = "Admin")]
         public IActionResult Delete(int id)
         {
             var product = _productRepository.GetById(id);
 
             if (product == null)
-            {
                 return NotFound();
-            }
 
             return View(product);
         }
 
-        // DELETE (POST)
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public IActionResult DeleteConfirmed(int id)
         {
             _productRepository.Delete(id);
-            return RedirectToAction(nameof(Index));
+
+            return RedirectToAction(nameof(Manage));
         }
-=======
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Websitebanhang.Models;
-using Websitebanhang.Repositores;
 
-public class ProductController : Controller
-{
-    private readonly IProductRepository _productRepository;
-    private readonly ICategoryRepository _categoryRepository;
-
-    public ProductController(IProductRepository productRepository,
-                             ICategoryRepository categoryRepository)
-    {
-        _productRepository = productRepository;
-        _categoryRepository = categoryRepository;
-    }
-
-    // LIST PRODUCT
-    public IActionResult Index()
-    {
-        var products = _productRepository.GetAll();
-        return View(products);
-    }
-
-    // ADD PRODUCT
-    public IActionResult Add()
-    {
-        var categories = _categoryRepository.GetAll();
-        ViewBag.Categories = new SelectList(categories, "Id", "Name");
-        return View();
-    }
-
-    [HttpPost]
-    public async Task<IActionResult> Add(Product product, IFormFile
-imageUrl, List<IFormFile> imageUrls)
-    {
-        if (ModelState.IsValid)
+        // =====================================
+        // LOAD CATEGORY
+        // =====================================
+        private void LoadCategories()
         {
-            if (imageUrl != null)
+            var categories = _categoryRepository.GetAll();
+            ViewBag.Categories = new SelectList(categories, "Id", "Name");
+        }
+
+        // =====================================
+        // SAVE IMAGE
+        // =====================================
+        private async Task<string> SaveImage(IFormFile image)
+        {
+            var fileName = Guid.NewGuid().ToString() + Path.GetExtension(image.FileName);
+
+            var path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images", fileName);
+
+            using (var stream = new FileStream(path, FileMode.Create))
             {
-                // Lưu hình ảnh đại diện
-                product.ImageUrl = await SaveImage(imageUrl);
+                await image.CopyToAsync(stream);
             }
-            if (imageUrls != null)
-            {
-                product.ImageUrls = new List<string>();
-                foreach (var file in imageUrls)
-                {
-                    // Lưu các hình ảnh khác
-                    product.ImageUrls.Add(await SaveImage(file));
-                }
-            }
-            _productRepository.Add(product);
-            return RedirectToAction("Index");
+
+            return "/images/" + fileName;
         }
-        return View(product);
-    }
-    private async Task<string> SaveImage(IFormFile image)
-    {
-        // Thay đổi đường dẫn theo cấu hình của bạn
-        var savePath = Path.Combine("wwwroot/images", image.FileName);
-        using (var fileStream = new FileStream(savePath, FileMode.Create))
-        {
-            await image.CopyToAsync(fileStream);
-        }
-        return "/images/" + image.FileName; // Trả về đường dẫn tương đối
-    }
-
-    // DISPLAY PRODUCT
-    public IActionResult Display(int id)
-    {
-        var product = _productRepository.GetById(id);
-        if (product == null)
-            return NotFound();
-
-        return View(product);
-    }
-
-    // UPDATE PRODUCT
-    public IActionResult Update(int id)
-    {
-        var product = _productRepository.GetById(id);
-        if (product == null)
-            return NotFound();
-
-        return View(product);
-    }
-
-    [HttpPost]
-    public IActionResult Update(Product product)
-    {
-        if (ModelState.IsValid)
-        {
-            _productRepository.Update(product);
-            return RedirectToAction("Index");
-        }
-
-        return View(product);
-    }
-
-    // DELETE PRODUCT
-    public IActionResult Delete(int id)
-    {
-        var product = _productRepository.GetById(id);
-        if (product == null)
-            return NotFound();
-
-        return View(product);
-    }
-
-    [HttpPost, ActionName("Delete")]
-    public IActionResult DeleteConfirmed(int id)
-    {
-        _productRepository.Delete(id);
-        return RedirectToAction("Index");
->>>>>>> ee325eaf63f2aabb046ebc4c33770f92d4a56eca
     }
 }

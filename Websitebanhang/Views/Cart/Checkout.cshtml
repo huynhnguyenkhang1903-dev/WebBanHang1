@@ -1,0 +1,83 @@
+﻿@model List<CartItem>
+
+<div class="container mt-4">
+
+<h2 class="text-center mb-4">💳 Checkout</h2>
+
+<form asp-controller="Cart" asp-action="PlaceOrder" method="post">
+
+<table class="table table-bordered text-center">
+
+<thead class="table-dark">
+<tr>
+<th>Product</th>
+<th>Price</th>
+<th>Quantity</th>
+<th>Total</th>
+</tr>
+</thead>
+
+<tbody>
+
+@{
+decimal total = 0;
+}
+
+@foreach (var item in Model)
+{
+var itemTotal = item.Price * item.Quantity;
+total += itemTotal;
+
+<tr>
+<td>@item.Name</td>
+<td>$@item.Price</td>
+<td>@item.Quantity</td>
+<td>$@itemTotal</td>
+</tr>
+}
+
+<tr class="table-warning fw-bold">
+<td colspan="3">Grand Total</td>
+<td>$@total</td>
+</tr>
+
+</tbody>
+
+</table>
+
+<hr />
+
+<h4 class="mb-3">Customer Information</h4>
+
+<div class="mb-3">
+<label class="form-label">Full Name</label>
+<input name="name" class="form-control" required />
+</div>
+
+<div class="mb-3">
+<label class="form-label">Address</label>
+<input name="address" class="form-control" required />
+</div>
+
+<div class="mb-3">
+<label class="form-label">Phone</label>
+<input name="phone" class="form-control" required />
+</div>
+
+<div class="text-end">
+
+<a asp-controller="Cart"
+   asp-action="Index"
+   class="btn btn-secondary">
+Back to Cart
+</a>
+
+<button type="submit" class="btn btn-success btn-lg">
+Place Order
+</button>
+
+</div>
+
+</form>
+
+</div>

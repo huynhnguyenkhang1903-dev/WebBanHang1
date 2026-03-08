@@ -1,0 +1,30 @@
+﻿@model Websitebanhang.Models.ViewModels.RegisterViewModel
+
+<h2>Register</h2>
+
+<form asp-action="Register" method="post">
+
+    <input asp-for="FullName" placeholder="Full Name" class="form-control" />
+    <br />
+
+    <input asp-for="Email" placeholder="Email" class="form-control" />
+    <br />
+
+    <input asp-for="PhoneNumber" placeholder="Phone" class="form-control" />
+    <br />
+
+    <input asp-for="Address" placeholder="Address" class="form-control" />
+    <br />
+
+    <input asp-for="DateOfBirth" type="date" class="form-control" />
+    <br />
+
+    <input asp-for="Password" type="password" placeholder="Password" class="form-control" />
+    <br />
+
+    <input asp-for="ConfirmPassword" type="password" placeholder="Confirm Password" class="form-control" />
+    <br />
+
+    <button type="submit" class="btn btn-primary">Register</button>
+
+</form>

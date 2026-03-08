@@ -1,157 +1,91 @@
-html {
-<<<<<<< HEAD
-    font-size: 14px;
-}
+/* ===== PRODUCT PAGE ===== */
 
-@media (min-width: 768px) {
-    html {
-        font-size: 16px;
-    }
-}
-
-/* Focus style */
-.btn:focus,
-.btn:active:focus,
-.btn-link.nav-link:focus,
-.form-control:focus,
-.form-check-input:focus {
-    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #c69c6d;
-}
-
-/* Layout */
-html {
-    position: relative;
-    min-height: 100%;
-}
-
-body {
-    margin-bottom: 60px;
-    background-color: #f5f1ea;
-    font-family: Arial, Helvetica, sans-serif;
-}
-
-/* Navbar */
-
-.navbar {
-    background-color: #6f4e37 !important;
-}
-
-.navbar-brand {
-    font-weight: bold;
-    font-size: 22px;
-}
-
-.nav-link {
-    color: white !important;
-}
-
-    .nav-link:hover {
-        color: #d4a373 !important;
-    }
-
-/* Buttons */
-
-.btn-success {
-    background-color: #8d6e63;
-    border: none;
-}
-
-    .btn-success:hover {
-        background-color: #6d4c41;
-    }
-
-.btn-warning {
-    background-color: #c69c6d;
-    border: none;
-}
-
-/* Product image */
-
-table img {
-    border-radius: 8px;
-}
-
-/* Table */
-
-.table {
-    background: white;
-}
-
-/* Footer */
-
-footer {
-    background-color: #3e2723;
-    color: white;
-    padding: 20px;
-}
-/* ===== AUTH PAGE ===== */
-
-.auth-bg {
-    min-height: 90vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: linear-gradient(135deg,#f5f1ea,#e7dccf);
-}
-
-.auth-card {
-    width: 420px;
+.product-container {
     padding: 40px;
-    border-radius: 18px;
+}
+
+/* Filter Bar */
+.product-filter {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+}
+
+    .product-filter input,
+    .product-filter select {
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid #ddd;
+        min-width: 180px;
+    }
+
+    .product-filter button {
+        background: #6f4e37;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        cursor: pointer;
+    }
+
+        .product-filter button:hover {
+            background: #4b2e2b;
+        }
+
+/* Product Grid */
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 25px;
+}
+
+/* Product Card */
+.product-card {
     background: white;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
-    transition: 0.3s;
-}
-
-    .auth-card:hover {
-        transform: translateY(-3px);
-    }
-
-.auth-title {
+    border-radius: 15px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
     text-align: center;
-    margin-bottom: 25px;
-    color: #6f4e37;
-    font-weight: 600;
-}
-
-.input-group-text {
-    background: #f3f3f3;
-}
-
-.auth-btn {
-    background: linear-gradient(135deg,#6f4e37,#8d6e63);
-    color: white;
-    border: none;
-    padding: 10px;
-    border-radius: 10px;
-    font-weight: 500;
+    padding: 15px;
     transition: 0.3s;
 }
 
-    .auth-btn:hover {
-        background: linear-gradient(135deg,#5a3e2b,#6d4c41);
+    .product-card:hover {
+        transform: translateY(-5px);
     }
 
-=======
-  font-size: 14px;
+    /* Image */
+    .product-card img {
+        width: 100%;
+        height: 160px;
+        object-fit: cover;
+        border-radius: 10px;
+    }
+
+/* Name */
+.product-name {
+    font-weight: bold;
+    margin-top: 10px;
+    color: #4b2e2b;
 }
 
-@media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
+/* Price */
+.product-price {
+    color: red;
+    font-weight: bold;
+    margin: 5px 0;
 }
 
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+/* Button */
+.product-btn {
+    background: #6f4e37;
+    border: none;
+    padding: 8px 15px;
+    color: white;
+    border-radius: 6px;
+    cursor: pointer;
 }
 
-html {
-  position: relative;
-  min-height: 100%;
-}
-
-body {
-  margin-bottom: 60px;
-}
->>>>>>> ee325eaf63f2aabb046ebc4c33770f92d4a56eca
+    .product-btn:hover {
+        background: #4b2e2b;
+    }

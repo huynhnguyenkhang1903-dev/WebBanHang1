@@ -1,22 +1,13 @@
-<<<<<<< HEAD
-﻿namespace Websitebanhang.Models
-=======
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace Websitebanhang.Models
->>>>>>> ee325eaf63f2aabb046ebc4c33770f92d4a56eca
 {
     public class Category
     {
         public int Id { get; set; }
-<<<<<<< HEAD
 
-        public string Name { get; set; } = "";
+        [Required(ErrorMessage = "Tên danh mục không được để trống")]
+        [StringLength(50, ErrorMessage = "Tên danh mục tối đa 50 ký tự")]
+        public string Name { get; set; } = string.Empty;
     }
 }
-=======
-        [Required, StringLength(50)]
-        public string? Name { get; set; }
-    }
-}
->>>>>>> ee325eaf63f2aabb046ebc4c33770f92d4a56eca

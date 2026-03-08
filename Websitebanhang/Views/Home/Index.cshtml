@@ -1,0 +1,55 @@
+﻿@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<div class="container mt-4">
+
+    <h2 class="mb-4">Admin Dashboard</h2>
+
+    <div class="row">
+
+        <div class="col-md-4">
+            <div class="card shadow p-3">
+                <h4>Quản lý sản phẩm</h4>
+                <p>Thêm, sửa, xóa sản phẩm</p>
+
+                <a asp-controller="Product"
+                   asp-action="Index"
+                   class="btn btn-primary">
+                   Quản lý
+                </a>
+
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow p-3">
+                <h4>Quản lý đơn hàng</h4>
+                <p>Xem danh sách đơn hàng</p>
+
+                <a asp-controller="Order"
+                   asp-action="Index"
+                   class="btn btn-success">
+                   Xem đơn
+                </a>
+
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow p-3">
+                <h4>Quản lý người dùng</h4>
+                <p>Phân quyền tài khoản</p>
+
+                <a asp-controller="User"
+                   asp-action="Index"
+                   class="btn btn-warning">
+                   Quản lý
+                </a>
+
+            </div>
+        </div>
+
+    </div>
+
+</div>

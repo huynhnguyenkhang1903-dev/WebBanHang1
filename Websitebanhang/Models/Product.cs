@@ -1,8 +1,5 @@
-<<<<<<< HEAD
-﻿using System.Collections.Generic;
-=======
-﻿using System.ComponentModel.DataAnnotations;
->>>>>>> ee325eaf63f2aabb046ebc4c33770f92d4a56eca
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace Websitebanhang.Models
 {
@@ -10,34 +7,30 @@ namespace Websitebanhang.Models
     {
         public int Id { get; set; }
 
-<<<<<<< HEAD
-        public string Name { get; set; } = "";
+        [Required(ErrorMessage = "Tên sản phẩm không được để trống")]
+        [StringLength(200)]
+        public string Name { get; set; } = string.Empty;
 
+        [Required(ErrorMessage = "Giá không được để trống")]
+        [Range(0.01, double.MaxValue, ErrorMessage = "Giá phải lớn hơn 0")]
         public decimal Price { get; set; }
 
-        public string Description { get; set; } = "";
+        [StringLength(1000)]
+        public string Description { get; set; } = string.Empty;
 
+        // Quốc gia sản phẩm
+        public string Country { get; set; } = "Vietnam";
+
+        // Category
+        [Required]
         public int CategoryId { get; set; }
 
         public Category? Category { get; set; }
 
+        // Ảnh đại diện
         public string? ImageUrl { get; set; }
 
-=======
-        [Required]
-        public string? Name { get; set; }
-
-        public decimal Price { get; set; }
-
-        public string? Description { get; set; }
-
-        public int CategoryId { get; set; }
-
-        // Hình đại diện
-        public string? ImageUrl { get; set; }
-
-        // Danh sách hình
->>>>>>> ee325eaf63f2aabb046ebc4c33770f92d4a56eca
-        public List<string>? ImageUrls { get; set; }
+        // Danh sách ảnh (gallery)
+        public List<string> ImageUrls { get; set; } = new List<string>();
     }
 }

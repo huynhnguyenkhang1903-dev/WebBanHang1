@@ -1,165 +1,146 @@
-<<<<<<< HEAD
-﻿@model IEnumerable<Websitebanhang.Models.Product>
+@using X.PagedList
+@using X.PagedList.Mvc.Core
+@model IPagedList<Websitebanhang.Models.Product>
 
 <div class="container mt-4">
 
-    <h2 class="text-center mb-4">☕ Shop Premium Coffee</h2>
+<h2 class="text-center mb-4 fw-bold">☕ Coffee Products</h2>
 
-    <!-- Admin button -->
-    @if (User.IsInRole("Admin"))
-    {
-        <div class="text-end mb-3">
-            <a asp-action="Add" class="btn btn-success">
-                ➕ Create New Product
-            </a>
-        </div>
-    }
+<!-- SEARCH + FILTER -->
+<form method="get" class="row mb-4">
 
-    <div class="table-responsive">
+<div class="col-md-4">
+<input type="text" name="search" class="form-control"
+placeholder="Search coffee..."
+value="@Context.Request.Query["search"]" />
+</div>
 
-        <table class="table table-hover table-bordered align-middle">
+<div class="col-md-3">
+<select name="price" class="form-select">
 
-            <thead class="table-dark text-center">
-                <tr>
-                    <th width="100">Image</th>
-                    <th width="60">Id</th>
-                    <th>Name</th>
-                    <th width="120">Price</th>
-                    <th>Description</th>
-                    <th width="120">Category</th>
-                    <th width="220">Actions</th>
-                </tr>
-            </thead>
+<option value="">Price</option>
 
-            <tbody>
+<option value="low" selected="@(Context.Request.Query["price"] == "low")">
+Low price
+</option>
 
-                @foreach (var item in Model)
-                {
-                    <tr>
+<option value="medium" selected="@(Context.Request.Query["price"] == "medium")">
+Medium price
+</option>
 
-                        <!-- Image -->
+<option value="high" selected="@(Context.Request.Query["price"] == "high")">
+High price
+</option>
 
-                        <td class="text-center">
+</select>
+</div>
 
-                            @if (!string.IsNullOrEmpty(item.ImageUrl))
-                            {
-                                <img src="@item.ImageUrl"
-                                     class="img-thumbnail"
-                                     style="width:70px;height:70px;object-fit:cover;" />
-                            }
-                            else
-                            {
-                                <img src="/images/no-image.png"
-                                     class="img-thumbnail"
-                                     style="width:70px;height:70px;" />
-                            }
+<div class="col-md-3">
+<select name="country" class="form-select">
 
-                        </td>
+<option value="">Country</option>
 
-                        <!-- Id -->
+<option value="Vietnam" selected="@(Context.Request.Query["country"] == "Vietnam")">
+Vietnam
+</option>
 
-                        <td class="text-center">
-                            @item.Id
-                        </td>
+<option value="Brazil" selected="@(Context.Request.Query["country"] == "Brazil")">
+Brazil
+</option>
 
-                        <!-- Name -->
+<option value="Colombia" selected="@(Context.Request.Query["country"] == "Colombia")">
+Colombia
+</option>
 
-                        <td class="fw-semibold">
-                            @item.Name
-                        </td>
+<option value="Ethiopia" selected="@(Context.Request.Query["country"] == "Ethiopia")">
+Ethiopia
+</option>
 
-                        <!-- Price -->
+<option value="Indonesia" selected="@(Context.Request.Query["country"] == "Indonesia")">
+Indonesia
+</option>
 
-                        <td class="text-danger fw-bold text-center">
-                            @item.Price.ToString("N0") ₫
-                        </td>
+</select>
+</div>
 
-                        <!-- Description -->
+<div class="col-md-2">
+<button class="btn btn-dark w-100">
+Search
+</button>
+</div>
 
-                        <td>
-                            @item.Description
-                        </td>
+</form>
 
-                        <!-- Category -->
 
-                        <td class="text-center">
-                            @item.Category?.Name
-                        </td>
+<!-- PRODUCT GRID -->
+<div class="row">
 
-                        <!-- Actions -->
+@foreach(var item in Model)
+{
+<div class="col-lg-2 col-md-3 col-sm-6 mb-4">
 
-                        <td class="text-center">
+<div class="card product-card h-100 shadow-sm">
 
-                            <a asp-action="Display"
-                               asp-route-id="@item.Id"
-                               class="btn btn-info btn-sm">
-                                Details
-                            </a>
+<img src="@(string.IsNullOrEmpty(item.ImageUrl) ? "/images/no-image.png" : item.ImageUrl)"
+class="card-img-top product-img"
+alt="@item.Name">
 
-                            @if (User.IsInRole("Admin"))
-                            {
-                                <a asp-action="Update"
-                                   asp-route-id="@item.Id"
-                                   class="btn btn-warning btn-sm">
-                                    Edit
-                                </a>
+<div class="card-body text-center">
 
-                                <a asp-action="Delete"
-                                   asp-route-id="@item.Id"
-                                   class="btn btn-danger btn-sm">
-                                    Delete
-                                </a>
-                            }
+<h6 class="fw-bold">@item.Name</h6>
 
-                        </td>
+<p class="text-danger fw-bold">
+@item.Price.ToString("N0") đ
+</p>
 
-                    </tr>
-                }
+<p class="text-muted small">
+@item.Country
+</p>
 
-            </tbody>
+<div class="d-grid gap-2">
 
-        </table>
+<a asp-action="Display"
+asp-route-id="@item.Id"
+class="btn btn-outline-dark btn-sm">
+View
+</a>
 
-    </div>
-=======
-﻿<div class="container mt-4 text-center">
+<a asp-controller="Cart"
+   asp-action="AddToCart"
+   asp-route-id="@item.Id"
+   class="btn btn-success">
+🛒 Add To Cart
+</a>
 
-    <h2>Shop Premium</h2>
+</div>
 
-    <p>
-        <a asp-action="Add" class="btn btn-primary">Create New</a>
-    </p>
+</div>
 
-    <table class="table table-bordered table-striped w-75 mx-auto">
-        <thead class="table-dark">
-            <tr>
-                <th>Id</th>
-                <th>Name</th>
-                <th>Price</th>
-                <th>Description</th>
-                <th>Category</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
+</div>
 
-        <tbody>
-            @foreach (var item in Model)
-            {
-                <tr>
-                    <td>@item.Id</td>
-                    <td>@item.Name</td>
-                    <td>@item.Price</td>
-                    <td>@item.Description</td>
-                    <td>@item.CategoryId</td>
-                    <td>
-                        <a asp-action="Update" asp-route-id="@item.Id">Edit</a> |
-                        <a asp-action="Display" asp-route-id="@item.Id">Details</a> |
-                        <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
->>>>>>> ee325eaf63f2aabb046ebc4c33770f92d4a56eca
+</div>
+}
+
+</div>
+
+
+<!-- PAGINATION -->
+<div class="d-flex justify-content-center mt-4">
+
+@Html.PagedListPager(
+Model,
+page => Url.Action("Index", new {
+page,
+search = Context.Request.Query["search"],
+price = Context.Request.Query["price"],
+country = Context.Request.Query["country"]
+}),
+new PagedListRenderOptions
+{
+LiElementClasses = new[] { "page-item" },
+PageClasses = new[] { "page-link" }
+})
+
+</div>
 
 </div>

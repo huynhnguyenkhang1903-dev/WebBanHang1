@@ -5,30 +5,45 @@
     ViewData["Title"] = "Add Product";
 }
 
-<h1>Add product</h1>
+<h2>Add Product</h2>
 
-<form asp-action="Add" enctype="multipart/form-data">
+<form asp-action="Add" method="post" enctype="multipart/form-data">
 
     <div asp-validation-summary="All" class="text-danger"></div>
 
+    <!-- NAME -->
     <div class="form-group">
         <label asp-for="Name"></label>
-        <input asp-for="Name" class="form-control" />
+        <input asp-for="Name" class="form-control"/>
         <span asp-validation-for="Name" class="text-danger"></span>
     </div>
 
+    <!-- PRICE -->
     <div class="form-group">
         <label asp-for="Price"></label>
-        <input asp-for="Price" class="form-control" />
+        <input asp-for="Price" class="form-control"/>
         <span asp-validation-for="Price" class="text-danger"></span>
     </div>
 
+    <!-- DESCRIPTION -->
     <div class="form-group">
         <label asp-for="Description"></label>
         <textarea asp-for="Description" class="form-control"></textarea>
         <span asp-validation-for="Description" class="text-danger"></span>
     </div>
 
+    <!-- COUNTRY -->
+    <div class="form-group">
+        <label asp-for="Country">Country</label>
+        <select asp-for="Country" class="form-control">
+            <option value="Vietnam">Vietnam</option>
+            <option value="Brazil">Brazil</option>
+            <option value="Colombia">Colombia</option>
+            <option value="Ethiopia">Ethiopia</option>
+        </select>
+    </div>
+
+    <!-- CATEGORY -->
     <div class="form-group">
         <label asp-for="CategoryId">Category</label>
         <select asp-for="CategoryId"
@@ -37,13 +52,22 @@
         </select>
     </div>
 
+    <!-- IMAGE -->
     <div class="form-group">
-        <label asp-for="ImageUrl">Image</label>
-        <input type="file" asp-for="ImageUrl" class="form-control" />
+        <label>Product Image</label>
+        <input type="file" name="imageFile" class="form-control" />
     </div>
 
-    <br />
+    <br/>
 
-    <button type="submit" class="btn btn-primary">Add</button>
+    <button type="submit" class="btn btn-primary">
+        Add Product
+    </button>
 
 </form>
+
+@section Scripts{
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
