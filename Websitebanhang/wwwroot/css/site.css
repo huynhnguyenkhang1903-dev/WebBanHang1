@@ -1,4 +1,5 @@
 html {
+<<<<<<< HEAD
     font-size: 14px;
 }
 
@@ -131,3 +132,26 @@ footer {
         background: linear-gradient(135deg,#5a3e2b,#6d4c41);
     }
 
+=======
+  font-size: 14px;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+body {
+  margin-bottom: 60px;
+}
+>>>>>>> ee325eaf63f2aabb046ebc4c33770f92d4a56eca

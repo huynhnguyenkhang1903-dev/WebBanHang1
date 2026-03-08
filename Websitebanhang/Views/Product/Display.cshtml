@@ -1,5 +1,6 @@
 ﻿@model Websitebanhang.Models.Product
 
+<<<<<<< HEAD
 <div class="container mt-5">
 
     <div class="row">
@@ -74,4 +75,22 @@
 
     </div>
 
+=======
+<h2>Product Details</h2>
+
+<div>
+    <h4>Name: @Model.Name</h4>
+    <h4>Price: @Model.Price</h4>
+    <h4>Description: @Model.Description</h4>
+
+    <img src="@Model.ImageUrl" alt="Product Image" style="width:300px;height:auto;" />
+
+    @if (Model.ImageUrls != null)
+    {
+        foreach (var imageUrl in Model.ImageUrls)
+        {
+            <img src="@imageUrl" alt="Product Image" style="width:300px;height:auto;" />
+        }
+    }
+>>>>>>> ee325eaf63f2aabb046ebc4c33770f92d4a56eca
 </div>

@@ -10,6 +10,7 @@
     <Folder Include="wwwroot\images\" />
   </ItemGroup>
 
+<<<<<<< HEAD
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.6" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="8.0.5" />
@@ -22,4 +23,6 @@
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.5" />
   </ItemGroup>
 
+=======
+>>>>>>> ee325eaf63f2aabb046ebc4c33770f92d4a56eca
 </Project>

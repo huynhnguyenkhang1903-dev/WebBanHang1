@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ﻿using Websitebanhang.Repositores;
 using Websitebanhang.Data;
 using Microsoft.EntityFrameworkCore;
@@ -87,11 +88,25 @@ using (var scope = app.Services.CreateScope())
 
 // ================= Middleware =================
 
+=======
+using Websitebanhang.Repositores;
+
+var builder = WebApplication.CreateBuilder(args);
+// Add services to the container.
+builder.Services.AddControllersWithViews();
+builder.Services.AddSingleton<IProductRepository,
+MockProductRepository>();
+builder.Services.AddScoped<ICategoryRepository,
+MockCategoryRepository>();
+var app = builder.Build();
+// Configure the HTTP request pipeline.
+>>>>>>> ee325eaf63f2aabb046ebc4c33770f92d4a56eca
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
+<<<<<<< HEAD
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
@@ -112,4 +127,14 @@ app.MapControllerRoute(
 
 app.MapRazorPages();
 
+=======
+app.UseHttpsRedirection();
+app.UseStaticFiles();
+app.UseRouting();
+app.UseAuthorization();
+app.UseStaticFiles();
+app.MapControllerRoute(
+name: "default",
+pattern: "{controller=Home}/{action=Index}/{id?}");
+>>>>>>> ee325eaf63f2aabb046ebc4c33770f92d4a56eca
 app.Run();
