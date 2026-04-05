@@ -1,0 +1,187 @@
+@using System.Linq
+@using X.PagedList
+@using X.PagedList.Mvc.Core
+@model IPagedList<Websitebanhang.Models.Product>
+
+    <link rel="stylesheet" href="~/css/product-grid.css" />
+
+    <div class="product-page container mt-4">
+
+        <h2 class="page-title text-center mb-4 fw-bold">Coffee Products</h2>
+
+        <!-- SEARCH + FILTER -->
+        <form method="get" class="row mb-4 align-items-center g-2 product-filter">
+
+            <div class="col-md-4">
+                <input type="text"
+                       name="search"
+                       class="form-control form-control-lg"
+                       placeholder="Search coffee..."
+                       value="@ViewContext.HttpContext.Request.Query["search"]" />
+            </div>
+
+            <div class="col-md-3">
+                <select name="price" class="form-select form-select-lg">
+
+                    <option value="">Price</option>
+
+                    <option value="low"
+                            selected="@(ViewContext.HttpContext.Request.Query["price"] == "low")">
+                        Low price
+                    </option>
+
+                    <option value="medium"
+                            selected="@(ViewContext.HttpContext.Request.Query["price"] == "medium")">
+                        Medium price
+                    </option>
+
+                    <option value="high"
+                            selected="@(ViewContext.HttpContext.Request.Query["price"] == "high")">
+                        High price
+                    </option>
+
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <select name="country" class="form-select form-select-lg">
+
+                    <option value="">Country</option>
+
+                    <option value="Vietnam"
+                            selected="@(ViewContext.HttpContext.Request.Query["country"] == "Vietnam")">
+                        Vietnam
+                    </option>
+
+                    <option value="Brazil"
+                            selected="@(ViewContext.HttpContext.Request.Query["country"] == "Brazil")">
+                        Brazil
+                    </option>
+
+                    <option value="Colombia"
+                            selected="@(ViewContext.HttpContext.Request.Query["country"] == "Colombia")">
+                        Colombia
+                    </option>
+
+                    <option value="Ethiopia"
+                            selected="@(ViewContext.HttpContext.Request.Query["country"] == "Ethiopia")">
+                        Ethiopia
+                    </option>
+
+                    <option value="Indonesia"
+                            selected="@(ViewContext.HttpContext.Request.Query["country"] == "Indonesia")">
+                        Indonesia
+                    </option>
+
+                </select>
+            </div>
+
+            <div class="col-md-2 d-grid">
+                <button class="btn btn-dark btn-lg w-100">Search</button>
+            </div>
+
+        </form>
+
+
+        <!-- PRODUCT GRID -->
+
+        <div class="row gy-4 product-grid">
+
+            @foreach (var item in Model)
+            {
+                <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+
+                    <div class="card product-card h-100">
+
+                        <div class="img-wrap">
+
+                            <img src="@(string.IsNullOrEmpty(item.ImageUrl) ? "/images/no-image.png" : item.ImageUrl)"
+                                 class="card-img-top product-img"
+                                 alt="@item.Name" />
+
+                            <div class="quick-actions">
+
+                                <a asp-action="Display"
+                                   asp-route-id="@item.Id"
+                                   class="btn btn-sm btn-light">
+                                    View
+                                </a>
+
+                                <a asp-controller="Cart"
+                                   asp-action="AddToCart"
+                                   asp-route-id="@item.Id"
+                                   class="btn btn-sm btn-success">
+                                    Add
+                                </a>
+
+                            </div>
+
+                        </div>
+
+                        <div class="card-body text-center">
+
+                            <h6 class="product-name text-truncate fw-semibold"
+                                title="@item.Name">
+
+                                @item.Name
+
+                            </h6>
+
+                            <p class="product-price text-danger fw-bold mb-1">
+
+                                @item.Price.ToString("N0") ?
+
+                            </p>
+
+                            <p class="text-muted small mb-2">
+
+                                @item.Country
+
+                            </p>
+
+                            <div class="d-grid">
+
+                                <a asp-controller="Cart"
+                                   asp-action="AddToCart"
+                                   asp-route-id="@item.Id"
+                                   class="btn btn-sm btn-primary">
+
+                                    Add to Cart
+
+                                </a>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+            }
+
+        </div>
+
+
+        <!-- PAGINATION -->
+
+        <div class="d-flex justify-content-center mt-4">
+
+            @Html.PagedListPager(
+            Model,
+            page => Url.Action("Index",
+            new
+            {
+                page,
+                search = ViewContext.HttpContext.Request.Query["search"],
+                price = ViewContext.HttpContext.Request.Query["price"],
+                country = ViewContext.HttpContext.Request.Query["country"]
+            }),
+            new PagedListRenderOptions
+            {
+                LiElementClasses = new[] { "page-item" },
+                PageClasses = new[] { "page-link" }
+            })
+
+        </div>
+
+    </div>
