@@ -1,6 +1,9 @@
 wwwroot\css\admin.css
 wwwroot\css\site.css
 wwwroot\favicon.ico
+wwwroot\images\coffee1.jpg
+wwwroot\images\coffee2.jpg
+wwwroot\images\coffee3.jpg
 wwwroot\images\images.jfif
 wwwroot\images\images.jpg
 wwwroot\js\site.js

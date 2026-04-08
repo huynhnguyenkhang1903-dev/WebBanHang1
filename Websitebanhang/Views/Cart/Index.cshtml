@@ -1,74 +1,89 @@
-﻿@model List<CartItem>
+@model List<CartItem>
 
 <div class="container mt-4">
 
-<h2 class="text-center mb-4">🛒 Shopping Cart</h2>
+    <h2 class="text-center mb-4">🛒 Giỏ hàng của bạn</h2>
 
-<form asp-controller="Cart" asp-action="Checkout" method="post">
+    <form asp-controller="Cart" asp-action="Checkout" method="post">
 
-<table class="table table-bordered text-center align-middle">
+        <div class="table-responsive">
+            <table class="table table-bordered text-center align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th width="60">Chọn</th>
+                        <th>Sản phẩm</th>
+                        <th width="120">Giá</th>
+                        <th width="120">Số lượng</th>
+                        <th width="150">Tổng cộng</th>
+                        <th width="120">Xoá</th>
+                    </tr>
+                </thead>
 
-<thead class="table-dark">
-<tr>
-<th width="60">Select</th>
-<th>Product</th>
-<th width="120">Price</th>
-<th width="120">Quantity</th>
-<th width="150">Total</th>
-<th width="120">Remove</th>
-</tr>
-</thead>
+                <tbody>
+                    @if (Model != null && Model.Count > 0)
+                    {
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <input type="checkbox" name="selectedProducts" value="@item.ProductId" />
+                                </td>
+                                <td class="fw-bold">@item.Name</td>
+                                <td>@item.Price.ToString("N0") ₫</td>
+                                <td>
+                                    <input type="number"
+                                           name="quantities[@item.ProductId]"
+                                           value="@item.Quantity"
+                                           min="1"
+                                           class="form-control text-center" />
+                                </td>
+                                <td class="text-danger fw-bold">
+                                    @((item.Price * item.Quantity).ToString("N0")) ₫
+                                </td>
+                                <td>
+                                    <a asp-controller="Cart"
+                                       asp-action="Remove"
+                                       asp-route-id="@item.ProductId"
+                                       class="btn btn-outline-danger btn-sm">
+                                        <i class="fa fa-trash"></i> Xoá
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center py-4">
+                                Giỏ hàng của bạn đang trống!
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
 
-<tbody>
+        @if (Model != null && Model.Count > 0)
+        {
+            <div class="text-end mt-3">
+                <a asp-controller="Product" asp-action="Index" class="btn btn-outline-secondary btn-lg me-2">
+                    <i class="fa fa-arrow-left"></i> Tiếp tục mua hàng
+                </a>
+                
+                <button type="submit" class="btn btn-success btn-lg px-4">
+                    💳 Tiến hành thanh toán
+                </button>
+            </div>
+        }
+        else
+        {
+            <div class="text-center mt-3">
+                 <a asp-controller="Product" asp-action="Index" class="btn btn-primary btn-lg">
+                    Đi tới cửa hàng ngay
+                </a>
+            </div>
+        }
 
-@foreach (var item in Model)
-{
-<tr>
-
-<td>
-<input type="checkbox" name="selectedProducts" value="@item.ProductId" />
-</td>
-
-<td>@item.Name</td>
-
-<td>$@item.Price</td>
-
-<td>
-<input type="number"
-       name="quantities[@item.ProductId]"
-       value="@item.Quantity"
-       min="1"
-       class="form-control text-center" />
-</td>
-
-<td>
-$@(item.Price * item.Quantity)
-</td>
-
-<td>
-<a asp-controller="Cart"
-   asp-action="Remove"
-   asp-route-id="@item.ProductId"
-   class="btn btn-danger btn-sm">
-Remove
-</a>
-</td>
-
-</tr>
-}
-
-</tbody>
-
-</table>
-
-<div class="text-end">
-
-<button type="submit" class="btn btn-success btn-lg">
-💳 Checkout Selected
-</button>
-
-</div>
-
-</form>
+    </form>
 
 </div>

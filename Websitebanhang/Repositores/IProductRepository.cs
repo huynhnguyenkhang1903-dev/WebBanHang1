@@ -1,15 +1,18 @@
 using System.Collections.Generic;
 using Websitebanhang.Models;
 
-public interface IProductRepository
+namespace Websitebanhang.Repositores
 {
-    IEnumerable<Product> GetAll();
+    public interface IProductRepository
+    {
+        IEnumerable<Product> GetAll();
 
-    Product? GetById(int id);
+        Product? GetById(int id);
 
-    void Add(Product product);
+        void Add(Product product);
 
-    void Update(Product product);
+        void Update(Product product);
 
-    void Delete(int id);
+        void Delete(int id);
+    }
 }

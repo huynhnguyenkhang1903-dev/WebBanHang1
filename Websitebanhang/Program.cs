@@ -1,8 +1,9 @@
-﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Websitebanhang.Data;
 using Websitebanhang.Models;
 using Websitebanhang.Repositores;
+using Websitebanhang.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -54,6 +55,7 @@ builder.Services.AddSession(options =>
 
 builder.Services.AddScoped<IProductRepository, MockProductRepository>();
 builder.Services.AddScoped<ICategoryRepository, MockCategoryRepository>();
+builder.Services.AddScoped<IEmailService, EmailService>();
 
 
 var app = builder.Build();

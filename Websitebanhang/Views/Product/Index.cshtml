@@ -4,7 +4,7 @@
 @model X.PagedList.IPagedList<ProductModel>
 
 <div class="container mt-4">
-    <h2 class="text-center mb-4 fw-bold">☕ Coffee Products</h2>
+    <h2 class="text-center mb-4 fw-bold">☕ Sản phẩm Cà Phê</h2>
 
     <!-- SEARCH + FILTER -->
     <form method="get" asp-action="Index" class="row mb-4 g-2">
@@ -13,23 +13,23 @@
             <input type="text"
                    name="search"
                    class="form-control"
-                   placeholder="Search coffee..."
+                   placeholder="Tìm kiếm cà phê..."
                    value="@Context.Request.Query["search"].ToString()" />
         </div>
 
         <div class="col-md-3">
             <select name="price" class="form-select">
-                <option value="">Price</option>
-                <option value="low" selected="@(Context.Request.Query["price"] == "low" ? "selected" : null)">Low price</option>
-                <option value="medium" selected="@(Context.Request.Query["price"] == "medium" ? "selected" : null)">Medium price</option>
-                <option value="high" selected="@(Context.Request.Query["price"] == "high" ? "selected" : null)">High price</option>
+                <option value="">Lọc theo giá</option>
+                <option value="low" selected="@(Context.Request.Query["price"] == "low" ? "selected" : null)">Giá thấp</option>
+                <option value="medium" selected="@(Context.Request.Query["price"] == "medium" ? "selected" : null)">Giá trung bình</option>
+                <option value="high" selected="@(Context.Request.Query["price"] == "high" ? "selected" : null)">Giá cao</option>
             </select>
         </div>
 
         <div class="col-md-3">
             <select name="country" class="form-select">
-                <option value="">Country</option>
-                <option value="Vietnam" selected="@(Context.Request.Query["country"] == "Vietnam" ? "selected" : null)">Vietnam</option>
+                <option value="">Xuất xứ</option>
+                <option value="Vietnam" selected="@(Context.Request.Query["country"] == "Vietnam" ? "selected" : null)">Việt Nam</option>
                 <option value="Brazil" selected="@(Context.Request.Query["country"] == "Brazil" ? "selected" : null)">Brazil</option>
                 <option value="Colombia" selected="@(Context.Request.Query["country"] == "Colombia" ? "selected" : null)">Colombia</option>
                 <option value="Ethiopia" selected="@(Context.Request.Query["country"] == "Ethiopia" ? "selected" : null)">Ethiopia</option>
@@ -39,7 +39,7 @@
 
         <div class="col-md-2">
             <button type="submit" class="btn btn-dark w-100">
-                Search
+                Tìm kiếm
             </button>
         </div>
     </form>
@@ -62,7 +62,7 @@
                             <h6 class="fw-bold">@item.Name</h6>
 
                             <p class="text-danger fw-bold mb-1">
-                                @item.Price.ToString("N0") đ
+                                @item.Price.ToString("N0") ₫
                             </p>
 
                             <p class="text-muted small mb-3">
@@ -73,14 +73,14 @@
                                 <a asp-action="Display"
                                    asp-route-id="@item.Id"
                                    class="btn btn-outline-dark btn-sm">
-                                    View
+                                    Xem chi tiết
                                 </a>
 
                                 <a asp-controller="Cart"
                                    asp-action="AddToCart"
                                    asp-route-id="@item.Id"
                                    class="btn btn-success btn-sm">
-                                    🛒 Add To Cart
+                                    🛒 Thêm vào giỏ
                                 </a>
                             </div>
                         </div>
@@ -93,7 +93,7 @@
         {
             <div class="col-12">
                 <div class="alert alert-warning text-center">
-                    No products found.
+                    Không tìm thấy sản phẩm nào.
                 </div>
             </div>
         }

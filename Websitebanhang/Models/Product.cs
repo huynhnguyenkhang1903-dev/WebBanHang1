@@ -32,5 +32,9 @@ namespace Websitebanhang.Models
 
         // Danh sách ảnh (gallery)
         public List<string> ImageUrls { get; set; } = new List<string>();
+
+        public int? VoucherId { get; set; }
+
+        public Voucher? Voucher { get; set; }
     }
 }

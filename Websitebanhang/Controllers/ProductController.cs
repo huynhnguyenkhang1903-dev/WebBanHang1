@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Websitebanhang.Repositores;
 using X.PagedList;
@@ -77,6 +77,17 @@ namespace Websitebanhang.Controllers
     .ToPagedList(page, pageSize);
 
             return View(pagedProducts);
+        }
+
+        [AllowAnonymous]
+        public IActionResult Display(int id)
+        {
+            var product = _productRepository.GetById(id);
+            if (product == null)
+            {
+                return NotFound();
+            }
+            return View(product);
         }
     }
 }

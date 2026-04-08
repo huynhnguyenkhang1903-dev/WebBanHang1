@@ -1,17 +1,20 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Websitebanhang.Models;
 using Websitebanhang.Repositores;
 using Websitebanhang.Extensions;
+using Websitebanhang.Services;
 
 namespace Websitebanhang.Controllers
 {
     public class CartController : Controller
     {
         private readonly IProductRepository _productRepository;
+        private readonly IEmailService _emailService;
 
-        public CartController(IProductRepository productRepository)
+        public CartController(IProductRepository productRepository, IEmailService emailService)
         {
             _productRepository = productRepository;
+            _emailService = emailService;
         }
 
         // hiển thị giỏ hàng
@@ -104,7 +107,7 @@ namespace Websitebanhang.Controllers
 
         // đặt hàng
         [HttpPost]
-        public IActionResult PlaceOrder(string name, string address, string phone)
+        public async Task<IActionResult> PlaceOrder(string name, string email, string address, string phone, string paymentMethod)
         {
             var cart = HttpContext.Session.GetObject<List<CartItem>>("Cart") ?? new List<CartItem>();
 
@@ -118,9 +121,49 @@ namespace Websitebanhang.Controllers
 
             // truyền dữ liệu sang trang success
             ViewBag.CustomerName = name;
+            ViewBag.Email = email;
             ViewBag.Address = address;
             ViewBag.Phone = phone;
+            var formattedPayment = paymentMethod == "cod" ? "Thanh toán khi nhận hàng" : "Chuyển khoản ngân hàng";
+            ViewBag.PaymentMethod = formattedPayment;
             ViewBag.Total = total;
+
+            // Send confirmation email
+            if (!string.IsNullOrWhiteSpace(email))
+            {
+                string htmlBody = $@"
+                    <div style='font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;'>
+                        <h2 style='color: #4CAF50; text-align: center;'>Thanh toán thành công!</h2>
+                        <hr />
+                        <h3>Xin chào <strong>{name}</strong>,</h3>
+                        <p>Cảm ơn bạn đã mua hàng tại <strong>Coffee Shop</strong>. Đơn hàng của bạn đã được ghi nhận và đang trong quá trình xử lý.</p>
+                        
+                        <h4>Chi tiết giao hàng:</h4>
+                        <ul>
+                            <li><strong>SĐT:</strong> {phone}</li>
+                            <li><strong>Địa chỉ:</strong> {address}</li>
+                            <li><strong>Phương thức:</strong> {formattedPayment}</li>
+                        </ul>
+
+                        <h3 style='background: #f4f4f4; padding: 10px; border-radius: 5px; text-align: center;'>
+                            Tổng tiền: <span style='color: #D32F2F;'>{total.ToString("N0")} ₫</span>
+                        </h3>
+                        
+                        <p style='text-align: center; color: #777; margin-top: 20px;'>
+                            Nếu bạn có bất kỳ câu hỏi nào, vui lòng trả lời email này.
+                        </p>
+                    </div>
+                ";
+
+                try 
+                {
+                    await _emailService.SendEmailAsync(email, "Xác nhận đơn hàng - Coffee Shop", htmlBody);
+                } 
+                catch (Exception)
+                {
+                    // Lỗi gửi email không nên làm crash tiến trình đặt hàng
+                }
+            }
 
             // xoá giỏ hàng
             HttpContext.Session.Remove("Cart");
