@@ -16,6 +16,10 @@ namespace Websitebanhang.Data
 
         public DbSet<Category> Categories { get; set; }
 
+        public DbSet<Order> Orders { get; set; }
+
+        public DbSet<UnitOfMeasure> UnitsOfMeasure { get; set; }
+
         // CONFIG DATABASE
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -24,6 +28,14 @@ namespace Websitebanhang.Data
             // Fix decimal warning for Price
             modelBuilder.Entity<Product>()
                 .Property(p => p.Price)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<Order>()
+                .Property(o => o.TotalAmount)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<CartItem>()
+                .Property(ci => ci.Price)
                 .HasPrecision(18, 2);
         }
     }

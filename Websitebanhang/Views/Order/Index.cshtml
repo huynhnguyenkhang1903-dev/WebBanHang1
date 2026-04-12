@@ -1,37 +1,51 @@
-﻿<div class="admin-container">
+@model IEnumerable<Websitebanhang.Models.Order>
 
-<div class="admin-title">
-Order Management
-</div>
+@{
+    ViewData["Title"] = "Quản lý Đơn hàng";
+}
 
-<div class="admin-card">
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold"><i class="fa fa-shopping-cart text-success me-2"></i> Quản Lý Đơn Hàng</h2>
+    </div>
 
-<table class="table table-dark-custom">
-
-<thead>
-<tr>
-<th>Order ID</th>
-<th>Customer</th>
-<th>Total</th>
-<th>Status</th>
-<th>Date</th>
-</tr>
-</thead>
-
-<tbody>
-
-<tr>
-<td>1001</td>
-<td>John Doe</td>
-<td>250000 ₫</td>
-<td>Completed</td>
-<td>10/03/2026</td>
-</tr>
-
-</tbody>
-
-</table>
-
-</div>
-
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Mã ĐH</th>
+                            <th>Khách hàng</th>
+                            <th>Email</th>
+                            <th>Số điện thoại</th>
+                            <th>Ngày đặt</th>
+                            <th>Phương thức</th>
+                            <th>Tổng tiền</th>
+                            <th>Trạng thái</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td class="fw-bold">#@item.Id</td>
+                                <td>@item.CustomerName</td>
+                                <td>@item.Email</td>
+                                <td>@item.Phone</td>
+                                <td>@item.OrderDate.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td><span class="badge bg-secondary">@item.PaymentMethod</span></td>
+                                <td class="text-danger fw-bold">@item.TotalAmount.ToString("N0") ₫</td>
+                                <td>
+                                    <span class="badge @(item.Status == "Pending" ? "bg-warning text-dark" : "bg-success")">
+                                        @item.Status
+                                    </span>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 </div>

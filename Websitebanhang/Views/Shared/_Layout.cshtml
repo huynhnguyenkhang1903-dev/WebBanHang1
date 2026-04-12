@@ -143,18 +143,22 @@ Giỏ Hàng
 
 @if (User.Identity != null && User.Identity.IsAuthenticated)
 {
-    <li class="nav-item">
-    <a class="nav-link" href="#">
+    <li class="nav-item dropdown">
+    <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     <i class="fa fa-user me-1"></i> Xin chào, @User.Identity.Name
     </a>
-    </li>
-
-    <li class="nav-item">
-    <form asp-controller="Account" asp-action="Logout" method="post" class="form-inline">
-        <button type="submit" class="nav-link btn btn-link border-0 text-white-50">
-            Đăng xuất
-        </button>
-    </form>
+    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+        <li><a class="dropdown-item" asp-controller="Account" asp-action="Profile"><i class="fa fa-id-card me-2"></i>Hồ sơ của tôi</a></li>
+        <li><a class="dropdown-item" asp-controller="Account" asp-action="ChangePassword"><i class="fa fa-key me-2"></i>Đổi mật khẩu</a></li>
+        <li><hr class="dropdown-divider"></li>
+        <li>
+            <form asp-controller="Account" asp-action="Logout" method="post" class="m-0 p-0">
+                <button type="submit" class="dropdown-item text-danger">
+                    <i class="fa fa-sign-out-alt me-2"></i>Đăng xuất
+                </button>
+            </form>
+        </li>
+    </ul>
     </li>
 }
 else

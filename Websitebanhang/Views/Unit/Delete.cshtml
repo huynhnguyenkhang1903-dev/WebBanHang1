@@ -1,0 +1,22 @@
+@model Websitebanhang.Models.UnitOfMeasure
+@{ ViewData["Title"] = "Xóa Đơn Vị Tính"; }
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-5">
+            <div class="alert alert-danger text-center">
+                <i class="fa fa-exclamation-triangle fa-3x mb-3"></i>
+                <h4 class="fw-bold">Bạn có chắc chắn?</h4>
+                <p>Xóa đơn vị tính <strong>@Model.Name</strong> sẽ không thể hoàn tác.</p>
+            </div>
+            <div class="card text-center p-4 border-danger">
+                <form asp-action="Delete" asp-route-id="@Model.Id" method="post">
+                    <div class="d-flex justify-content-center gap-3">
+                        <a asp-action="Index" class="btn btn-secondary px-4">Hủy</a>
+                        <button type="submit" class="btn btn-danger px-4 fw-bold">Xác nhận Xóa</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

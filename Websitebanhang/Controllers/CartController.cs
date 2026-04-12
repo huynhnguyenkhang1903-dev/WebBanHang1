@@ -11,11 +11,13 @@ namespace Websitebanhang.Controllers
     {
         private readonly IProductRepository _productRepository;
         private readonly IEmailService _emailService;
+        private readonly Websitebanhang.Data.AppDbContext _context;
 
-        public CartController(IProductRepository productRepository, IEmailService emailService)
+        public CartController(IProductRepository productRepository, IEmailService emailService, Websitebanhang.Data.AppDbContext context)
         {
             _productRepository = productRepository;
             _emailService = emailService;
+            _context = context;
         }
 
         // hiển thị giỏ hàng
@@ -200,6 +202,30 @@ namespace Websitebanhang.Controllers
                     // Lỗi gửi email không nên làm crash tiến trình đặt hàng
                 }
             }
+
+            // LƯU ĐƠN HÀNG VÀO DATABASE
+            var order = new Order
+            {
+                CustomerName = name,
+                Email = email,
+                Address = address,
+                Phone = phone,
+                PaymentMethod = formattedPayment,
+                TotalAmount = total,
+                OrderDate = DateTime.Now,
+                Status = "Pending",
+                Items = cart.Select(c => new CartItem 
+                {
+                    ProductId = c.ProductId,
+                    Name = c.Name,
+                    Price = c.Price,
+                    Quantity = c.Quantity,
+                    ImageUrl = c.ImageUrl
+                }).ToList()
+            };
+
+            _context.Orders.Add(order);
+            await _context.SaveChangesAsync();
 
             // xoá giỏ hàng
             HttpContext.Session.Remove("Cart");

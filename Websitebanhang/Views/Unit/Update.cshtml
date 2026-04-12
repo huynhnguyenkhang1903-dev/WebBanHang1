@@ -1,0 +1,29 @@
+@model Websitebanhang.Models.UnitOfMeasure
+@{ ViewData["Title"] = "Sửa Đơn Vị Tính"; }
+
+<div class="container mt-4 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <h2 class="text-center mb-4"><i class="fa fa-edit text-warning me-2"></i>Sửa Đơn Vị Tính</h2>
+            <div class="card shadow-sm border-0 border-top border-warning border-4 p-4">
+                <form asp-action="Update" method="post">
+                    <input type="hidden" asp-for="Id" />
+                    <div class="mb-3">
+                        <label asp-for="Name" class="form-label fw-bold">Tên đơn vị</label>
+                        <input asp-for="Name" class="form-control" />
+                        <span asp-validation-for="Name" class="text-danger"></span>
+                    </div>
+                    <div class="mb-4">
+                        <label asp-for="Description" class="form-label fw-bold">Mô tả thêm</label>
+                        <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                        <span asp-validation-for="Description" class="text-danger"></span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <a asp-action="Index" class="btn btn-secondary">Hủy</a>
+                        <button type="submit" class="btn btn-warning fw-bold"><i class="fa fa-save me-2"></i>Cập nhật</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
