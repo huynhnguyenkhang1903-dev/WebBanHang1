@@ -1,121 +1,54 @@
-﻿@model IEnumerable<Websitebanhang.Models.Product>
+@model IEnumerable<Websitebanhang.Models.Product>
 
 @{
-    ViewData["Title"] = "Product Management";
+    ViewData["Title"] = "Quản Lý Sản Phẩm";
 }
 
 <div class="container mt-4">
-
     <div class="d-flex justify-content-between align-items-center mb-4">
-
-        <h2 class="fw-bold text-coffee">
-            ☕ Product Management
-        </h2>
-
-        <a asp-action="Add" class="btn btn-coffee">
-            <i class="fa fa-plus"></i> Add Product
-        </a>
-
+        <h2 class="fw-bold"><i class="fa fa-coffee text-primary me-2"></i> Quản Lý Sản Phẩm</h2>
+        <a asp-action="Add" class="btn btn-primary"><i class="fa fa-plus me-1"></i> Thêm Mới</a>
     </div>
 
-    <div class="table-responsive shadow-sm bg-white p-3 rounded">
-
-        <table class="table table-hover align-middle">
-
-            <thead class="table-coffee text-center">
-
-                <tr>
-                    <th width="100">Image</th>
-                    <th>Name</th>
-                    <th width="120">Price</th>
-                    <th width="150">Category</th>
-                    <th width="220">Actions</th>
-                </tr>
-
-            </thead>
-
-            <tbody>
-
-                @if (Model != null && Model.Any())
-                {
-                    foreach (var item in Model)
-                    {
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
                         <tr>
-
-                            <!-- IMAGE -->
-                            <td class="text-center">
-
-                                @if (!string.IsNullOrEmpty(item.ImageUrl))
-                                {
-                                    <img src="@item.ImageUrl"
-                                         style="width:65px;height:65px;object-fit:cover;border-radius:8px;" />
-                                }
-                                else
-                                {
-                                    <img src="/images/no-image.png"
-                                         style="width:65px;height:65px;border-radius:8px;" />
-                                }
-
-                            </td>
-
-                            <!-- NAME -->
-                            <td class="fw-semibold">
-                                @item.Name
-                            </td>
-
-                            <!-- PRICE -->
-                            <td class="text-danger fw-bold text-center">
-                                @item.Price.ToString("N0") ₫
-                            </td>
-
-                            <!-- CATEGORY -->
-                            <td class="text-center">
-                                @(item.Category?.Name ?? "None")
-                            </td>
-
-                            <!-- ACTION -->
-                            <td class="text-center">
-
-                                <a asp-action="Display"
-                                   asp-route-id="@item.Id"
-                                   class="btn btn-sm btn-outline-dark">
-
-                                    View
-                                </a>
-
-                                <a asp-action="Update"
-                                   asp-route-id="@item.Id"
-                                   class="btn btn-sm btn-warning">
-
-                                    Edit
-                                </a>
-
-                                <a asp-action="Delete"
-                                   asp-route-id="@item.Id"
-                                   class="btn btn-sm btn-danger"
-                                   onclick="return confirm('Delete this product?')">
-
-                                    Delete
-                                </a>
-
-                            </td>
-
+                            <th>Ảnh</th>
+                            <th>Tên sản phẩm</th>
+                            <th>Giá (VNĐ)</th>
+                            <th>Danh mục</th>
+                            <th>Hành động</th>
                         </tr>
-                    }
-                }
-                else
-                {
-                    <tr>
-                        <td colspan="5" class="text-center text-muted p-4">
-                            No products available
-                        </td>
-                    </tr>
-                }
-
-            </tbody>
-
-        </table>
-
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>
+                                    @if (!string.IsNullOrWhiteSpace(item.ImageUrl))
+                                    {
+                                        <img src="@item.ImageUrl" alt="@item.Name" style="width: 50px; height: 50px; object-fit: cover;" class="rounded" onerror="this.onerror=null; this.src='/images/placeholder.jpg';" />
+                                    }
+                                    else
+                                    {
+                                        <img src="/images/placeholder.jpg" alt="@item.Name" style="width: 50px; height: 50px; object-fit: cover;" class="rounded" onerror="this.onerror=null;" />
+                                    }
+                                </td>
+                                <td class="fw-bold">@item.Name</td>
+                                <td class="text-success fw-bold">@item.Price.ToString("N0") ₫</td>
+                                <td>@(item.Category != null ? item.Category.Name : "Không có")</td>
+                                <td>
+                                    <a asp-action="Update" asp-route-id="@item.Id" class="btn btn-sm btn-outline-warning"><i class="fa fa-edit"></i> Sửa</a>
+                                    <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger"><i class="fa fa-trash"></i> Xóa</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
-
 </div>

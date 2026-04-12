@@ -13,10 +13,12 @@ namespace Websitebanhang.Controllers
     public class ProductController : Controller
     {
         private readonly IProductRepository _productRepository;
+        private readonly ICategoryRepository _categoryRepository;
 
-        public ProductController(IProductRepository productRepository)
+        public ProductController(IProductRepository productRepository, ICategoryRepository categoryRepository)
         {
             _productRepository = productRepository;
+            _categoryRepository = categoryRepository;
         }
 
         [AllowAnonymous]
@@ -93,6 +95,75 @@ namespace Websitebanhang.Controllers
                 return NotFound();
             }
             return View(product);
+        }
+
+        // ================= ADMIN CRUD =================
+
+        [Authorize(Roles = "Admin")]
+        public IActionResult Manage()
+        {
+            var products = _productRepository.GetAll();
+            return View(products);
+        }
+
+        [Authorize(Roles = "Admin")]
+        public IActionResult Add()
+        {
+            ViewBag.Categories = _categoryRepository.GetAll();
+            return View();
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "Admin")]
+        public IActionResult Add(ProductModel product)
+        {
+            if (ModelState.IsValid)
+            {
+                _productRepository.Add(product);
+                return RedirectToAction("Manage");
+            }
+            ViewBag.Categories = _categoryRepository.GetAll();
+            return View(product);
+        }
+
+        [Authorize(Roles = "Admin")]
+        public IActionResult Update(int id)
+        {
+            var product = _productRepository.GetById(id);
+            if (product == null) return NotFound();
+
+            ViewBag.Categories = _categoryRepository.GetAll();
+            return View(product);
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "Admin")]
+        public IActionResult Update(ProductModel product)
+        {
+            if (ModelState.IsValid)
+            {
+                _productRepository.Update(product);
+                return RedirectToAction("Manage");
+            }
+            ViewBag.Categories = _categoryRepository.GetAll();
+            return View(product);
+        }
+
+        [Authorize(Roles = "Admin")]
+        public IActionResult Delete(int id)
+        {
+            var product = _productRepository.GetById(id);
+            if (product == null) return NotFound();
+
+            return View(product);
+        }
+
+        [HttpPost, ActionName("Delete")]
+        [Authorize(Roles = "Admin")]
+        public IActionResult DeleteConfirmed(int id)
+        {
+            _productRepository.Delete(id);
+            return RedirectToAction("Manage");
         }
     }
 }

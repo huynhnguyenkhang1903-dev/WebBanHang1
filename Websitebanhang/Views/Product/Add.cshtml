@@ -1,73 +1,66 @@
-﻿@model Websitebanhang.Models.Product
-@using Microsoft.AspNetCore.Mvc.Rendering
+@model Websitebanhang.Models.Product
 
 @{
-    ViewData["Title"] = "Add Product";
+    ViewData["Title"] = "Thêm Sản Phẩm Mới";
 }
 
-<h2>Add Product</h2>
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <h2 class="fw-bold mb-4"><i class="fa fa-plus-circle text-success me-2"></i> Thêm Sản Phẩm Mới</h2>
+            
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <form asp-action="Add" method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
-<form asp-action="Add" method="post" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label asp-for="Name" class="form-label fw-bold">Tên sản phẩm</label>
+                            <input asp-for="Name" class="form-control" placeholder="Nhập tên sản phẩm..." />
+                            <span asp-validation-for="Name" class="text-danger"></span>
+                        </div>
 
-    <div asp-validation-summary="All" class="text-danger"></div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Price" class="form-label fw-bold">Giá (VNĐ)</label>
+                                <input asp-for="Price" type="number" class="form-control" />
+                                <span asp-validation-for="Price" class="text-danger"></span>
+                            </div>
 
-    <!-- NAME -->
-    <div class="form-group">
-        <label asp-for="Name"></label>
-        <input asp-for="Name" class="form-control"/>
-        <span asp-validation-for="Name" class="text-danger"></span>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="CategoryId" class="form-label fw-bold">Danh mục</label>
+                                <select asp-for="CategoryId" class="form-select" asp-items="@(new SelectList(ViewBag.Categories, "Id", "Name"))">
+                                    <option value="">-- Chọn danh mục --</option>
+                                </select>
+                                <span asp-validation-for="CategoryId" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="ImageUrl" class="form-label fw-bold">Link Ảnh (URL)</label>
+                            <input asp-for="ImageUrl" class="form-control" placeholder="https://..." />
+                            <span asp-validation-for="ImageUrl" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Country" class="form-label fw-bold">Quốc gia / Xuất xứ</label>
+                            <input asp-for="Country" class="form-control" placeholder="VD: Vietnam, Brazil..." />
+                            <span asp-validation-for="Country" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Description" class="form-label fw-bold">Mô tả</label>
+                            <textarea asp-for="Description" class="form-control" rows="4"></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <a asp-action="Manage" class="btn btn-secondary">Quay Lại</a>
+                            <button type="submit" class="btn btn-success"><i class="fa fa-save"></i> Thêm Sản Phẩm</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
-
-    <!-- PRICE -->
-    <div class="form-group">
-        <label asp-for="Price"></label>
-        <input asp-for="Price" class="form-control"/>
-        <span asp-validation-for="Price" class="text-danger"></span>
-    </div>
-
-    <!-- DESCRIPTION -->
-    <div class="form-group">
-        <label asp-for="Description"></label>
-        <textarea asp-for="Description" class="form-control"></textarea>
-        <span asp-validation-for="Description" class="text-danger"></span>
-    </div>
-
-    <!-- COUNTRY -->
-    <div class="form-group">
-        <label asp-for="Country">Country</label>
-        <select asp-for="Country" class="form-control">
-            <option value="Vietnam">Vietnam</option>
-            <option value="Brazil">Brazil</option>
-            <option value="Colombia">Colombia</option>
-            <option value="Ethiopia">Ethiopia</option>
-        </select>
-    </div>
-
-    <!-- CATEGORY -->
-    <div class="form-group">
-        <label asp-for="CategoryId">Category</label>
-        <select asp-for="CategoryId"
-                asp-items="ViewBag.Categories"
-                class="form-control">
-        </select>
-    </div>
-
-    <!-- IMAGE -->
-    <div class="form-group">
-        <label>Product Image</label>
-        <input type="file" name="imageFile" class="form-control" />
-    </div>
-
-    <br/>
-
-    <button type="submit" class="btn btn-primary">
-        Add Product
-    </button>
-
-</form>
-
-@section Scripts{
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
-}
+</div>

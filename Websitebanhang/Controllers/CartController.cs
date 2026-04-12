@@ -3,6 +3,7 @@ using Websitebanhang.Models;
 using Websitebanhang.Repositores;
 using Websitebanhang.Extensions;
 using Websitebanhang.Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Websitebanhang.Controllers
 {
@@ -107,6 +108,7 @@ namespace Websitebanhang.Controllers
 
         // đặt hàng
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> PlaceOrder(string name, string email, string address, string phone, string paymentMethod)
         {
             var cart = HttpContext.Session.GetObject<List<CartItem>>("Cart") ?? new List<CartItem>();

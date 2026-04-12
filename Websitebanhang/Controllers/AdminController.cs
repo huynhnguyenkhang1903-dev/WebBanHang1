@@ -1,21 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Websitebanhang.Controllers
 {
+    [Authorize(Roles = "Admin")]
     public class AdminController : Controller
     {
-        private bool CheckAdmin()
+        public IActionResult Index()
         {
-            return HttpContext.Session.GetString("Role") == "Admin";
-        }
-
-        public IActionResult Users()
-        {
-            if (!CheckAdmin())
-            {
-                return RedirectToAction("Index", "Home");
-            }
-
             return View(LoginController.users);
         }
     }

@@ -1,5 +1,6 @@
-﻿using Websitebanhang.Data;
+using Websitebanhang.Data;
 using Websitebanhang.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace Websitebanhang.Repositores
 {
@@ -14,7 +15,7 @@ namespace Websitebanhang.Repositores
 
         public IEnumerable<Product> GetAll()
         {
-            return _context.Products.ToList();
+            return _context.Products.Include(p => p.Category).AsNoTracking().ToList();
         }
 
         public Product? GetById(int id)

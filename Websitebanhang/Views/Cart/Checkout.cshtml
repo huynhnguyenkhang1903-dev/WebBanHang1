@@ -1,8 +1,8 @@
-﻿@model List<CartItem>
+@model List<CartItem>
 
 <div class="container mt-4">
 
-<h2 class="text-center mb-4">💳 Checkout</h2>
+<h2 class="text-center mb-4">💳 Thanh toán</h2>
 
 <form asp-controller="Cart" asp-action="PlaceOrder" method="post">
 
@@ -10,10 +10,10 @@
 
 <thead class="table-dark">
 <tr>
-<th>Product</th>
-<th>Price</th>
-<th>Quantity</th>
-<th>Total</th>
+<th>Sản phẩm</th>
+<th>Giá</th>
+<th>Số lượng</th>
+<th>Thành tiền</th>
 </tr>
 </thead>
 
@@ -30,15 +30,15 @@ total += itemTotal;
 
 <tr>
 <td>@item.Name</td>
-<td>$@item.Price</td>
+<td>@item.Price.ToString("N0") ₫</td>
 <td>@item.Quantity</td>
-<td>$@itemTotal</td>
+<td>@itemTotal.ToString("N0") ₫</td>
 </tr>
 }
 
 <tr class="table-warning fw-bold">
-<td colspan="3">Grand Total</td>
-<td>$@total</td>
+<td colspan="3">Tổng Tiền</td>
+<td>@total.ToString("N0") ₫</td>
 </tr>
 
 </tbody>
@@ -47,20 +47,25 @@ total += itemTotal;
 
 <hr />
 
-<h4 class="mb-3">Customer Information</h4>
+<h4 class="mb-3">Thông tin khách hàng</h4>
 
 <div class="mb-3">
-<label class="form-label">Full Name</label>
+<label class="form-label">Họ và tên</label>
 <input name="name" class="form-control" required />
 </div>
 
 <div class="mb-3">
-<label class="form-label">Address</label>
+<label class="form-label">Email</label>
+<input type="email" name="email" class="form-control" required />
+</div>
+
+<div class="mb-3">
+<label class="form-label">Địa chỉ</label>
 <input name="address" class="form-control" required />
 </div>
 
 <div class="mb-3">
-<label class="form-label">Phone</label>
+<label class="form-label">Số điện thoại</label>
 <input name="phone" class="form-control" required />
 </div>
 
@@ -69,11 +74,11 @@ total += itemTotal;
 <a asp-controller="Cart"
    asp-action="Index"
    class="btn btn-secondary">
-Back to Cart
+Quay lại giỏ hàng
 </a>
 
 <button type="submit" class="btn btn-success btn-lg">
-Place Order
+Đặt hàng
 </button>
 
 </div>

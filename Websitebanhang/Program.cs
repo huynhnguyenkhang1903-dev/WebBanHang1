@@ -10,7 +10,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 // ================= MVC =================
 
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+    });
 builder.Services.AddRazorPages();
 
 
@@ -41,6 +45,12 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
 
 // ================= SESSION =================
 
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = "/Account/Login";
+    options.AccessDeniedPath = "/Account/Login";
+});
+
 builder.Services.AddDistributedMemoryCache();
 
 builder.Services.AddSession(options =>
@@ -53,8 +63,8 @@ builder.Services.AddSession(options =>
 
 // ================= REPOSITORY =================
 
-builder.Services.AddScoped<IProductRepository, MockProductRepository>();
-builder.Services.AddScoped<ICategoryRepository, MockCategoryRepository>();
+builder.Services.AddScoped<IProductRepository, EFProductRepository>();
+builder.Services.AddScoped<ICategoryRepository, EFCategoryRepository>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 
 
