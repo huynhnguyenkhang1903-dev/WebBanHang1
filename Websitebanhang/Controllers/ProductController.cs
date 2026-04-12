@@ -20,9 +20,14 @@ namespace Websitebanhang.Controllers
         }
 
         [AllowAnonymous]
-        public IActionResult Index(string search, string price, string country, int page = 1)
+        public IActionResult Index(string search, string price, string country, int? categoryId, int page = 1)
         {
             var products = _productRepository.GetAll().AsQueryable();
+
+            if (categoryId.HasValue)
+            {
+                products = products.Where(p => p.CategoryId == categoryId.Value);
+            }
 
             // SEARCH
             if (!string.IsNullOrWhiteSpace(search))

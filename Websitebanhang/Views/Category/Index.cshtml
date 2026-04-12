@@ -1,0 +1,43 @@
+@model IEnumerable<Websitebanhang.Models.Category>
+
+@{
+    ViewData["Title"] = "Danh Mục Sản Phẩm";
+}
+
+<div class="container my-5">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="fw-bold text-center">☕ Danh Mục Sản Phẩm</h2>
+            <p class="text-muted text-center">Khám phá các danh mục cà phê chất lượng của chúng tôi</p>
+        </div>
+    </div>
+
+    <div class="row gx-4 gy-4">
+        @if (Model != null && Model.Any())
+        {
+            foreach (var item in Model)
+            {
+                <div class="col-md-4">
+                    <div class="card shadow-sm h-100 border-0 rounded-3 text-center p-4" style="transition: transform 0.3s ease;">
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <i class="fa fa-coffee fa-3x" style="color: #6F4E37;"></i>
+                            </div>
+                            <h4 class="card-title fw-bold text-dark mb-3">@item.Name</h4>
+                            <p class="card-text text-muted mb-4">Mua các sản phẩm tuyệt vời thuộc danh mục @item.Name.</p>
+                            <a asp-controller="Product" asp-action="Index" asp-route-categoryId="@item.Id" class="btn btn-outline-dark px-4 rounded-pill">
+                                Xem Sản Phẩm
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col-12 text-center text-muted">
+                <p>Không có danh mục nào.</p>
+            </div>
+        }
+    </div>
+</div>

@@ -8,6 +8,10 @@
 
     <!-- SEARCH + FILTER -->
     <form method="get" asp-action="Index" class="row mb-4 g-2">
+        @if (Context.Request.Query.ContainsKey("categoryId"))
+        {
+            <input type="hidden" name="categoryId" value="@Context.Request.Query["categoryId"]" />
+        }
 
         <div class="col-md-4">
             <input type="text"
@@ -108,6 +112,7 @@
                 page => Url.Action("Index", new
                 {
                     page,
+                    categoryId = Context.Request.Query["categoryId"].ToString(),
                     search = Context.Request.Query["search"].ToString(),
                     price = Context.Request.Query["price"].ToString(),
                     country = Context.Request.Query["country"].ToString()

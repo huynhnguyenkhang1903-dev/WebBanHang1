@@ -1,4 +1,4 @@
-﻿using Websitebanhang.Models;
+using Websitebanhang.Models;
 
 namespace Websitebanhang.Repositores
 {
@@ -10,9 +10,11 @@ namespace Websitebanhang.Repositores
         {
             _categories = new List<Category>
             {
-                new Category { Id = 1, Name = "Laptop" },
-                new Category { Id = 2, Name = "Desktop" },
-                new Category { Id = 3, Name = "PC" }
+                new Category { Id = 1, Name = "Cà phê hạt" },
+                new Category { Id = 2, Name = "Cà phê pha sẵn" },
+                new Category { Id = 3, Name = "Quà tặng & Bộ quà tặng" },
+                new Category { Id = 4, Name = "Nguyên liệu pha chế" },
+                new Category { Id = 5, Name = "Dụng cụ pha chế" }
             };
         }
 

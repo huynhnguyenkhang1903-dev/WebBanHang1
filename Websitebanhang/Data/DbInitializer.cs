@@ -1,4 +1,4 @@
-﻿using Websitebanhang.Models;
+using Websitebanhang.Models;
 
 namespace Websitebanhang.Data
 {
@@ -6,6 +6,50 @@ namespace Websitebanhang.Data
     {
         public static void Seed(AppDbContext context)
         {
+            // Seed 5 categories
+            var categoryNames = new[] 
+            { 
+                "Cà phê hạt", 
+                "Cà phê pha sẵn", 
+                "Quà tặng & Bộ quà tặng", 
+                "Nguyên liệu pha chế", 
+                "Dụng cụ pha chế" 
+            };
+
+            foreach (var cName in categoryNames)
+            {
+                if (!context.Categories.Any(c => c.Name == cName))
+                {
+                    context.Categories.Add(new Category { Name = cName });
+                }
+            }
+            context.SaveChanges();
+
+            // Xóa các danh mục cũ (Máy pha cà phê, Linh kiện)
+            var oldCategories = context.Categories
+                .Where(c => c.Name == "Máy pha cà phê" || c.Name == "Linh kiện")
+                .ToList();
+
+            if (oldCategories.Any())
+            {
+                // Kiểm tra xem có sản phẩm nào thuộc danh mục này không, nếu có chuyển về danh mục mặc định
+                var defaultCat = context.Categories.FirstOrDefault(c => c.Name == "Cà phê hạt");
+                var defaultCatId = defaultCat != null ? defaultCat.Id : 1;
+
+                foreach (var oldCat in oldCategories)
+                {
+                    var productsToUpdate = context.Products.Where(p => p.CategoryId == oldCat.Id).ToList();
+                    foreach (var p in productsToUpdate)
+                    {
+                        p.CategoryId = defaultCatId;
+                    }
+                }
+                context.SaveChanges();
+
+                context.Categories.RemoveRange(oldCategories);
+                context.SaveChanges();
+            }
+
             if (context.Products.Any())
                 return;
 
@@ -13,6 +57,9 @@ namespace Websitebanhang.Data
             {
                 "Vietnam", "Brazil", "Colombia", "Ethiopia", "Indonesia"
             };
+
+            var firstCat = context.Categories.FirstOrDefault(c => c.Name == "Cà phê hạt");
+            int catId = firstCat != null ? firstCat.Id : 1;
 
             var products = new List<Product>();
 
@@ -24,7 +71,7 @@ namespace Websitebanhang.Data
                     Price = 50000 + (i * 10000),
                     Description = "Delicious coffee number " + i,
                     Country = countries[i % countries.Length],
-                    CategoryId = 1,
+                    CategoryId = catId,
                     ImageUrl = "/images/coffee.jpg"
                 });
             }

@@ -134,50 +134,8 @@ using (var scope = app.Services.CreateScope())
     }
 
 
-    // ===== CATEGORY SEED =====
-
-    Category category;
-
-    if (!context.Categories.Any())
-    {
-        category = new Category { Name = "Coffee" };
-        context.Categories.Add(category);
-        context.SaveChanges();
-    }
-    else
-    {
-        category = context.Categories.First();
-    }
-
-
-    // ===== PRODUCT SEED =====
-
-    if (!context.Products.Any())
-    {
-        var countries = new[]
-        {
-            "Vietnam",
-            "Brazil",
-            "Colombia",
-            "Ethiopia",
-            "Indonesia"
-        };
-
-        for (int i = 1; i <= 70; i++)
-        {
-            context.Products.Add(new Product
-            {
-                Name = "Coffee " + i,
-                Price = 50000 + (i * 10000),
-                Description = "Coffee product " + i,
-                Country = countries[i % countries.Length],
-                CategoryId = category.Id,
-                ImageUrl = "/images/coffee.jpg"
-            });
-        }
-
-        context.SaveChanges();
-    }
+    // ===== DB INITIALIZER =====
+    DbInitializer.Seed(context);
 }
 
 app.Run();
