@@ -1,0 +1,39 @@
+@{
+    ViewData["Title"] = "Cập nhật Ảnh Đại Diện";
+}
+
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <h2 class="text-center mb-4"><i class="fa fa-camera text-info me-2"></i>Ảnh Đại Diện</h2>
+            <div class="card shadow-sm p-4 border-0 border-top border-info border-4 text-center">
+                
+                @if (!string.IsNullOrEmpty(ViewBag.CurrentAvatar))
+                {
+                    <img src="@ViewBag.CurrentAvatar" alt="Avatar" class="rounded-circle mb-4 mx-auto d-block" style="width: 150px; height: 150px; object-fit: cover; border: 3px solid #17a2b8;" />
+                }
+                else
+                {
+                    <div class="rounded-circle mb-4 mx-auto d-flex align-items-center justify-content-center bg-secondary" style="width: 150px; height: 150px; border: 3px solid #6c757d;">
+                        <i class="fa fa-user fa-5x text-white"></i>
+                    </div>
+                }
+
+                <form asp-action="UploadAvatar" method="post" enctype="multipart/form-data">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3 fw-bold"></div>
+
+                    <div class="mb-4 text-start">
+                        <label for="avatarFile" class="form-label fw-bold">Chọn ảnh mới (Tối đa 2MB)</label>
+                        <input type="file" name="avatarFile" id="avatarFile" class="form-control" accept=".jpg,.jpeg,.png" required />
+                        <small class="text-muted">Định dạng hỗ trợ: JPG, JPEG, PNG</small>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-info text-white btn-lg fw-bold"><i class="fa fa-upload me-2"></i>Tải Lên</button>
+                        <a asp-action="Profile" class="btn btn-outline-secondary mt-2"><i class="fa fa-arrow-left me-2"></i>Quay lại hồ sơ</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

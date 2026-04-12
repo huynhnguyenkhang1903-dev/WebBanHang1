@@ -5,6 +5,10 @@ using Websitebanhang.Models;
 using Websitebanhang.Models.ViewModels;
 using Websitebanhang.Services;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using System.IO;
+using System;
 
 namespace Websitebanhang.Controllers
 {
@@ -13,12 +17,14 @@ namespace Websitebanhang.Controllers
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IEmailService _emailService;
+        private readonly IWebHostEnvironment _env;
 
-        public AccountController(SignInManager<ApplicationUser> signInManager, UserManager<ApplicationUser> userManager, IEmailService emailService)
+        public AccountController(SignInManager<ApplicationUser> signInManager, UserManager<ApplicationUser> userManager, IEmailService emailService, IWebHostEnvironment env)
         {
             _signInManager = signInManager;
             _userManager = userManager;
             _emailService = emailService;
+            _env = env;
         }
 
         public IActionResult Login()
@@ -261,6 +267,83 @@ namespace Websitebanhang.Controllers
             }
 
             return View(model);
+        }
+
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> UploadAvatar()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return RedirectToAction("Login");
+            }
+            ViewBag.CurrentAvatar = user.AvatarUrl;
+            return View();
+        }
+
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UploadAvatar(IFormFile avatarFile)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return RedirectToAction("Login");
+
+            if (avatarFile == null || avatarFile.Length == 0)
+            {
+                ModelState.AddModelError(string.Empty, "Vui lòng chọn một tệp hình ảnh hợp lệ.");
+                ViewBag.CurrentAvatar = user.AvatarUrl;
+                return View();
+            }
+
+            // Check size (2MB)
+            if (avatarFile.Length > 2 * 1024 * 1024)
+            {
+                ModelState.AddModelError(string.Empty, "Kích thước tệp không được vượt quá 2MB.");
+                ViewBag.CurrentAvatar = user.AvatarUrl;
+                return View();
+            }
+
+            // Check extension
+            var ext = Path.GetExtension(avatarFile.FileName).ToLower();
+            if (ext != ".jpg" && ext != ".jpeg" && ext != ".png")
+            {
+                ModelState.AddModelError(string.Empty, "Chỉ cho phép tệp hình ảnh định dạng (jpg, jpeg, png).");
+                ViewBag.CurrentAvatar = user.AvatarUrl;
+                return View();
+            }
+
+            // Save file
+            var folderPath = Path.Combine(_env.WebRootPath, "images", "avatars");
+            if (!Directory.Exists(folderPath))
+            {
+                Directory.CreateDirectory(folderPath);
+            }
+
+            var uniqueFileName = Guid.NewGuid().ToString() + "_" + avatarFile.FileName;
+            var filePath = Path.Combine(folderPath, uniqueFileName);
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await avatarFile.CopyToAsync(stream);
+            }
+
+            // Delete old avatar if not default
+            if (!string.IsNullOrEmpty(user.AvatarUrl))
+            {
+                var oldFilePath = Path.Combine(_env.WebRootPath, user.AvatarUrl.TrimStart('/'));
+                if (System.IO.File.Exists(oldFilePath))
+                {
+                    System.IO.File.Delete(oldFilePath);
+                }
+            }
+
+            user.AvatarUrl = "/images/avatars/" + uniqueFileName;
+            await _userManager.UpdateAsync(user);
+
+            TempData["SuccessMessage"] = "Ảnh đại diện đã được cập nhật thành công!";
+            return RedirectToAction("Profile");
         }
 
         public async Task<IActionResult> Logout()

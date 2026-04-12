@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity;
 
 namespace Websitebanhang.Models
 {
@@ -9,5 +9,7 @@ namespace Websitebanhang.Models
         public string? Address { get; set; }
 
         public DateTime? DateOfBirth { get; set; }
+
+        public string? AvatarUrl { get; set; }
     }
 }
