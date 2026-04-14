@@ -7,6 +7,10 @@ namespace Websitebanhang.Models.ViewModels
     {
         public string? Email { get; set; }
 
+        [Required(ErrorMessage = "Tên hiển thị không được để trống")]
+        [Display(Name = "Tên hiển thị")]
+        public string? UserName { get; set; }
+
         [Required(ErrorMessage = "Họ và tên không được để trống")]
         [Display(Name = "Họ và tên")]
         public string? FullName { get; set; }

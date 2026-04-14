@@ -6,235 +6,184 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-
     <meta charset="utf-8" />
-    <title>@ViewData["Title"] - Coffee Shop</title>
-
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"] - Aura Coffee</title>
 
-    <!-- Bootstrap -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
-          rel="stylesheet" />
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
 
     <!-- Font Awesome -->
-    <link rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 
     <!-- Site CSS -->
-    <link rel="stylesheet"
-          href="~/css/site.css"
-          asp-append-version="true" />
-
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
 
 <body>
 
-<!-- NAVBAR -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-black shadow-sm">
+<!-- STICKY NAVBAR -->
+<nav id="mainNavbar" class="navbar navbar-expand-lg navbar-custom">
+    <div class="container d-flex align-items-center">
+        <!-- LOGO -->
+        <a class="navbar-brand d-flex align-items-center gap-2" asp-controller="Home" asp-action="Index">
+            <i class="fa-solid fa-mug-hot text-gold fs-3"></i>
+            <span>Aura Coffee</span>
+        </a>
 
-<div class="container">
+        <!-- MOBILE BUTTON -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
 
-<!-- LOGO -->
-<a class="navbar-brand fw-bold"
-   asp-controller="Home"
-   asp-action="Index">
-☕ Coffee Shop
-</a>
+        <!-- MENU (CENTER) -->
+        <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" asp-controller="Home" asp-action="Index">Trang Chủ</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" asp-controller="Product" asp-action="Index">Hạt Cà Phê</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" asp-controller="Category" asp-action="Index">Danh Mục</a>
+                </li>
 
-<!-- MOBILE BUTTON -->
-<button class="navbar-toggler"
-        type="button"
-        data-bs-toggle="collapse"
-        data-bs-target="#navbarNav">
-<span class="navbar-toggler-icon"></span>
-</button>
 
-<!-- MENU -->
-<div class="collapse navbar-collapse" id="navbarNav">
+            </ul>
+        </div>
 
-<ul class="navbar-nav me-auto">
-
-<li class="nav-item">
-<a class="nav-link"
-   asp-controller="Home"
-   asp-action="Index">
-Trang Chủ
-</a>
-</li>
-
-<li class="nav-item">
-<a class="nav-link"
-   asp-controller="Product"
-   asp-action="Index">
-Cà Phê
-</a>
-</li>
-
-<li class="nav-item">
-<a class="nav-link"
-   asp-controller="Category"
-   asp-action="Index">
-Danh Mục
-</a>
-</li>
-
-<!-- ADMIN MENU -->
-@if (User.IsInRole("Admin"))
-{
-    <li class="nav-item dropdown">
-
-    <a class="nav-link dropdown-toggle"
-       href="#"
-       role="button"
-       data-bs-toggle="dropdown">
-
-    Quản trị
-
-    </a>
-
-    <ul class="dropdown-menu">
-
-    <li>
-    <a class="dropdown-item"
-       asp-controller="Admin"
-       asp-action="Index">
-    Bảng điều khiển
-    </a>
-    </li>
-
-    <li>
-    <a class="dropdown-item"
-       asp-controller="Product"
-       asp-action="Index">
-    Quản lý sản phẩm
-    </a>
-    </li>
-
-    <li>
-    <a class="dropdown-item"
-       asp-controller="Order"
-       asp-action="Index">
-    Quản lý đơn hàng
-    </a>
-    </li>
-
-    <li>
-    <a class="dropdown-item"
-       asp-controller="User"
-       asp-action="Index">
-    Quản lý người dùng
-    </a>
-    </li>
-
-    </ul>
-
-    </li>
-}
-
-</ul>
-
-<!-- CART -->
-<a asp-controller="Cart"
-   asp-action="Index"
-   class="btn btn-outline-light me-3">
-
-<i class="fa fa-shopping-cart"></i>
-Giỏ Hàng
-
-</a>
-
-<!-- LOGIN / REGISTER / LOGOUT -->
-<ul class="navbar-nav">
-
-@if (SignInManager.IsSignedIn(User))
-{
-    var currentUser = await UserManager.GetUserAsync(User);
-    <li class="nav-item dropdown d-flex align-items-center">
-    <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-        @if (currentUser != null && !string.IsNullOrEmpty(currentUser.AvatarUrl))
-        {
-            <img src="@currentUser.AvatarUrl" alt="Avatar" class="rounded-circle me-2" style="width: 30px; height: 30px; object-fit: cover;" />
-        }
-        else
-        {
-            <i class="fa fa-user me-2"></i>
-        }
-        Xin chào, @User.Identity?.Name
-    </a>
-    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-        <li><a class="dropdown-item" asp-controller="Account" asp-action="Profile"><i class="fa fa-id-card me-2"></i>Hồ sơ của tôi</a></li>
-        <li><a class="dropdown-item" asp-controller="Account" asp-action="ChangePassword"><i class="fa fa-key me-2"></i>Đổi mật khẩu</a></li>
-        <li><hr class="dropdown-divider"></li>
-        <li>
-            <form asp-controller="Account" asp-action="Logout" method="post" class="m-0 p-0">
-                <button type="submit" class="dropdown-item text-danger">
-                    <i class="fa fa-sign-out-alt me-2"></i>Đăng xuất
-                </button>
+        <!-- RIGHT ACTIONS -->
+        <div class="d-none d-lg-flex align-items-center gap-4">
+            
+            <!-- Search -->
+            <form class="d-flex position-relative" action="/Product/Index" method="get">
+                <input type="text" name="search" class="form-control rounded-pill pe-5 bg-light border-0" placeholder="Tìm kiếm..." style="width: 200px;">
+                <button type="submit" class="btn position-absolute end-0 top-50 translate-middle-y text-muted border-0"><i class="fa-solid fa-magnifying-glass"></i></button>
             </form>
-        </li>
-    </ul>
-    </li>
-}
-else
-{
-    <li class="nav-item">
-    <a class="nav-link"
-       asp-controller="Account"
-       asp-action="Login">
 
-    <i class="fa fa-sign-in-alt me-1"></i>
-    Đăng nhập
+            <!-- Cart -->
+            <a asp-controller="Cart" asp-action="Index" class="text-dark fs-5 cart-icon-wrapper">
+                <i class="fa-solid fa-basket-shopping"></i>
+                <span class="cart-badge shadow-sm">@* Optionally load quantity here *@ 0</span>
+            </a>
 
-    </a>
-    </li>
-
-    <li class="nav-item">
-    <a class="nav-link"
-       asp-controller="Account"
-       asp-action="Register">
-
-    Đăng ký
-
-    </a>
-    </li>
-}
-
-</ul>
-
-</div>
-
-</div>
-
+            <!-- Avatar / Login -->
+            <ul class="navbar-nav m-0 p-0">
+            @if (SignInManager.IsSignedIn(User))
+            {
+                var currentUser = await UserManager.GetUserAsync(User);
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle d-flex align-items-center gap-2 p-0" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        @if (currentUser != null && !string.IsNullOrEmpty(currentUser.AvatarUrl))
+                        {
+                            <img src="@currentUser.AvatarUrl" alt="Avatar" class="rounded-circle shadow-sm" style="width: 38px; height: 38px; object-fit: cover;" />
+                        }
+                        else
+                        {
+                            <div class="rounded-circle bg-coffee text-white d-flex align-items-center justify-content-center shadow-sm" style="width: 38px; height: 38px;">
+                                <i class="fa-solid fa-user"></i>
+                            </div>
+                        }
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end border-0 shadow-sm mt-2" aria-labelledby="userDropdown">
+                        <li class="px-3 py-2 text-muted small">Xin chào, <strong>@User.Identity?.Name</strong></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" asp-controller="Account" asp-action="Profile"><i class="fa-regular fa-id-badge me-2 text-coffee"></i>Hồ sơ</a></li>
+                        <li><a class="dropdown-item" asp-controller="Account" asp-action="ChangePassword"><i class="fa-solid fa-shield-halved me-2 text-coffee"></i>Đổi mật khẩu</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <form asp-controller="Account" asp-action="Logout" method="post" class="m-0 p-0">
+                                <button type="submit" class="dropdown-item text-danger">
+                                    <i class="fa-solid fa-arrow-right-from-bracket me-2"></i>Đăng xuất
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
+                </li>
+            }
+            else
+            {
+                <li class="nav-item">
+                    <a class="btn btn-outline-dark rounded-pill px-4 btn-sm fw-medium" asp-controller="Account" asp-action="Login">Đăng nhập</a>
+                </li>
+            }
+            </ul>
+        </div>
+    </div>
 </nav>
 
 <!-- BODY -->
-<main class="container mt-4">
-@RenderBody()
+<main class="container mt-5 mb-5 pb-5">
+    @RenderBody()
 </main>
 
 <!-- FOOTER -->
-<footer class="bg-black text-white text-center mt-5 p-4">
-
-<div class="container">
-
-<p class="mb-2 fs-5">
-☕ Coffee Shop - Premium Roasted Coffee
-</p>
-
-<p class="mb-1">
-Fresh Beans • Quality Coffee • Perfect Taste
-</p>
-
-<p class="mb-0">
-© 2025 Coffee Store
-</p>
-
-</div>
-
+<footer class="footer-custom">
+    <div class="container">
+        <div class="row gy-4">
+            <div class="col-md-4 text-center text-md-start">
+                <a class="d-flex align-items-center gap-2 justify-content-center justify-content-md-start text-white mb-3" asp-controller="Home" asp-action="Index">
+                    <i class="fa-solid fa-mug-hot text-gold fs-3"></i>
+                    <span class="fs-4 fw-bold">Aura Coffee</span>
+                </a>
+                <p class="small text-white-50">Mang đến trải nghiệm cà phê nguyên bản, đậm vị và đầy cảm hứng cho người Việt.</p>
+            </div>
+            <div class="col-md-4 text-center">
+                <h5 class="text-gold mb-3">Liên Kết</h5>
+                <ul class="list-unstyled d-flex flex-column gap-2">
+                    <li><a href="/">Trang Chủ</a></li>
+                    <li><a href="/Product">Cà Phê</a></li>
+                    <li><a href="#">Về Chúng Tôi</a></li>
+                </ul>
+            </div>
+            <div class="col-md-4 text-center text-md-end">
+                <h5 class="text-gold mb-3">Kết Nối</h5>
+                <div class="d-flex justify-content-center justify-content-md-end gap-3 fs-4">
+                    <a href="#"><i class="fa-brands fa-facebook"></i></a>
+                    <a href="#"><i class="fa-brands fa-instagram"></i></a>
+                    <a href="#"><i class="fa-brands fa-tiktok"></i></a>
+                </div>
+                <p class="small text-white-50 mt-3 mb-0">© 2026 Aura Coffee. All Rights Reserved.</p>
+            </div>
+        </div>
+    </div>
 </footer>
+
+<!-- BACK TO TOP BUTTON -->
+<button id="backToTop" title="Lên đầu trang"><i class="fa-solid fa-arrow-up"></i></button>
 
 <!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Scripts for Sticky Navbar & BackToTop -->
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const navbar = document.getElementById("mainNavbar");
+        const backToTopBtn = document.getElementById("backToTop");
+
+        window.addEventListener("scroll", function() {
+            // Sticky Navbar
+            if (window.scrollY > 50) {
+                navbar.classList.add("sticky");
+            } else {
+                navbar.classList.remove("sticky");
+            }
+
+            // Back To Top Button
+            if (window.scrollY > 300) {
+                backToTopBtn.style.display = "flex";
+            } else {
+                backToTopBtn.style.display = "none";
+            }
+        });
+
+        // Smooth scroll to top
+        backToTopBtn.addEventListener("click", function() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    });
+</script>
 
 @RenderSection("Scripts", required: false)
 

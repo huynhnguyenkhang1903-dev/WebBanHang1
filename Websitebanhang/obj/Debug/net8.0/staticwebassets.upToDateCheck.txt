@@ -1,6 +1,8 @@
 wwwroot\css\admin.css
 wwwroot\css\site.css
 wwwroot\favicon.ico
+wwwroot\images\avatars\cd4a5ffd-72dc-435e-8e49-6cf0efbb7a34_z7718201688879_04a3bcbd10694de590388485a4da98aa.jpg
+wwwroot\images\avatars\e6cbf9c7-bfe5-45d8-895e-3725602522c6_z7718201688879_04a3bcbd10694de590388485a4da98aa.jpg
 wwwroot\images\coffee1.jpg
 wwwroot\images\coffee2.jpg
 wwwroot\images\coffee3.jpg

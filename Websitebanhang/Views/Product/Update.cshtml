@@ -1,74 +1,116 @@
 @model Websitebanhang.Models.Product
 
 @{
-    ViewData["Title"] = "Cập Nhật Sản Phẩm";
+    ViewData["Title"] = "Cập Nhật Cà Phê";
+    Layout = "_AdminLayout";
 }
 
-<div class="container mt-4">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <h2 class="fw-bold mb-4"><i class="fa fa-edit text-warning me-2"></i> Cập Nhật Sản Phẩm</h2>
-            
-            <div class="card shadow-sm border-warning border-top border-4">
-                <div class="card-body p-4">
-                    <form asp-action="Update" method="post">
-                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
-                        <input type="hidden" asp-for="Id" />
+<div class="row fade-in justify-content-center">
+    <!-- Breadcrumb -->
+    <div class="col-md-10 mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0 px-3 py-2 bg-white rounded-pill shadow-sm d-inline-flex">
+                <li class="breadcrumb-item"><a href="/" class="text-secondary"><i class="fa-solid fa-house"></i></a></li>
+                <li class="breadcrumb-item"><a href="/Product/Manage" class="text-secondary">Quản Trị</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Cập Nhật Sản Phẩm</li>
+            </ol>
+        </nav>
+    </div>
 
-                        <div class="mb-3">
-                            <label asp-for="Name" class="form-label fw-bold">Tên sản phẩm</label>
-                            <input asp-for="Name" class="form-control" />
-                            <span asp-validation-for="Name" class="text-danger"></span>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label asp-for="Price" class="form-label fw-bold">Giá (VNĐ)</label>
-                                <input asp-for="Price" type="number" class="form-control" />
-                                <span asp-validation-for="Price" class="text-danger"></span>
-                            </div>
-
-                            <div class="col-md-6 mb-3">
-                                <label asp-for="CategoryId" class="form-label fw-bold">Danh mục</label>
-                                <select asp-for="CategoryId" class="form-select" asp-items="@(new SelectList(ViewBag.Categories, "Id", "Name", Model.CategoryId))">
-                                    <option value="">-- Chọn danh mục --</option>
-                                </select>
-                                <span asp-validation-for="CategoryId" class="text-danger"></span>
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label asp-for="ImageUrl" class="form-label fw-bold">Link Ảnh (URL)</label>
-                            <input asp-for="ImageUrl" class="form-control" />
-                            <span asp-validation-for="ImageUrl" class="text-danger"></span>
-                        </div>
-
-                        <div class="mb-3 text-center">
-                            @if (!string.IsNullOrEmpty(Model.ImageUrl))
-                            {
-                                <img src="@Model.ImageUrl" class="img-thumbnail" style="max-height: 150px" />
-                            }
-                        </div>
-
-                        <div class="mb-3">
-                            <label asp-for="Country" class="form-label fw-bold">Quốc gia / Xuất xứ</label>
-                            <input asp-for="Country" class="form-control" />
-                            <span asp-validation-for="Country" class="text-danger"></span>
-                        </div>
-
-                        <div class="mb-3">
-                            <label asp-for="Description" class="form-label fw-bold">Mô tả</label>
-                            <textarea asp-for="Description" class="form-control" rows="4"></textarea>
-                            <span asp-validation-for="Description" class="text-danger"></span>
-                        </div>
-
-                        <div class="d-flex justify-content-between mt-4">
-                            <a asp-action="Manage" class="btn btn-secondary">Hủy Bỏ</a>
-                            <button type="submit" class="btn btn-warning fw-bold"><i class="fa fa-save"></i> Cập Nhật</button>
-                        </div>
-                    </form>
+    <!-- UPDATE FORM -->
+    <div class="col-md-10 col-lg-8">
+        <div class="bg-white p-5 rounded-4 shadow-sm border-0 position-relative">
+            <!-- Decorative Header -->
+            <div class="d-flex align-items-center mb-4 border-bottom pb-3">
+                <div class="d-inline-flex align-items-center justify-content-center bg-cream rounded-circle me-3" style="width: 50px; height: 50px;">
+                    <i class="fa-solid fa-pen-nib fs-5 text-gold"></i>
+                </div>
+                <div>
+                    <h3 class="text-coffee fw-bold mb-0">Chỉnh Sửa Thông Tin</h3>
+                    <p class="text-muted small mb-0">Cập nhật chi tiết cho dòng sản phẩm cà phê này</p>
                 </div>
             </div>
+
+            <form asp-action="Update" method="post">
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger px-4 rounded-3 text-sm"></div>
+                <input type="hidden" asp-for="Id" />
+
+                <!-- Product Name -->
+                <div class="form-floating mb-4">
+                    <input asp-for="Name" class="form-control bg-light border-0" id="floatingName" placeholder="Tên sản phẩm">
+                    <label for="floatingName" class="ps-4">Tên Cà Phê</label>
+                    <span asp-validation-for="Name" class="text-danger small mt-1 d-block"></span>
+                </div>
+
+                <div class="row g-4 mb-4">
+                    <!-- Price -->
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            <input asp-for="Price" type="number" class="form-control bg-light border-0 fw-bold text-coffee" id="floatingPrice" placeholder="Giá">
+                            <label for="floatingPrice" class="ps-4">Giá (VNĐ)</label>
+                        </div>
+                        <span asp-validation-for="Price" class="text-danger small mt-1 d-block"></span>
+                    </div>
+
+                    <!-- Category -->
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            <select asp-for="CategoryId" class="form-select bg-light border-0" id="floatingCategory" asp-items="@(new SelectList(ViewBag.Categories, "Id", "Name", Model.CategoryId))">
+                                <option value="">-- Chọn danh mục --</option>
+                            </select>
+                            <label for="floatingCategory" class="ps-4">Danh Mục</label>
+                        </div>
+                        <span asp-validation-for="CategoryId" class="text-danger small mt-1 d-block"></span>
+                    </div>
+                </div>
+
+                <div class="row g-4 mb-4">
+                    <!-- Image URL -->
+                    <div class="col-md-8">
+                        <div class="form-floating">
+                            <input asp-for="ImageUrl" class="form-control bg-light border-0" id="floatingImage" placeholder="Link Ảnh">
+                            <label for="floatingImage" class="ps-4">Link Ảnh (URL)</label>
+                        </div>
+                        <span asp-validation-for="ImageUrl" class="text-danger small mt-1 d-block"></span>
+                    </div>
+
+                    <!-- Image Preview -->
+                    <div class="col-md-4 d-flex align-items-center justify-content-center bg-cream rounded-3 border preview-container">
+                        @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                        {
+                            <img src="@Model.ImageUrl" alt="Preview" class="object-fit-cover rounded" style="max-height: 80px;" />
+                        }
+                        else
+                        {
+                            <span class="text-muted small"><i class="fa-regular fa-image me-1"></i>Trống</span>
+                        }
+                    </div>
+                </div>
+
+                <!-- Country -->
+                <div class="form-floating mb-4">
+                    <input asp-for="Country" class="form-control bg-light border-0" id="floatingCountry" placeholder="Quốc gia xuất xứ">
+                    <label for="floatingCountry" class="ps-4">Nguồn Gốc / Quốc Gia</label>
+                    <span asp-validation-for="Country" class="text-danger small mt-1 d-block"></span>
+                </div>
+
+                <!-- Description -->
+                <div class="form-floating mb-4">
+                    <textarea asp-for="Description" class="form-control bg-light border-0" id="floatingDesc" placeholder="Mô tả" style="height: 120px"></textarea>
+                    <label for="floatingDesc" class="ps-4">Mô Tả Sản Phẩm</label>
+                    <span asp-validation-for="Description" class="text-danger small mt-1 d-block"></span>
+                </div>
+
+                <!-- Actions -->
+                <div class="d-flex justify-content-between align-items-center border-top pt-4">
+                    <a asp-action="Manage" class="btn btn-outline-secondary rounded-pill px-4">
+                        <i class="fa-solid fa-arrow-left me-2"></i>Quay lại
+                    </a>
+                    <button type="submit" class="btn btn-gold rounded-pill px-5 py-2 fw-medium shadow-sm btn-press">
+                        <i class="fa-solid fa-floppy-disk me-2"></i>Lưu Cập Nhật
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

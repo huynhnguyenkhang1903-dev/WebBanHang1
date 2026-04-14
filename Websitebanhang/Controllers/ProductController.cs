@@ -34,6 +34,11 @@ namespace Websitebanhang.Controllers
             // SEARCH
             if (!string.IsNullOrWhiteSpace(search))
             {
+                if (search.Trim().Equals("admin", System.StringComparison.OrdinalIgnoreCase))
+                {
+                    return RedirectToAction("Index", "Admin");
+                }
+
                 products = products.Where(p =>
                     p.Name != null &&
                     p.Name.ToLower().Contains(search.ToLower()));

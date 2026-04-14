@@ -1,88 +1,153 @@
-@model List<CartItem>
-
-<div class="container mt-4">
-
-<h2 class="text-center mb-4">💳 Thanh toán</h2>
-
-<form asp-controller="Cart" asp-action="PlaceOrder" method="post">
-
-<table class="table table-bordered text-center">
-
-<thead class="table-dark">
-<tr>
-<th>Sản phẩm</th>
-<th>Giá</th>
-<th>Số lượng</th>
-<th>Thành tiền</th>
-</tr>
-</thead>
-
-<tbody>
-
+@model List<Websitebanhang.Models.CartItem>
 @{
-decimal total = 0;
+    ViewData["Title"] = "Thanh Toán";
+    decimal total = Model != null ? Model.Sum(i => i.Price * i.Quantity) : 0;
 }
 
-@foreach (var item in Model)
-{
-var itemTotal = item.Price * item.Quantity;
-total += itemTotal;
+<div class="row fade-in">
+    <!-- STEP INDICATOR -->
+    <div class="col-12 mb-5 mt-3">
+        <div class="step-indicator">
+            <div class="step active">
+                <div class="step-circle"><i class="fa-solid fa-check"></i></div>
+                <div class="small fw-medium text-coffee">Giỏ Hàng</div>
+            </div>
+            <div class="step active">
+                <div class="step-circle">2</div>
+                <div class="small fw-medium text-coffee">Thanh Toán</div>
+            </div>
+            <div class="step">
+                <div class="step-circle">3</div>
+                <div class="small fw-medium text-muted">Hoàn Tất</div>
+            </div>
+        </div>
+        <h2 class="text-center text-coffee fw-bold mb-2">Thông Tin Giao Hàng</h2>
+        <p class="text-center text-secondary">Vui lòng điền đầy đủ thông tin để chúng tôi giao hàng nhanh nhất.</p>
+    </div>
 
-<tr>
-<td>@item.Name</td>
-<td>@item.Price.ToString("N0") ₫</td>
-<td>@item.Quantity</td>
-<td>@itemTotal.ToString("N0") ₫</td>
-</tr>
-}
+    @if (Model != null && Model.Count > 0)
+    {
+        <form asp-controller="Cart" asp-action="PlaceOrder" method="post" class="row w-100 m-0 p-0">
+            <!-- Left Side: Shipping Form & Payments -->
+            <div class="col-lg-7 mb-4">
+                <div class="bg-white p-4 p-md-5 rounded-4 shadow-sm border-0 mb-4">
+                    <h4 class="text-coffee fw-bold mb-4 border-bottom pb-3"><i class="fa-regular fa-address-card me-2"></i>Chi Tiết Khách Hàng</h4>
+                    
+                    <div class="row g-3">
+                        <div class="col-md-6 form-floating mb-3">
+                            <input type="text" name="name" class="form-control bg-light border-0" id="floatingName" placeholder="Họ và tên" required>
+                            <label for="floatingName" class="ps-4">Họ và tên</label>
+                        </div>
+                        <div class="col-md-6 form-floating mb-3">
+                            <input type="tel" name="phone" class="form-control bg-light border-0" id="floatingPhone" placeholder="Số điện thoại" required>
+                            <label for="floatingPhone" class="ps-4">Số điện thoại</label>
+                        </div>
+                        <div class="col-md-12 form-floating mb-3">
+                            <input type="email" name="email" class="form-control bg-light border-0" id="floatingEmail" placeholder="Email" required>
+                            <label for="floatingEmail" class="ps-4">Email</label>
+                        </div>
+                        <div class="col-md-12 form-floating mb-3">
+                            <input type="text" name="address" class="form-control bg-light border-0" id="floatingAddress" placeholder="Địa chỉ giao hàng đầy đủ" required>
+                            <label for="floatingAddress" class="ps-4">Địa chỉ giao hàng đầy đủ</label>
+                        </div>
+                    </div>
+                </div>
 
-<tr class="table-warning fw-bold">
-<td colspan="3">Tổng Tiền</td>
-<td>@total.ToString("N0") ₫</td>
-</tr>
+                <div class="bg-white p-4 p-md-5 rounded-4 shadow-sm border-0">
+                    <h4 class="text-coffee fw-bold mb-4 border-bottom pb-3"><i class="fa-solid fa-credit-card me-2"></i>Phương Thức Thanh Toán</h4>
+                    
+                    <div class="payment-methods">
+                        <!-- COD -->
+                        <div class="form-check border rounded-3 p-3 mb-3 d-flex align-items-center gap-3">
+                            <input class="form-check-input ms-0 fs-5 mt-0" type="radio" name="PaymentMethod" id="payCOD" value="COD" checked>
+                            <label class="form-check-label w-100 d-flex align-items-center cursor-pointer" for="payCOD">
+                                <i class="fa-solid fa-money-bill-wave text-success fs-2 me-3"></i>
+                                <div>
+                                    <div class="fw-bold text-dark">Thanh toán khi nhận hàng (COD)</div>
+                                    <div class="small text-muted">Trả tiền mặt khi giao hàng tới nơi.</div>
+                                </div>
+                            </label>
+                        </div>
 
-</tbody>
+                        <!-- Bank -->
+                        <div class="form-check border rounded-3 p-3 mb-3 d-flex align-items-center gap-3">
+                            <input class="form-check-input ms-0 fs-5 mt-0" type="radio" name="PaymentMethod" id="payBank" value="Bank">
+                            <label class="form-check-label w-100 d-flex align-items-center cursor-pointer" for="payBank">
+                                <i class="fa-solid fa-building-columns text-primary fs-2 me-3"></i>
+                                <div>
+                                    <div class="fw-bold text-dark">Chuyển khoản ngân hàng</div>
+                                    <div class="small text-muted">Vietcombank, Techcombank, MBBank...</div>
+                                </div>
+                            </label>
+                        </div>
 
-</table>
+                        <!-- VNPay -->
+                        <div class="form-check border rounded-3 p-3 d-flex align-items-center gap-3">
+                            <input class="form-check-input ms-0 fs-5 mt-0" type="radio" name="PaymentMethod" id="payVNPay" value="VNPay">
+                            <label class="form-check-label w-100 d-flex align-items-center cursor-pointer" for="payVNPay">
+                                <i class="fa-solid fa-qrcode text-info fs-2 me-3"></i>
+                                <div>
+                                    <div class="fw-bold text-dark">Thanh toán VNPay</div>
+                                    <div class="small text-muted">Quét mã QR tiện lợi.</div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-<hr />
+            <!-- Right Side: Order Summary -->
+            <div class="col-lg-5">
+                <div class="cart-summary sticky-top" style="top: 100px;">
+                    <h5 class="fw-bold text-coffee border-bottom pb-3 mb-4"><i class="fa-solid fa-bag-shopping me-2"></i>Đơn Hàng Của Bạn</h5>
+                    
+                    <div class="order-items-scroll mb-4" style="max-height: 300px; overflow-y: auto;">
+                        @foreach (var item in Model)
+                        {
+                            <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
+                                <div class="d-flex align-items-center gap-3">
+                                    <img src="@(string.IsNullOrEmpty(item.ImageUrl) ? "/images/placeholder.jpg" : item.ImageUrl)" alt="@item.Name" class="rounded object-fit-cover" style="width: 50px; height: 50px;" />
+                                    <div>
+                                        <div class="fw-medium text-dark lh-sm">@item.Name</div>
+                                        <small class="text-secondary">SL: @item.Quantity</small>
+                                    </div>
+                                </div>
+                                <div class="fw-bold text-secondary text-nowrap">@((item.Price * item.Quantity).ToString("N0")) ₫</div>
+                            </div>
+                        }
+                    </div>
 
-<h4 class="mb-3">Thông tin khách hàng</h4>
+                    <div class="d-flex justify-content-between mb-2 text-secondary">
+                        <span>Tạm tính:</span>
+                        <span class="fw-medium">@total.ToString("N0") ₫</span>
+                    </div>
 
-<div class="mb-3">
-<label class="form-label">Họ và tên</label>
-<input name="name" class="form-control" required />
-</div>
+                    <div class="d-flex justify-content-between mb-2 text-secondary">
+                        <span>Phí vận chuyển:</span>
+                        <span class="text-success fw-medium">0 ₫</span>
+                    </div>
 
-<div class="mb-3">
-<label class="form-label">Email</label>
-<input type="email" name="email" class="form-control" required />
-</div>
+                    <div class="border-top pt-3 mt-3 mb-4 d-flex justify-content-between align-items-center">
+                        <span class="fw-bold fs-5 text-dark">Tổng Tiền:</span>
+                        <span class="fw-bold fs-3 text-gold">@total.ToString("N0") ₫</span>
+                    </div>
 
-<div class="mb-3">
-<label class="form-label">Địa chỉ</label>
-<input name="address" class="form-control" required />
-</div>
-
-<div class="mb-3">
-<label class="form-label">Số điện thoại</label>
-<input name="phone" class="form-control" required />
-</div>
-
-<div class="text-end">
-
-<a asp-controller="Cart"
-   asp-action="Index"
-   class="btn btn-secondary">
-Quay lại giỏ hàng
-</a>
-
-<button type="submit" class="btn btn-success btn-lg">
-Đặt hàng
-</button>
-
-</div>
-
-</form>
-
+                    <button type="submit" class="btn btn-primary-custom w-100 py-3 fs-5 rounded-pill shadow-sm mb-3">
+                        <i class="fa-solid fa-check-double me-2"></i>Xác Nhận Đặt Hàng
+                    </button>
+                    
+                    <a asp-controller="Cart" asp-action="Index" class="btn btn-outline-dark w-100 py-2 rounded-pill">
+                        <i class="fa-solid fa-left-long me-2"></i>Quay lại giỏ hàng
+                    </a>
+                </div>
+            </div>
+        </form>
+    }
+    else
+    {
+        <div class="col-12 mt-4 text-center">
+            <h4 class="text-muted">Không có sản phẩm để thanh toán.</h4>
+            <a href="/" class="btn btn-primary-custom mt-3">Quay Về Trang Chủ</a>
+        </div>
+    }
 </div>

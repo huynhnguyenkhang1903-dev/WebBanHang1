@@ -1,91 +1,149 @@
-﻿@{
-    ViewData["Title"] = "Home";
+@{
+    ViewData["Title"] = "Trang Chủ";
+    var newProducts = ViewBag.NewProducts as List<Websitebanhang.Models.Product>;
+    var bestSellers = ViewBag.BestSellers as List<Websitebanhang.Models.Product>;
 }
 
 <!-- HERO SECTION -->
-<div class="hero text-white d-flex align-items-center justify-content-center">
-    <div class="text-center">
-        <h1 class="display-4 fw-bold mb-3">☕ Coffee Shop</h1>
-        <p class="lead mb-4">Thưởng thức cà phê nguyên chất mỗi ngày</p>
-
-        <a asp-controller="Product"
-           asp-action="Index"
-           class="btn btn-warning btn-lg px-4">
-            Khám phá ngay
-        </a>
+<div class="hero-section text-center position-relative fade-in">
+    <div class="position-absolute top-0 start-0 w-100 h-100" style="background-image: url('https://images.unsplash.com/photo-1497935586351-b67a49e012bf?auto=format&fit=crop&w=1200&q=80'); background-size: cover; background-position: center; opacity: 0.15; border-radius: 16px;"></div>
+    <div class="container position-relative z-index-1">
+        <h1 class="display-3 fw-bold text-coffee mb-4">Hoàn Hảo Từng Giọt</h1>
+        <p class="lead text-secondary mb-5 mx-auto" style="max-width: 600px;">
+            Khám phá hương vị nguyên bản từ những hạt cà phê được tuyển chọn khắt khe nhất, mang đến cho bạn trải nghiệm tuyệt vời mỗi ngày.
+        </p>
+        <div class="d-flex justify-content-center gap-3">
+            <a asp-controller="Product" asp-action="Index" class="btn btn-primary-custom btn-lg">Khám Phá Ngay</a>
+            <a href="#about" class="btn btn-outline-dark btn-lg rounded-3">Câu Chuyện</a>
+        </div>
     </div>
 </div>
 
-<!-- FEATURE SECTION -->
-<div class="container mt-5">
-
-    <div class="row text-center">
-
-        <div class="col-md-4 mb-4">
-            <div class="card shadow p-4 h-100">
-                <i class="fa fa-coffee fa-3x mb-3 text-dark"></i>
-                <h5>Cà phê chất lượng</h5>
-                <p>Hạt cà phê tuyển chọn từ nhiều quốc gia</p>
+<!-- FEATURES -->
+<div id="about" class="row text-center mb-5 fade-in delay-1">
+    <div class="col-md-4 mb-4">
+        <div class="p-4 bg-white rounded-4 shadow-sm h-100">
+            <div class="d-inline-flex align-items-center justify-content-center bg-cream rounded-circle mb-3" style="width: 80px; height: 80px;">
+                <i class="fa-solid fa-medal fs-1 text-gold"></i>
             </div>
+            <h4 class="mb-3">Chất Lượng Cao</h4>
+            <p class="text-muted">100% hạt cà phê nguyên chất, rang mộc tự nhiên không tẩm ướp tạp chất.</p>
         </div>
-
-        <div class="col-md-4 mb-4">
-            <div class="card shadow p-4 h-100">
-                <i class="fa fa-truck fa-3x mb-3 text-dark"></i>
-                <h5>Giao hàng nhanh</h5>
-                <p>Giao tận nơi trong 24h</p>
-            </div>
-        </div>
-
-        <div class="col-md-4 mb-4">
-            <div class="card shadow p-4 h-100">
-                <i class="fa fa-star fa-3x mb-3 text-dark"></i>
-                <h5>Hương vị tuyệt vời</h5>
-                <p>Đậm đà – thơm ngon – chuẩn gu</p>
-            </div>
-        </div>
-
     </div>
-
+    <div class="col-md-4 mb-4">
+        <div class="p-4 bg-white rounded-4 shadow-sm h-100">
+            <div class="d-inline-flex align-items-center justify-content-center bg-cream rounded-circle mb-3" style="width: 80px; height: 80px;">
+                <i class="fa-solid fa-truck-fast fs-1 text-gold"></i>
+            </div>
+            <h4 class="mb-3">Giao Hàng Nhanh</h4>
+            <p class="text-muted">Đóng gói an toàn, giao hàng hỏa tốc trong 2h tại nội thành.</p>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="p-4 bg-white rounded-4 shadow-sm h-100">
+            <div class="d-inline-flex align-items-center justify-content-center bg-cream rounded-circle mb-3" style="width: 80px; height: 80px;">
+                <i class="fa-solid fa-mug-hot fs-1 text-gold"></i>
+            </div>
+            <h4 class="mb-3">Hương Vị Đậm Đà</h4>
+            <p class="text-muted">Công thức rang pha chế độc quyền giữ nguyên vẹn vị ngon nguyên bản.</p>
+        </div>
+    </div>
 </div>
 
-<!-- PRODUCT PREVIEW -->
-<div class="container mt-5">
-
-    <h3 class="text-center mb-4 fw-bold">Sản phẩm nổi bật</h3>
-
-    <div class="row">
-
-        <div class="col-md-4 mb-4">
-            <div class="card shadow">
-                <img src="/images/coffee1.jpg" class="card-img-top" />
-                <div class="card-body text-center">
-                    <h5>Arabica</h5>
-                    <p class="text-muted">Hương nhẹ, thanh</p>
-                </div>
-            </div>
+<!-- NEWEST PRODUCTS -->
+<div class="mb-5 fade-in delay-2">
+    <div class="d-flex justify-content-between align-items-end mb-4">
+        <div>
+            <h2 class="mb-1 text-coffee">Sản Phẩm Mới</h2>
+            <p class="text-muted mb-0">Những dòng cà phê vừa được ra mắt</p>
         </div>
-
-        <div class="col-md-4 mb-4">
-            <div class="card shadow">
-                <img src="/images/coffee2.jpg" class="card-img-top" />
-                <div class="card-body text-center">
-                    <h5>Robusta</h5>
-                    <p class="text-muted">Đậm đà, mạnh mẽ</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-4 mb-4">
-            <div class="card shadow">
-                <img src="/images/coffee3.jpg" class="card-img-top" />
-                <div class="card-body text-center">
-                    <h5>Espresso</h5>
-                    <p class="text-muted">Tinh tế, đậm vị</p>
-                </div>
-            </div>
-        </div>
-
+        <a asp-controller="Product" asp-action="Index" class="btn btn-outline-dark rounded-pill btn-sm d-none d-md-block">Xem Tất Cả</a>
     </div>
 
+    <div class="row g-4">
+        @if (newProducts != null && newProducts.Any())
+        {
+            foreach (var item in newProducts)
+            {
+                <div class="col-6 col-md-4 col-lg-2">
+                    <!-- Updated to use new product card logic -->
+                    <div class="product-card">
+                        <div class="product-img-wrapper bg-light">
+                            @if (!string.IsNullOrEmpty(item.Category?.Name))
+                            {
+                                <span class="badge-category shadow-sm">@item.Category.Name</span>
+                            }
+                            <img src="@(string.IsNullOrEmpty(item.ImageUrl) ? "/images/placeholder.jpg" : item.ImageUrl)" alt="@item.Name" />
+                        </div>
+                        <div class="p-3 d-flex flex-column flex-grow-1">
+                            <h6 class="mb-1 text-truncate pe-none">@item.Name</h6>
+                            <div class="text-gold fw-bold mb-3 mt-auto">@item.Price.ToString("N0") ₫</div>
+                            <div class="d-flex gap-2">
+                                <a asp-controller="Product" asp-action="Display" asp-route-id="@item.Id" class="btn btn-outline-dark btn-sm flex-grow-1">Xem</a>
+                                <form action="/Cart/AddToCart" method="post" class="m-0">
+                                    <input type="hidden" name="id" value="@item.Id" />
+                                    <button type="submit" class="btn btn-gold btn-sm"><i class="fa-solid fa-cart-plus"></i></button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col-12 text-center py-5 text-muted">
+                <i class="fa-solid fa-box-open fs-1 mb-3"></i>
+                <p>Chưa có sản phẩm mới nào.</p>
+            </div>
+        }
+    </div>
+    <div class="text-center mt-4 d-block d-md-none">
+        <a asp-controller="Product" asp-action="Index" class="btn btn-outline-dark rounded-pill btn-sm w-100">Xem Tất Cả</a>
+    </div>
+</div>
+
+<!-- BEST SELLERS -->
+<div class="mb-5 fade-in delay-3">
+    <div class="d-flex justify-content-between align-items-end mb-4">
+        <div>
+            <h2 class="mb-1 text-coffee">Bán Chạy Nhất</h2>
+            <p class="text-muted mb-0">Được yêu thích bởi khách hàng</p>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        @if (bestSellers != null && bestSellers.Any())
+        {
+            foreach (var item in bestSellers)
+            {
+                <div class="col-6 col-md-4 col-lg-2">
+                    <div class="product-card">
+                        <div class="product-img-wrapper bg-light">
+                            <span class="badge bg-danger position-absolute top-0 end-0 m-2 z-index-2 shadow-sm rounded-pill"><i class="fa-solid fa-fire me-1"></i>Hot</span>
+                            <img src="@(string.IsNullOrEmpty(item.ImageUrl) ? "/images/placeholder.jpg" : item.ImageUrl)" alt="@item.Name" />
+                        </div>
+                        <div class="p-3 d-flex flex-column flex-grow-1">
+                            <h6 class="mb-1 text-truncate pe-none">@item.Name</h6>
+                            <div class="text-gold fw-bold mb-3 mt-auto">@item.Price.ToString("N0") ₫</div>
+                            <div class="d-flex gap-2">
+                                <a asp-controller="Product" asp-action="Display" asp-route-id="@item.Id" class="btn btn-outline-dark btn-sm flex-grow-1">Xem</a>
+                                <form action="/Cart/AddToCart" method="post" class="m-0">
+                                    <input type="hidden" name="id" value="@item.Id" />
+                                    <button type="submit" class="btn btn-gold btn-sm"><i class="fa-solid fa-cart-plus"></i></button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col-12 text-center py-5 text-muted">
+                <i class="fa-solid fa-box-open fs-1 mb-3"></i>
+                <p>Chưa có sản phẩm bán chạy.</p>
+            </div>
+        }
+    </div>
 </div>

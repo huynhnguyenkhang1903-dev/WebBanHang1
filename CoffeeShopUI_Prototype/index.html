@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Premium Coffee Shop - Discover the rich, authentic taste of expertly roasted coffee.">
+    <title>Aura Coffee | Premium Roasters</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <a href="#" class="logo">AURA COFFEE</a>
+            <ul class="nav-links">
+                <li><a href="#home">Home</a></li>
+                <li><a href="#menu">Our Menu</a></li>
+                <li><a href="#about">The Craft</a></li>
+            </ul>
+            <div class="nav-actions">
+                <button class="cart-btn" aria-label="Shopping Cart">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="9" cy="21" r="1"></circle>
+                        <circle cx="20" cy="21" r="1"></circle>
+                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                    </svg>
+                    <span class="cart-badge" id="cart-badge">0</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header id="home" class="hero">
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <h1 class="hero-title animate-up">Awaken Your Senses</h1>
+            <p class="hero-subtitle animate-up delay-1">Experience the pinnacle of dark-roasted perfection. Ethically sourced, perfectly brewed.</p>
+            <div class="hero-actions animate-up delay-2">
+                <a href="#menu" class="btn btn-primary">Explore Menu</a>
+                <a href="#about" class="btn btn-secondary">Our Story</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Menu Section -->
+    <section id="menu" class="menu-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>Signature Brews</h2>
+                <p>Crafted with precision by our master baristas.</p>
+            </div>
+            
+            <div class="product-grid">
+                <!-- Product 1 -->
+                <article class="product-card">
+                    <div class="product-image-container">
+                        <img src="assets/espresso.png" alt="Dark Crema Espresso" class="product-image">
+                        <div class="product-overlay">
+                            <button class="btn-icon add-to-cart" data-name="Dark Crema Espresso" data-price="4.50" aria-label="Add to cart">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h3 class="product-title">Dark Crema Espresso</h3>
+                        <p class="product-desc">Intense, rich crema with notes of dark chocolate and toasted caramel.</p>
+                        <div class="product-footer">
+                            <span class="product-price">$4.50</span>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Product 2 -->
+                <article class="product-card">
+                    <div class="product-image-container">
+                        <img src="assets/latte.png" alt="Velvet Silk Latte" class="product-image">
+                        <div class="product-overlay">
+                            <button class="btn-icon add-to-cart" data-name="Velvet Silk Latte" data-price="5.50" aria-label="Add to cart">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h3 class="product-title">Velvet Silk Latte</h3>
+                        <p class="product-desc">Smooth micro-foam over our signature espresso blend. Beautifully balanced.</p>
+                        <div class="product-footer">
+                            <span class="product-price">$5.50</span>
+                        </div>
+                    </div>
+                </article>
+                
+                <!-- Product 3 Placeholder (To show layout) -->
+                <article class="product-card">
+                    <div class="product-image-container">
+                        <div class="placeholder-img">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
+                                <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path>
+                                <line x1="6" y1="1" x2="6" y2="4"></line>
+                                <line x1="10" y1="1" x2="10" y2="4"></line>
+                                <line x1="14" y1="1" x2="14" y2="4"></line>
+                            </svg>
+                        </div>
+                        <div class="product-overlay">
+                            <button class="btn-icon add-to-cart" data-name="Pour Over Reserve" data-price="6.00" aria-label="Add to cart">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h3 class="product-title">Pour Over Reserve</h3>
+                        <p class="product-desc">Single-origin Ethiopian beans brewed precisely for a wild, fruity profile.</p>
+                        <div class="product-footer">
+                            <span class="product-price">$6.00</span>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="about-section">
+        <div class="container container-split">
+            <div class="about-content">
+                <h2>The Art of Roasting</h2>
+                <p>At Aura Coffee, we believe that every bean has a story waiting to be told. We source only the top 1% of ethically farmed beans from around the globe.</p>
+                <p>Our master roasters coax out the deepest flavors, prioritizing rich, dark, and mood-enhancing notes. This is not just coffee; it's an experience crafted for the bold.</p>
+                <div class="stats-row">
+                    <div class="stat-item">
+                        <span class="stat-number">10+</span>
+                        <span class="stat-label">Single Origins</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">48h</span>
+                        <span class="stat-label">Freshness Guarantee</span>
+                    </div>
+                </div>
+            </div>
+            <div class="about-image">
+                <div class="image-accent"></div>
+                <img src="assets/espresso.png" alt="Coffee Brewing Process">
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container footer-content">
+            <div class="footer-brand">
+                <h3 class="logo-text">AURA COFFEE</h3>
+                <p>Elevating your morning ritual.</p>
+            </div>
+            <div class="footer-links">
+                <h4>Explore</h4>
+                <ul>
+                    <li><a href="#home">Home</a></li>
+                    <li><a href="#menu">Menu</a></li>
+                    <li><a href="#about">Our Story</a></li>
+                </ul>
+            </div>
+            <div class="footer-newsletter">
+                <h4>Stay Awake</h4>
+                <p>Join our newsletter for exclusive roasts.</p>
+                <form class="newsletter-form" onsubmit="event.preventDefault()">
+                    <input type="email" placeholder="Your email address" required>
+                    <button type="submit" class="btn btn-primary">Subscribe</button>
+                </form>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 Aura Coffee. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="scripts.js"></script>
+</body>
+</html>

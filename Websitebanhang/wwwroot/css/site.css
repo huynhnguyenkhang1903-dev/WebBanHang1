@@ -1,115 +1,353 @@
-/* ===== PRODUCT PAGE ===== */
+/* =========================================================
+   AURA COFFEE - PREMIUM REDESIGN
+   ========================================================= */
 
-.product-container {
-    padding: 40px;
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+:root {
+    /* Main Theme Colors */
+    --coffee-brown: #6F4E37;
+    --coffee-brown-dark: #5A3E2A;
+    --coffee-brown-light: #8B6547;
+    --cream: #FFF8F0;
+    --cream-dark: #F5EAE0;
+    --gold: #D4A853;
+    --gold-hover: #E8BF6C;
+
+    /* Base Colors */
+    --text-primary: #333333;
+    --text-secondary: #666666;
+    --text-muted: #999999;
+    --bg-white: #FFFFFF;
+    --bg-light: #F9F9F9;
+    
+    /* Layout & Shadows */
+    --border-radius: 8px;
+    --border-radius-lg: 16px;
+    --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+    --shadow-md: 0 4px 8px rgba(0,0,0,0.08);
+    --shadow-hover: 0 12px 24px rgba(0,0,0,0.12);
+    
+    /* Animations */
+    --transition-fast: 0.2s ease;
+    --transition-smooth: 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
-/* Filter Bar */
-.product-filter {
+/* ================== GLOBAL RESET & TYPOGRAPHY ================== */
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--cream);
+    color: var(--text-primary);
+    line-height: 1.6;
     display: flex;
-    gap: 15px;
-    margin-bottom: 30px;
-    flex-wrap: wrap;
+    flex-direction: column;
+    min-height: 100vh;
 }
 
-    .product-filter input,
-    .product-filter select {
-        padding: 10px;
-        border-radius: 8px;
-        border: 1px solid #ddd;
-        min-width: 180px;
-    }
-
-    .product-filter button {
-        background: #6f4e37;
-        color: white;
-        border: none;
-        padding: 10px 20px;
-        border-radius: 8px;
-        cursor: pointer;
-    }
-
-        .product-filter button:hover {
-            background: #4b2e2b;
-        }
-
-/* Product Grid */
-.product-grid {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 25px;
+main {
+    flex: 1; /* Pushes footer to bottom */
 }
 
-/* Product Card */
-.product-card {
-    background: white;
-    border-radius: 15px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-    text-align: center;
-    padding: 15px;
-    transition: 0.3s;
+a {
+    color: var(--coffee-brown);
+    text-decoration: none;
+    transition: color var(--transition-fast);
 }
 
-    .product-card:hover {
-        transform: translateY(-5px);
-    }
-
-    /* Image */
-    .product-card img {
-        width: 100%;
-        height: 160px;
-        object-fit: cover;
-        border-radius: 10px;
-    }
-
-/* Name */
-.product-name {
-    font-weight: bold;
-    margin-top: 10px;
-    color: #4b2e2b;
+a:hover {
+    color: var(--gold);
 }
 
-/* Price */
-.product-price {
-    color: red;
-    font-weight: bold;
-    margin: 5px 0;
+h1, h2, h3, h4, h5, h6 {
+    color: var(--coffee-brown);
+    font-weight: 600;
 }
 
-/* Button */
-.product-btn {
-    background: #6f4e37;
-    border: none;
-    padding: 8px 15px;
+/* ================== UTILITIES ================== */
+.bg-coffee { background-color: var(--coffee-brown) !important; color: white !important; }
+.bg-cream { background-color: var(--cream) !important; }
+.text-coffee { color: var(--coffee-brown) !important; }
+.text-gold { color: var(--gold) !important; }
+
+/* Buttons */
+.btn-primary-custom {
+    background-color: var(--coffee-brown);
     color: white;
-    border-radius: 6px;
+    border: none;
+    border-radius: var(--border-radius);
+    padding: 0.5rem 1.5rem;
+    font-weight: 500;
+    transition: all var(--transition-smooth);
+}
+.btn-primary-custom:hover, .btn-primary-custom:focus {
+    background-color: var(--coffee-brown-dark);
+    color: white;
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+.btn-gold {
+    background-color: var(--gold);
+    color: white;
+    border: none;
+    border-radius: var(--border-radius);
+    padding: 0.5rem 1.5rem;
+    font-weight: 500;
+    transition: all var(--transition-smooth);
+}
+.btn-gold:hover {
+    background-color: var(--gold-hover);
+    color: white;
+    box-shadow: 0 4px 15px rgba(212, 168, 83, 0.4);
+    transform: translateY(-2px);
+}
+
+.btn-press:active {
+    transform: scale(0.95) !important;
+}
+
+/* Base Inputs */
+.form-control:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 0.25rem rgba(212, 168, 83, 0.25);
+}
+
+/* ================== ANIMATIONS ================== */
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+    animation: fadeInUp 0.6s ease forwards;
+}
+.delay-1 { animation-delay: 0.1s; }
+.delay-2 { animation-delay: 0.2s; }
+.delay-3 { animation-delay: 0.3s; }
+
+/* ================== NAVBAR ================== */
+.navbar-custom {
+    background-color: var(--bg-white);
+    box-shadow: var(--shadow-sm);
+    padding: 1rem 0;
+    transition: all var(--transition-smooth);
+}
+.navbar-custom.sticky {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1050;
+    box-shadow: var(--shadow-md);
+    padding: 0.5rem 0;
+}
+.navbar-brand {
+    color: var(--coffee-brown) !important;
+    font-weight: 700;
+    font-size: 1.5rem;
+}
+.nav-link {
+    color: var(--text-primary) !important;
+    font-weight: 500;
+    margin: 0 10px;
+    position: relative;
+}
+.nav-link:hover, .nav-link.active {
+    color: var(--gold) !important;
+}
+.nav-link::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: 0;
+    left: 50%;
+    background-color: var(--gold);
+    transition: all var(--transition-smooth);
+}
+.nav-link:hover::after {
+    width: 100%;
+    left: 0;
+}
+
+.cart-icon-wrapper {
+    position: relative;
+    display: inline-block;
+}
+.cart-badge {
+    position: absolute;
+    top: -8px;
+    right: -10px;
+    background-color: var(--gold);
+    color: white;
+    font-size: 0.75rem;
+    padding: 0.2em 0.5em;
+    border-radius: 50%;
+    font-weight: bold;
+}
+
+/* ================== HERO & CARDS ================== */
+.hero-section {
+    background: linear-gradient(135deg, var(--cream) 0%, var(--cream-dark) 100%);
+    padding: 5rem 0;
+    border-radius: var(--border-radius-lg);
+    margin-bottom: 3rem;
+}
+
+.product-card {
+    background: var(--bg-white);
+    border-radius: var(--border-radius-lg);
+    border: none;
+    box-shadow: var(--shadow-sm);
+    transition: transform var(--transition-smooth), box-shadow var(--transition-smooth);
+    overflow: hidden;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+.product-card:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--shadow-hover);
+}
+.product-img-wrapper {
+    position: relative;
+    overflow: hidden;
+    padding-top: 100%; /* 1:1 Aspect Ratio */
+}
+.product-img-wrapper img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+.product-card:hover .product-img-wrapper img {
+    transform: scale(1.08);
+}
+.badge-category {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: var(--gold);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    z-index: 2;
+}
+
+/* ================== CHECKOUT & CART ================== */
+.cart-summary {
+    background: var(--bg-white);
+    border-radius: var(--border-radius-lg);
+    padding: 1.5rem;
+    box-shadow: var(--shadow-sm);
+    position: sticky;
+    top: 100px;
+}
+.qty-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid #ddd;
+    background: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
+    transition: all var(--transition-fast);
+}
+.qty-btn:hover {
+    border-color: var(--gold);
+    color: var(--gold);
+}
+.qty-input {
+    width: 50px;
+    text-align: center;
+    border: none;
+    background: transparent;
+    font-weight: 600;
 }
 
-    .product-btn:hover {
-        background: #4b2e2b;
-    }
-/* ===== RESPONSIVE GRID ===== */
-@media (max-width: 1200px) {
-    .product-grid {
-        grid-template-columns: repeat(4, 1fr);
-    }
+.step-indicator {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+.step {
+    text-align: center;
+    position: relative;
+    flex: 1;
+}
+.step::after {
+    content: '';
+    position: absolute;
+    top: 15px;
+    right: -50%;
+    width: 100%;
+    height: 2px;
+    background: #ddd;
+    z-index: 1;
+}
+.step:last-child::after { display: none; }
+.step-circle {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #ddd;
+    color: white;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0.5rem;
+    position: relative;
+    z-index: 2;
+    font-weight: bold;
+}
+.step.active .step-circle {
+    background: var(--gold);
+    box-shadow: 0 0 0 4px rgba(212, 168, 83, 0.2);
+}
+.step.active ~ .step::after { background: var(--gold); } /* simplified for sequential progression if needed */
+
+/* ================== FOOTER ================== */
+.footer-custom {
+    background-color: var(--coffee-brown);
+    color: var(--cream);
+    padding: 3rem 0 1.5rem;
+    margin-top: 5rem;
+}
+.footer-custom a {
+    color: var(--cream-dark);
+}
+.footer-custom a:hover {
+    color: var(--gold);
 }
 
-@media (max-width: 992px) {
-    .product-grid {
-        grid-template-columns: repeat(3, 1fr);
-    }
+/* ================== BACK TO TOP ================== */
+#backToTop {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background-color: var(--gold);
+    color: white;
+    border: none;
+    box-shadow: var(--shadow-md);
+    display: none; /* hidden by default */
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    cursor: pointer;
+    z-index: 1000;
+    transition: all var(--transition-fast);
 }
-
-@media (max-width: 768px) {
-    .product-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-@media (max-width: 480px) {
-    .product-grid {
-        grid-template-columns: 1fr;
-    }
+#backToTop:hover {
+    background-color: var(--gold-hover);
+    transform: translateY(-3px);
 }

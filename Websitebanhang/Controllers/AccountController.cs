@@ -37,17 +37,20 @@ namespace Websitebanhang.Controllers
         {
             if (ModelState.IsValid)
             {
-                var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: false);
-                if (result.Succeeded)
+                var user = await _userManager.FindByEmailAsync(model.Email);
+                if (user != null)
                 {
-                    var user = await _userManager.FindByEmailAsync(model.Email);
-                    var roles = await _userManager.GetRolesAsync(user!);
-
-                    if (roles.Contains("Admin"))
+                    var result = await _signInManager.PasswordSignInAsync(user.UserName, model.Password, model.RememberMe, lockoutOnFailure: false);
+                    if (result.Succeeded)
                     {
-                        return RedirectToAction("Index", "Admin");
+                        var roles = await _userManager.GetRolesAsync(user);
+
+                        if (roles.Contains("Admin"))
+                        {
+                            return RedirectToAction("Index", "Admin");
+                        }
+                        return RedirectToAction("Index", "Home");
                     }
-                    return RedirectToAction("Index", "Home");
                 }
                 ModelState.AddModelError(string.Empty, "Email hoặc mật khẩu không chính xác.");
             }
@@ -102,6 +105,7 @@ namespace Websitebanhang.Controllers
             var model = new ProfileViewModel
             {
                 Email = user.Email,
+                UserName = user.UserName,
                 FullName = user.FullName,
                 Address = user.Address,
                 PhoneNumber = user.PhoneNumber,
@@ -131,6 +135,20 @@ namespace Websitebanhang.Controllers
             user.Address = model.Address;
             user.PhoneNumber = model.PhoneNumber;
             user.DateOfBirth = model.DateOfBirth;
+
+            if (model.UserName != null && model.UserName != user.UserName)
+            {
+                var setUserNameResult = await _userManager.SetUserNameAsync(user, model.UserName);
+                if (!setUserNameResult.Succeeded)
+                {
+                    foreach (var error in setUserNameResult.Errors)
+                    {
+                        ModelState.AddModelError(string.Empty, error.Description);
+                    }
+                    return View(model);
+                }
+                await _signInManager.RefreshSignInAsync(user);
+            }
 
             var result = await _userManager.UpdateAsync(user);
 

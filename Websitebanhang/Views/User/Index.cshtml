@@ -1,47 +1,272 @@
-﻿<div class="admin-container">
+@model List<Websitebanhang.Models.ViewModels.UserViewModel>
 
-<div class="admin-title">
-User Management
+@{
+    ViewData["Title"] = "User Management";
+    Layout = "_AdminLayout";
+}
+
+<style>
+    .admin-container {
+        background-color: #FFF8F0;
+        padding: 20px;
+        min-height: 100vh;
+        color: #333;
+    }
+
+    .admin-title-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+
+    .admin-title {
+        color: #6F4E37;
+        font-weight: bold;
+        font-size: 24px;
+        margin: 0;
+    }
+
+    .badge-quantity {
+        background-color: #6F4E37;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-size: 14px;
+    }
+
+    .search-box {
+        margin-bottom: 20px;
+        max-width: 400px;
+    }
+
+    .search-input {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        outline: none;
+    }
+
+    .search-input:focus {
+        border-color: #6F4E37;
+        box-shadow: 0 0 5px rgba(111, 78, 55, 0.5);
+    }
+
+    .admin-card {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .table-custom {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .table-custom th, .table-custom td {
+        padding: 15px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .table-custom th {
+        color: #6F4E37;
+        font-weight: 600;
+    }
+
+    .avatar-img {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+        background-color: #eee;
+    }
+
+    .badge-role {
+        padding: 5px 10px;
+        border-radius: 15px;
+        font-size: 0.85em;
+        font-weight: 500;
+        background-color: #e9ecef;
+        color: #495057;
+    }
+
+    .badge-role.admin {
+        background-color: #6F4E37;
+        color: white;
+    }
+
+    .badge-status {
+        padding: 5px 10px;
+        border-radius: 15px;
+        font-size: 0.85em;
+        font-weight: 500;
+    }
+
+    .badge-status.active {
+        background-color: #d4edda;
+        color: #155724;
+    }
+
+    .badge-status.locked {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+
+    .action-btn {
+        padding: 5px 10px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 0.9em;
+        color: white;
+        transition: background-color 0.2s;
+    }
+
+    .btn-lock {
+        background-color: #f0ad4e;
+    }
+    .btn-lock:hover { background-color: #ec971f; }
+
+    .btn-unlock {
+        background-color: #5cb85c;
+    }
+    .btn-unlock:hover { background-color: #449d44; }
+
+    .btn-delete {
+        background-color: #d9534f;
+    }
+    .btn-delete:hover { background-color: #c9302c; }
+
+    .form-inline {
+        display: inline-block;
+        margin: 0;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 40px;
+        color: #6F4E37;
+        font-size: 1.2em;
+    }
+</style>
+
+<div class="admin-container">
+    <div class="admin-title-row">
+        <h1 class="admin-title">Quản lý người dùng</h1>
+        <span class="badge-quantity">@(Model?.Count ?? 0) Người dùng</span>
+    </div>
+
+    <div class="search-box">
+        <input type="text" id="userSearch" class="search-input" placeholder="Tìm kiếm theo tên hoặc email..." onkeyup="filterUsers()" />
+    </div>
+
+    <div class="admin-card">
+        @if (Model != null && Model.Count > 0)
+        {
+            <table class="table-custom" id="userTable">
+                <thead>
+                    <tr>
+                        <th>Ảnh đại diện</th>
+                        <th>Họ và tên</th>
+                        <th>Email</th>
+                        <th>Số điện thoại</th>
+                        <th>Vai trò</th>
+                        <th>Trạng thái</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var user in Model)
+                    {
+                        <tr class="user-row">
+                            <td>
+                                @if (!string.IsNullOrEmpty(user.AvatarUrl))
+                                {
+                                    <img src="@user.AvatarUrl" alt="Ảnh đại diện" class="avatar-img" />
+                                }
+                                else
+                                {
+                                    <img src="/lib/favicon.png" alt="Ảnh đại diện mặc định" class="avatar-img" />
+                                }
+                            </td>
+                            <td class="user-name">@(string.IsNullOrEmpty(user.FullName) ? "Chưa cập nhật" : user.FullName)</td>
+                            <td class="user-email">@user.Email</td>
+                            <td>@(string.IsNullOrEmpty(user.PhoneNumber) ? "Chưa cập nhật" : user.PhoneNumber)</td>
+                            <td>
+                                <span class="badge-role @(user.Role.Equals("Admin", StringComparison.OrdinalIgnoreCase) ? "admin" : "")">
+                                    @(string.IsNullOrEmpty(user.Role) ? "Chưa phân quyền" : user.Role)
+                                </span>
+                            </td>
+                            <td>
+                                @if (user.IsLocked)
+                                {
+                                    <span class="badge-status locked">Đã khóa</span>
+                                }
+                                else
+                                {
+                                    <span class="badge-status active">Hoạt động</span>
+                                }
+                            </td>
+                            <td>
+                                <a asp-action="Update" asp-route-id="@user.Id" class="action-btn btn-update form-inline" title="Sửa thông tin" style="text-decoration:none; padding: 6px 12px; background-color: #17a2b8; margin-right: 5px;">Sửa</a>
+                                
+                                <form asp-action="LockUnlock" method="post" class="form-inline">
+                                    <input type="hidden" name="userId" value="@user.Id" />
+                                    @if (user.IsLocked)
+                                    {
+                                        <button type="submit" class="action-btn btn-unlock" title="Mở khóa tài khoản">Mở khóa</button>
+                                    }
+                                    else
+                                    {
+                                        <button type="submit" class="action-btn btn-lock" title="Khóa tài khoản">Khóa</button>
+                                    }
+                                </form>
+
+                                <form asp-action="Delete" method="post" class="form-inline" onsubmit="return confirm('Bạn có chắc chắn muốn xóa người dùng này không?');">
+                                    <input type="hidden" name="userId" value="@user.Id" />
+                                    <button type="submit" class="action-btn btn-delete" title="Xóa người dùng">Xóa</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <div class="empty-state">
+                <p>Không tìm thấy người dùng nào.</p>
+            </div>
+        }
+    </div>
 </div>
 
-<div class="admin-card">
+@section Scripts {
+    <script>
+        function filterUsers() {
+            var input, filter, table, tr, tdName, tdEmail, i, txtValueName, txtValueEmail;
+            input = document.getElementById("userSearch");
+            filter = input.value.toUpperCase();
+            table = document.getElementById("userTable");
+            if (!table) return;
+            tr = table.getElementsByClassName("user-row");
 
-<table class="table table-dark-custom">
-
-<thead>
-<tr>
-<th>Email</th>
-<th>Role</th>
-<th>Status</th>
-<th>Actions</th>
-</tr>
-</thead>
-
-<tbody>
-
-<tr>
-<td>admin@gmail.com</td>
-<td>Admin</td>
-<td>Active</td>
-
-<td>
-
-<button class="admin-btn">
-Edit
-</button>
-
-<button class="admin-btn">
-Delete
-</button>
-
-</td>
-
-</tr>
-
-</tbody>
-
-</table>
-
-</div>
-
-</div>
+            for (i = 0; i < tr.length; i++) {
+                tdName = tr[i].getElementsByClassName("user-name")[0];
+                tdEmail = tr[i].getElementsByClassName("user-email")[0];
+                if (tdName || tdEmail) {
+                    txtValueName = tdName.textContent || tdName.innerText;
+                    txtValueEmail = tdEmail.textContent || tdEmail.innerText;
+                    if (txtValueName.toUpperCase().indexOf(filter) > -1 || txtValueEmail.toUpperCase().indexOf(filter) > -1) {
+                        tr[i].style.display = "";
+                    } else {
+                        tr[i].style.display = "none";
+                    }
+                }       
+            }
+        }
+    </script>
+}
