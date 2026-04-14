@@ -1,7 +1,9 @@
 @model List<Websitebanhang.Models.CartItem>
+@inject Microsoft.AspNetCore.Identity.UserManager<Websitebanhang.Models.ApplicationUser> UserManager
 @{
     ViewData["Title"] = "Thanh Toán";
     decimal total = Model != null ? Model.Sum(i => i.Price * i.Quantity) : 0;
+    var currentUser = await UserManager.GetUserAsync(User);
 }
 
 <div class="row fade-in">
@@ -35,19 +37,23 @@
                     
                     <div class="row g-3">
                         <div class="col-md-6 form-floating mb-3">
-                            <input type="text" name="name" class="form-control bg-light border-0" id="floatingName" placeholder="Họ và tên" required>
+                            <input type="text" name="name" class="form-control bg-light border-0" id="floatingName" placeholder="Họ và tên" value="@currentUser?.FullName" required>
                             <label for="floatingName" class="ps-4">Họ và tên</label>
                         </div>
                         <div class="col-md-6 form-floating mb-3">
-                            <input type="tel" name="phone" class="form-control bg-light border-0" id="floatingPhone" placeholder="Số điện thoại" required>
+                            <input type="tel" name="phone" class="form-control bg-light border-0" id="floatingPhone" placeholder="Số điện thoại" value="@currentUser?.PhoneNumber" required>
                             <label for="floatingPhone" class="ps-4">Số điện thoại</label>
                         </div>
                         <div class="col-md-12 form-floating mb-3">
-                            <input type="email" name="email" class="form-control bg-light border-0" id="floatingEmail" placeholder="Email" required>
+                            <input type="email" name="email" class="form-control bg-light border-0" id="floatingEmail" placeholder="Email" value="@currentUser?.Email" @(currentUser != null ? "readonly" : "") required>
                             <label for="floatingEmail" class="ps-4">Email</label>
+                            @if (currentUser != null)
+                            {
+                                <div class="form-text text-muted ms-2"><i class="fa-solid fa-lock me-1"></i>Email mặc định theo tài khoản của bạn để dễ dàng theo dõi đơn hàng.</div>
+                            }
                         </div>
                         <div class="col-md-12 form-floating mb-3">
-                            <input type="text" name="address" class="form-control bg-light border-0" id="floatingAddress" placeholder="Địa chỉ giao hàng đầy đủ" required>
+                            <input type="text" name="address" class="form-control bg-light border-0" id="floatingAddress" placeholder="Địa chỉ giao hàng đầy đủ" value="@currentUser?.Address" required>
                             <label for="floatingAddress" class="ps-4">Địa chỉ giao hàng đầy đủ</label>
                         </div>
                     </div>

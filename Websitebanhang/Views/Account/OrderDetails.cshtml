@@ -1,0 +1,112 @@
+@model Websitebanhang.Models.Order
+@{
+    ViewData["Title"] = "Chi Tiết Đơn Hàng";
+}
+
+<div class="row fade-in">
+    <!-- Breadcrumb -->
+    <div class="col-12 mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0 px-3 py-2 bg-white rounded-pill shadow-sm d-inline-flex">
+                <li class="breadcrumb-item"><a href="/" class="text-secondary"><i class="fa-solid fa-house"></i></a></li>
+                <li class="breadcrumb-item"><a asp-controller="Account" asp-action="Profile" class="text-secondary">Hồ Sơ Của Tôi</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Đơn Hàng #ORD-@Model.Id.ToString("D3")</li>
+            </ol>
+        </nav>
+    </div>
+
+    <div class="col-12 col-lg-8 mx-auto">
+        <div class="bg-white rounded-4 shadow-sm overflow-hidden p-4 p-md-5">
+            <div class="d-flex justify-content-between align-items-center border-bottom pb-4 mb-4">
+                <div>
+                    <h3 class="text-coffee fw-bold mb-1">Chi Tiết Đơn Hàng</h3>
+                    <p class="text-muted mb-0">Mã đơn: <span class="fw-bold text-dark">#ORD-@Model.Id.ToString("D3")</span></p>
+                </div>
+                <div class="text-end">
+                    <p class="text-muted mb-1 small">Ngày đặt hàng: @Model.OrderDate.ToString("dd/MM/yyyy HH:mm")</p>
+                    @if (Model.Status == "Pending")
+                    {
+                        <span class="badge bg-warning text-dark fs-6 mt-1">Chờ xử lý</span>
+                    }
+                    else if (Model.Status == "Hoàn thành")
+                    {
+                        <span class="badge bg-success fs-6 mt-1">Hoàn thành</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary fs-6 mt-1">@Model.Status</span>
+                    }
+                </div>
+            </div>
+
+            <!-- Customer Details Block -->
+            <div class="row mb-4">
+                <div class="col-md-6 mb-3 mb-md-0">
+                    <div class="p-3 bg-light rounded-3 h-100">
+                        <h6 class="text-coffee fw-bold mb-3"><i class="fa-solid fa-location-dot me-2"></i>Thông Tin Nhận Hàng</h6>
+                        <p class="mb-1"><strong>Người nhận:</strong> @Model.CustomerName</p>
+                        <p class="mb-1"><strong>Số điện thoại:</strong> @Model.Phone</p>
+                        <p class="mb-0"><strong>Địa chỉ:</strong> @Model.Address</p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="p-3 bg-light rounded-3 h-100">
+                        <h6 class="text-coffee fw-bold mb-3"><i class="fa-solid fa-credit-card me-2"></i>Thanh Toán</h6>
+                        <p class="mb-1"><strong>Phương thức:</strong> @Model.PaymentMethod</p>
+                        <p class="mb-0"><strong>Trạng thái:</strong> Chưa thanh toán</p>
+                    </div>
+                </div>
+            </div>
+
+            <h5 class="text-coffee fw-bold mb-3 mt-4">Sản Phẩm Đã Đặt</h5>
+            <div class="table-responsive mb-4">
+                <table class="table align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th scope="col">Hình Ảnh</th>
+                            <th scope="col">Sản Phẩm</th>
+                            <th scope="col" class="text-center">Số Lượng</th>
+                            <th scope="col" class="text-end">Đơn Giá</th>
+                            <th scope="col" class="text-end">Thành Tiền</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Items != null && Model.Items.Any())
+                        {
+                            foreach (var item in Model.Items)
+                            {
+                                <tr>
+                                    <td>
+                                        <img src="@item.ImageUrl" alt="@item.Name" class="rounded object-fit-cover shadow-sm" width="60" height="60" onerror="this.onerror=null; this.src='/images/default.jpg'" />
+                                    </td>
+                                    <td class="fw-medium text-dark">@item.Name</td>
+                                    <td class="text-center">@item.Quantity</td>
+                                    <td class="text-end">@item.Price.ToString("N0") ₫</td>
+                                    <td class="text-end fw-bold text-gold">@((item.Price * item.Quantity).ToString("N0")) ₫</td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="5" class="text-center py-4 text-muted">Không có thông tin chi tiết sản phẩm cho đơn hàng này.</td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot class="table-light">
+                        <tr>
+                            <td colspan="4" class="text-end fw-bold py-3 fs-5">TỔNG CỘNG:</td>
+                            <td class="text-end fw-bold py-3 fs-5 text-danger">@Model.TotalAmount.ToString("N0") ₫</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+            
+            <div class="text-center mt-5">
+                <a asp-controller="Account" asp-action="Profile" class="btn btn-outline-dark rounded-pill px-4">
+                    <i class="fa-solid fa-arrow-left me-2"></i>Quay Lại Hồ Sơ
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

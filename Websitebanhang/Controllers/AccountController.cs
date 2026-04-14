@@ -9,6 +9,8 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using System.IO;
 using System;
+using System.Linq;
+using Microsoft.EntityFrameworkCore;
 
 namespace Websitebanhang.Controllers
 {
@@ -18,13 +20,15 @@ namespace Websitebanhang.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IEmailService _emailService;
         private readonly IWebHostEnvironment _env;
+        private readonly Websitebanhang.Data.AppDbContext _context;
 
-        public AccountController(SignInManager<ApplicationUser> signInManager, UserManager<ApplicationUser> userManager, IEmailService emailService, IWebHostEnvironment env)
+        public AccountController(SignInManager<ApplicationUser> signInManager, UserManager<ApplicationUser> userManager, IEmailService emailService, IWebHostEnvironment env, Websitebanhang.Data.AppDbContext context)
         {
             _signInManager = signInManager;
             _userManager = userManager;
             _emailService = emailService;
             _env = env;
+            _context = context;
         }
 
         public IActionResult Login()
@@ -40,7 +44,7 @@ namespace Websitebanhang.Controllers
                 var user = await _userManager.FindByEmailAsync(model.Email);
                 if (user != null)
                 {
-                    var result = await _signInManager.PasswordSignInAsync(user.UserName, model.Password, model.RememberMe, lockoutOnFailure: false);
+                    var result = await _signInManager.PasswordSignInAsync(user.UserName!, model.Password, model.RememberMe, lockoutOnFailure: false);
                     if (result.Succeeded)
                     {
                         var roles = await _userManager.GetRolesAsync(user);
@@ -102,6 +106,11 @@ namespace Websitebanhang.Controllers
                 return RedirectToAction("Login");
             }
 
+            var orders = await _context.Orders
+                .Where(o => o.Email == user.Email)
+                .OrderByDescending(o => o.OrderDate)
+                .ToListAsync();
+
             var model = new ProfileViewModel
             {
                 Email = user.Email,
@@ -109,7 +118,8 @@ namespace Websitebanhang.Controllers
                 FullName = user.FullName,
                 Address = user.Address,
                 PhoneNumber = user.PhoneNumber,
-                DateOfBirth = user.DateOfBirth
+                DateOfBirth = user.DateOfBirth,
+                Orders = orders
             };
 
             return View(model);
@@ -368,6 +378,25 @@ namespace Websitebanhang.Controllers
         {
             await _signInManager.SignOutAsync();
             return RedirectToAction("Index", "Home");
+        }
+
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> OrderDetails(int id)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return RedirectToAction("Login");
+
+            var order = await _context.Orders
+                .Include(o => o.Items)
+                .FirstOrDefaultAsync(o => o.Id == id && o.Email == user.Email);
+
+            if (order == null)
+            {
+                return NotFound("Không tìm thấy đơn hàng hoặc bạn không có quyền xem đơn hàng này.");
+            }
+
+            return View(order);
         }
     }
 }

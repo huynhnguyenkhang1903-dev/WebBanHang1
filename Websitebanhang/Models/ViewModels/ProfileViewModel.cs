@@ -25,5 +25,7 @@ namespace Websitebanhang.Models.ViewModels
         [Display(Name = "Ngày sinh")]
         [DataType(DataType.Date)]
         public DateTime? DateOfBirth { get; set; }
+
+        public System.Collections.Generic.List<Websitebanhang.Models.Order>? Orders { get; set; }
     }
 }

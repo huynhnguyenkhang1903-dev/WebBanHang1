@@ -120,40 +120,59 @@
                     <!-- TAB: Order History -->
                     <div class="tab-pane fade" id="v-pills-orders" role="tabpanel">
                         <h4 class="text-coffee fw-bold mb-4 border-bottom pb-2">Lịch Sử Đơn Hàng</h4>
-                        <div class="alert alert-light border border-warning text-dark mb-4">
-                            <i class="fa-solid fa-circle-info text-warning me-2"></i>Tính năng này đang được đồng bộ. Sẽ hiển thị danh sách đơn hàng đã mua.
-                        </div>
                         
-                        <!-- Placeholder table for design purposes -->
-                        <div class="table-responsive">
-                            <table class="table table-hover align-middle">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>Mã Đơn</th>
-                                        <th>Ngày Đặt</th>
-                                        <th>Tổng Tiền</th>
-                                        <th>Trạng Thái</th>
-                                        <th>Thao Tác</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td class="fw-bold">#ORD-001</td>
-                                        <td>14/04/2026</td>
-                                        <td class="text-gold fw-bold">120,000 ₫</td>
-                                        <td><span class="badge bg-success">Hoàn thành</span></td>
-                                        <td><button class="btn btn-sm btn-outline-dark">Chi tiết</button></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="fw-bold">#ORD-002</td>
-                                        <td>10/04/2026</td>
-                                        <td class="text-gold fw-bold">250,000 ₫</td>
-                                        <td><span class="badge bg-warning text-dark">Đang giao</span></td>
-                                        <td><button class="btn btn-sm btn-outline-dark">Chi tiết</button></td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
+                        @if (Model?.Orders != null && Model.Orders.Any())
+                        {
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Mã Đơn</th>
+                                            <th>Ngày Đặt</th>
+                                            <th>Tổng Tiền</th>
+                                            <th>Trạng Thái</th>
+                                            <th>Thao Tác</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var order in Model.Orders)
+                                        {
+                                            <tr>
+                                                <td class="fw-bold">#ORD-@order.Id.ToString("D3")</td>
+                                                <td>@order.OrderDate.ToString("dd/MM/yyyy HH:mm")</td>
+                                                <td class="text-gold fw-bold">@order.TotalAmount.ToString("N0") ₫</td>
+                                                <td>
+                                                    @if (order.Status == "Pending")
+                                                    {
+                                                        <span class="badge bg-warning text-dark">Chờ xử lý</span>
+                                                    }
+                                                    else if (order.Status == "Hoàn thành")
+                                                    {
+                                                        <span class="badge bg-success">Hoàn thành</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge bg-secondary">@order.Status</span>
+                                                    }
+                                                </td>
+                                                <td>
+                                                    <a asp-controller="Account" asp-action="OrderDetails" asp-route-id="@order.Id" class="btn btn-sm btn-outline-dark">Chi tiết</a>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="text-center py-5">
+                                <i class="fa-solid fa-box-open text-muted mb-3" style="font-size: 3rem;"></i>
+                                <h5 class="text-muted">Bạn chưa có đơn hàng nào</h5>
+                                <p class="text-secondary">Hãy khám phá bộ sưu tập cà phê của chúng tôi và đặt hàng nhé!</p>
+                                <a asp-controller="Product" asp-action="Index" class="btn btn-primary-custom mt-2 rounded-pill px-4">Mua Sắm Ngay</a>
+                            </div>
+                        }
                     </div>
 
                 </div>
