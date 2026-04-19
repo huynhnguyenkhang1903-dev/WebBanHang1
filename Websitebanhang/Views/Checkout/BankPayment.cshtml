@@ -1,0 +1,15 @@
+﻿<div class="container text-center mt-5">
+    <h2>Thanh toán đơn hàng</h2>
+
+    <img src="@ViewBag.QRCode" width="300" />
+
+    <p><b>Số tiền:</b> @ViewBag.Amount VNĐ</p>
+    <p><b>Nội dung:</b> @ViewBag.Content</p>
+
+    <form asp-action="ConfirmPayment" method="post">
+        <input type="hidden" name="orderId" value="@ViewBag.OrderId" />
+        <button class="btn btn-success mt-3">
+            Tôi đã thanh toán
+        </button>
+    </form>
+</div>
