@@ -35,6 +35,24 @@ namespace Websitebanhang.Controllers
         {
             return View();
         }
+        [Authorize]
+        public async Task<IActionResult> MyOrders()
+        {
+            var user = await _userManager.GetUserAsync(User);
+
+            if (user == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var orders = await _context.Orders
+                .Include(o => o.Items)
+                .Where(o => o.UserId == user.Id)
+                .OrderByDescending(o => o.OrderDate)
+                .ToListAsync();
+
+            return View(orders);
+        }
 
         [HttpPost]
         public async Task<IActionResult> Login(LoginViewModel model)
@@ -101,12 +119,14 @@ namespace Websitebanhang.Controllers
         public async Task<IActionResult> Profile()
         {
             var user = await _userManager.GetUserAsync(User);
+
             if (user == null)
             {
-                return RedirectToAction("Login");
+                return RedirectToAction("Login", "Account");
             }
 
             var orders = await _context.Orders
+                .Include(o => o.Items)
                 .Where(o => o.Email == user.Email)
                 .OrderByDescending(o => o.OrderDate)
                 .ToListAsync();
@@ -141,8 +161,8 @@ namespace Websitebanhang.Controllers
                 return RedirectToAction("Login");
             }
 
-            user.FullName = model.FullName;
-            user.Address = model.Address;
+            user.FullName = string.IsNullOrEmpty(model.FullName) ? "" : model.FullName;
+            user.Address = string.IsNullOrEmpty(model.Address) ? "" : model.Address;
             user.PhoneNumber = model.PhoneNumber;
             user.DateOfBirth = model.DateOfBirth;
 
@@ -380,23 +400,45 @@ namespace Websitebanhang.Controllers
             return RedirectToAction("Index", "Home");
         }
 
+        // ================= HỦY ĐƠN HÀNG =================
+        [HttpPost]
         [Authorize]
-        [HttpGet]
-        public async Task<IActionResult> OrderDetails(int id)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CancelOrder(int id)
         {
             var user = await _userManager.GetUserAsync(User);
-            if (user == null) return RedirectToAction("Login");
+            if (user == null)
+                return RedirectToAction("Login");
+
+            // 🔥 FIX NULL EMAIL
+            if (string.IsNullOrEmpty(user.Email))
+            {
+                TempData["Error"] = "Tài khoản không hợp lệ!";
+                return RedirectToAction("Profile");
+            }
 
             var order = await _context.Orders
-                .Include(o => o.Items)
                 .FirstOrDefaultAsync(o => o.Id == id && o.Email == user.Email);
 
             if (order == null)
             {
-                return NotFound("Không tìm thấy đơn hàng hoặc bạn không có quyền xem đơn hàng này.");
+                TempData["Error"] = "Không tìm thấy đơn hàng!";
+                return RedirectToAction("Profile");
             }
 
-            return View(order);
+            // 🔥 CHỈ CHO HỦY KHI PENDING
+            if (order.Status != "Pending")
+            {
+                TempData["Error"] = "Chỉ có thể hủy đơn đang chờ xử lý!";
+                return RedirectToAction("Profile");
+            }
+
+            // ✅ Hủy đơn
+            order.Status = "Cancelled";
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Đã hủy đơn hàng thành công!";
+            return RedirectToAction("Profile");
         }
     }
 }

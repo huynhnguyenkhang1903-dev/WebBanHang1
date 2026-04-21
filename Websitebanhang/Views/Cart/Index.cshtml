@@ -12,158 +12,206 @@
                 <li class="breadcrumb-item active" aria-current="page">Giỏ Hàng</li>
             </ol>
         </nav>
-        <h2 class="text-coffee mt-2 fw-bold">Giỏ Hàng Của Bạn</h2>
+
+        <div class="d-flex justify-content-between align-items-center flex-wrap mt-2">
+            <h2 class="text-coffee fw-bold">Giỏ Hàng Của Bạn</h2>
+
+            <!-- 🔥 NÚT XEM TIẾN TRÌNH ĐƠN HÀNG -->
+            <a asp-controller="Account" asp-action="MyOrders"
+               class="btn btn-outline-dark rounded-pill px-4">
+                <i class="fa-solid fa-truck-fast me-2"></i>
+                Theo dõi đơn hàng
+            </a>
+        </div>
     </div>
 
-    @if (Model != null && Model.Count > 0)
-    {
-        <form asp-controller="Cart" asp-action="Checkout" method="post" class="row w-100 m-0 p-0">
-            <!-- Left Side: Cart Items Table (8 Columns) -->
-            <div class="col-lg-8 mb-4">
-                <div class="bg-white rounded-4 shadow-sm overflow-hidden border-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0">
-                            <thead class="bg-light text-secondary">
+@if (Model != null && Model.Count > 0)
+{
+    <form asp-controller="Cart" asp-action="Checkout" method="post" class="row w-100 m-0 p-0">
+
+        <!-- LEFT -->
+        <div class="col-lg-8 mb-4">
+            <div class="bg-white rounded-4 shadow-sm overflow-hidden border-0">
+
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light text-secondary">
+                            <tr>
+                                <th class="ps-4" width="50">
+                                    <input type="checkbox" id="selectAll" class="form-check-input" checked onchange="toggleAll(this)" />
+                                </th>
+                                <th>Sản Phẩm</th>
+                                <th width="150" class="text-center">Đơn Giá</th>
+                                <th width="150" class="text-center">Số Lượng</th>
+                                <th width="150" class="text-end pe-4">Thành Tiền</th>
+                                <th width="80" class="text-center">Xóa</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
                                 <tr>
-                                    <th class="ps-4" width="50">
-                                        <input type="checkbox" id="selectAll" class="form-check-input" checked onchange="toggleAll(this)" />
-                                    </th>
-                                    <th>Sản Phẩm</th>
-                                    <th width="150" class="text-center">Đơn Giá</th>
-                                    <th width="150" class="text-center">Số Lượng</th>
-                                    <th width="150" class="text-end pe-4">Thành Tiền</th>
-                                    <th width="80" class="text-center">Xóa</th>
+                                    <td class="ps-4">
+                                        <input type="checkbox"
+                                               name="selectedProducts"
+                                               value="@item.ProductId"
+                                               class="form-check-input cart-checkbox"
+                                               checked
+                                               onchange="updateTotal()" />
+                                    </td>
+
+                                    <td>
+                                        <div class="d-flex align-items-center gap-3">
+                                            <div class="rounded-3 overflow-hidden" style="width:60px;height:60px;">
+                                                <img src="@(string.IsNullOrEmpty(item.ImageUrl) ? "/images/placeholder.jpg" : item.ImageUrl)"
+                                                     class="w-100 h-100 object-fit-cover" />
+                                            </div>
+                                            <div class="fw-bold text-coffee">@item.Name</div>
+                                        </div>
+                                    </td>
+
+                                    <td class="text-center item-price" data-price="@item.Price">
+                                        @item.Price.ToString("N0") ₫
+                                    </td>
+
+                                    <td class="text-center">
+                                        <div class="d-flex justify-content-center align-items-center">
+
+                                            <button type="button" class="btn btn-sm btn-light"
+                                                    onclick="updateQty('@item.ProductId', -1)">-</button>
+
+                                            <input type="number"
+                                                   id="qty-@item.ProductId"
+                                                   name="quantities[@item.ProductId]"
+                                                   value="@item.Quantity"
+                                                   min="1"
+                                                   class="form-control text-center mx-1"
+                                                   style="width:60px"
+                                                   onchange="updateTotal()" />
+
+                                            <button type="button" class="btn btn-sm btn-light"
+                                                    onclick="updateQty('@item.ProductId', 1)">+</button>
+                                        </div>
+                                    </td>
+
+                                    <td class="text-end fw-bold text-gold pe-4 item-total">
+                                        @((item.Price * item.Quantity).ToString("N0")) ₫
+                                    </td>
+
+                                    <td class="text-center">
+                                        <a asp-controller="Cart" asp-action="Remove" asp-route-id="@item.ProductId"
+                                           class="btn btn-sm btn-danger rounded-circle">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </a>
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var item in Model)
-                                {
-                                    <tr>
-                                        <td class="ps-4">
-                                            <!-- The standard form submit needs this named input -->
-                                            <input type="checkbox" name="selectedProducts" value="@item.ProductId" class="form-check-input cart-checkbox" checked onchange="updateTotal()" />
-                                        </td>
-                                        <td>
-                                            <div class="d-flex align-items-center gap-3">
-                                                <div class="rounded-3 overflow-hidden" style="width: 60px; height: 60px;">
-                                                    <img src="@(string.IsNullOrEmpty(item.ImageUrl) ? "/images/placeholder.jpg" : item.ImageUrl)" alt="@item.Name" class="w-100 h-100 object-fit-cover" />
-                                                </div>
-                                                <div class="fw-bold text-coffee">@item.Name</div>
-                                            </div>
-                                        </td>
-                                        <td class="text-center fw-medium item-price" data-price="@item.Price">@item.Price.ToString("N0") ₫</td>
-                                        <td class="text-center">
-                                            <div class="d-flex align-items-center justify-content-center">
-                                                <button type="button" class="qty-btn" onclick="updateQty('@item.ProductId', -1)"><i class="fa-solid fa-minus fs-6"></i></button>
-                                                <!-- The backend expects quantities[productId] -->
-                                                <input type="number" id="qty-@item.ProductId" name="quantities[@item.ProductId]" value="@item.Quantity" min="1" class="qty-input item-qty mx-1" onchange="updateTotal()" readonly />
-                                                <button type="button" class="qty-btn" onclick="updateQty('@item.ProductId', 1)"><i class="fa-solid fa-plus fs-6"></i></button>
-                                            </div>
-                                        </td>
-                                        <td class="text-end fw-bold text-gold pe-4 item-total">@((item.Price * item.Quantity).ToString("N0")) ₫</td>
-                                        <td class="text-center">
-                                            <a asp-controller="Cart" asp-action="Remove" asp-route-id="@item.ProductId" class="btn btn-sm btn-outline-danger border-0 rounded-circle"><i class="fa-solid fa-trash-can"></i></a>
-                                        </td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
-                    </div>
+                            }
+                        </tbody>
+                    </table>
                 </div>
-            </div>
 
-            <!-- Right Side: Order Summary (4 Columns) -->
-            <div class="col-lg-4">
-                <div class="cart-summary">
-                    <h5 class="fw-bold text-coffee border-bottom pb-3 mb-4">Tóm Tắt Đơn Hàng</h5>
-                    
-                    <div class="d-flex justify-content-between mb-3 text-secondary">
-                        <span>Tạm tính (<span id="totalItems">@Model.Count</span> sản phẩm):</span>
-                        <span id="subTotal" class="fw-medium text-dark">0 ₫</span>
-                    </div>
-
-                    <div class="d-flex justify-content-between mb-3 text-secondary">
-                        <span>Phí vận chuyển:</span>
-                        <span class="text-success fw-medium">Miễn phí</span>
-                    </div>
-
-                    <div class="border-top pt-3 mb-4 d-flex justify-content-between align-items-center">
-                        <span class="fw-bold fs-5 text-dark">Tổng Cộng:</span>
-                        <span id="finalTotal" class="fw-bold fs-4 text-gold">0 ₫</span>
-                    </div>
-
-                    <button type="submit" class="btn btn-primary-custom w-100 py-3 fs-5 rounded-pill mb-3 shadow-sm">
-                        Tiến Hành Thanh Toán
-                    </button>
-                    
-                    <a asp-controller="Product" asp-action="Index" class="btn btn-outline-dark w-100 py-2 rounded-pill">
-                        Tiếp Tục Mua Hàng
-                    </a>
-                </div>
-            </div>
-        </form>
-    }
-    else
-    {
-        <div class="col-12 mt-4">
-            <div class="bg-white p-5 rounded-4 shadow-sm text-center">
-                <div class="d-inline-flex align-items-center justify-content-center bg-light rounded-circle mb-4" style="width: 120px; height: 120px;">
-                    <i class="fa-solid fa-basket-shopping display-3 text-muted"></i>
-                </div>
-                <h3 class="text-coffee fw-bold mb-3">Giỏ hàng trống</h3>
-                <p class="text-secondary mb-4 fs-5">Hãy chọn thêm sản phẩm yêu thích của bạn nhé!</p>
-                <a asp-controller="Product" asp-action="Index" class="btn btn-primary-custom btn-lg rounded-pill px-5">Khám Phá Cà Phê</a>
             </div>
         </div>
-    }
+
+        <!-- RIGHT -->
+        <div class="col-lg-4">
+            <div class="cart-summary bg-white p-4 rounded-4 shadow-sm">
+
+                <h5 class="fw-bold text-coffee mb-3">Tóm Tắt</h5>
+
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Tạm tính:</span>
+                    <span id="subTotal">0 ₫</span>
+                </div>
+
+                <div class="d-flex justify-content-between mb-3">
+                    <span>Vận chuyển:</span>
+                    <span class="text-success">Miễn phí</span>
+                </div>
+
+                <hr />
+
+                <div class="d-flex justify-content-between mb-3">
+                    <strong>Tổng:</strong>
+                    <strong id="finalTotal" class="text-gold">0 ₫</strong>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100 rounded-pill">
+                    Thanh Toán
+                </button>
+
+                <a asp-controller="Product" asp-action="Index"
+                   class="btn btn-outline-dark w-100 mt-2 rounded-pill">
+                    Tiếp tục mua hàng
+                </a>
+
+                <!-- 🔥 THÊM TIẾN TRÌNH ĐƠN HÀNG -->
+                <a asp-controller="Account" asp-action="MyOrders"
+                   class="btn btn-outline-warning w-100 mt-3 rounded-pill">
+                    <i class="fa-solid fa-truck-fast me-2"></i>
+                    Xem tiến trình đơn hàng
+                </a>
+
+            </div>
+        </div>
+
+    </form>
+}
+else
+{
+    <div class="col-12 text-center">
+        <div class="bg-white p-5 rounded-4 shadow-sm">
+            <i class="fa-solid fa-cart-shopping fa-3x mb-3 text-muted"></i>
+            <h4>Giỏ hàng trống</h4>
+            <a asp-controller="Product" asp-action="Index"
+               class="btn btn-primary mt-3 rounded-pill">
+                Khám phá cà phê
+            </a>
+        </div>
+    </div>
+}
 </div>
 
 @section Scripts {
-    <script>
-        // Update Quantity by ID
-        function updateQty(id, change) {
-            const input = document.getElementById(`qty-${id}`);
-            let val = parseInt(input.value) + change;
-            if (val < 1) val = 1;
-            input.value = val;
-            updateTotal();
-        }
+<script>
+    function updateQty(id, change) {
+        const input = document.getElementById(`qty-${id}`);
+        let val = parseInt(input.value) + change;
+        if (val < 1) val = 1;
+        input.value = val;
+        updateTotal();
+    }
 
-        // Toggle All Checkboxes
-        function toggleAll(source) {
-            const checkboxes = document.querySelectorAll('.cart-checkbox');
-            checkboxes.forEach(cb => cb.checked = source.checked);
-            updateTotal();
-        }
+    function toggleAll(source) {
+        document.querySelectorAll('.cart-checkbox')
+            .forEach(cb => cb.checked = source.checked);
+        updateTotal();
+    }
 
-        // Calculate Totals dynamically
-        function updateTotal() {
-            let total = 0;
-            let count = 0;
-            const rows = document.querySelectorAll('tbody tr');
-            
-            rows.forEach(row => {
-                const cb = row.querySelector('.cart-checkbox');
-                const price = parseFloat(row.querySelector('.item-price').getAttribute('data-price'));
-                const qty = parseInt(row.querySelector('.item-qty').value);
-                
-                // Update row total
-                const rowTotal = price * qty;
-                row.querySelector('.item-total').innerText = rowTotal.toLocaleString('vi-VN') + ' ₫';
-                
-                // Add to grand total if selected
-                if (cb.checked) {
-                    total += rowTotal;
-                    count++;
-                }
-            });
+    function updateTotal() {
+        let total = 0;
 
-            document.getElementById('totalItems').innerText = count;
-            document.getElementById('subTotal').innerText = total.toLocaleString('vi-VN') + ' ₫';
-            document.getElementById('finalTotal').innerText = total.toLocaleString('vi-VN') + ' ₫';
-        }
+        document.querySelectorAll('tbody tr').forEach(row => {
 
-        // Initialize on load
-        document.addEventListener('DOMContentLoaded', updateTotal);
-    </script>
+            const cb = row.querySelector('.cart-checkbox');
+            const price = parseFloat(row.querySelector('.item-price').dataset.price);
+            const qty = parseInt(row.querySelector('input[type="number"]').value);
+
+            const rowTotal = price * qty;
+            row.querySelector('.item-total').innerText =
+                rowTotal.toLocaleString('vi-VN') + " ₫";
+
+            if (cb.checked) total += rowTotal;
+        });
+
+        document.getElementById('subTotal').innerText =
+            total.toLocaleString('vi-VN') + " ₫";
+
+        document.getElementById('finalTotal').innerText =
+            total.toLocaleString('vi-VN') + " ₫";
+    }
+
+    document.addEventListener("DOMContentLoaded", updateTotal);
+</script>
 }

@@ -13,3 +13,15 @@
         </button>
     </form>
 </div>
+<h2>Thanh toán chuyển khoản</h2>
+
+<p>Số tiền: <b>@ViewBag.Amount ₫</b></p>
+<p>Nội dung: <b>@ViewBag.Content</b></p>
+
+<img src="@ViewBag.QRCode" width="300" />
+
+<br /><br />
+
+<a href="/Cart/CheckPayment?orderId=@ViewBag.OrderId">
+    Tôi đã thanh toán
+</a>

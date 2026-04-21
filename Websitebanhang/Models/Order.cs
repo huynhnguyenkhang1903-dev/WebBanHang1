@@ -1,11 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace Websitebanhang.Models
 {
     public class Order
     {
-        public int Id { get; set; }
+        [Key]
+        public int Id { get; set; }   // ✅ THÊM KHÓA CHÍNH
+
+        public string? UserId { get; set; }
 
         public string CustomerName { get; set; } = "";
         public string Email { get; set; } = "";
@@ -17,7 +21,7 @@ namespace Websitebanhang.Models
         public decimal TotalAmount { get; set; }
         public DateTime OrderDate { get; set; }
 
-        public string Status { get; set; } = "Pending";
+        public string Status { get; set; } = OrderStatus.Pending;
 
         public bool IsPaid { get; set; } = false;
         public string? TransactionId { get; set; }

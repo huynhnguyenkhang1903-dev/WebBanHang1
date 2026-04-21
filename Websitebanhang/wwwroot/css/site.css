@@ -351,3 +351,10 @@ h1, h2, h3, h4, h5, h6 {
     background-color: var(--gold-hover);
     transform: translateY(-3px);
 }
+.text-coffee {
+    color: #6F4E37;
+}
+
+.text-gold {
+    color: #d4af37;
+}
