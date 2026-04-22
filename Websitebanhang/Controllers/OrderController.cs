@@ -1,27 +1,30 @@
+<<<<<<< HEAD
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+=======
+using Microsoft.AspNetCore.Authorization;
+>>>>>>> bf5665fb560577c9cb7231b7c9f72f71195e6fcd
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Websitebanhang.Data;
-using Websitebanhang.Models;
+using System.Threading.Tasks;
 
 namespace Websitebanhang.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "Admin")]
     public class OrderController : Controller
     {
         private readonly AppDbContext _context;
-        private readonly UserManager<ApplicationUser> _userManager;
 
-        public OrderController(AppDbContext context, UserManager<ApplicationUser> userManager)
+        public OrderController(AppDbContext context)
         {
             _context = context;
-            _userManager = userManager;
         }
 
         // ================= DANH SÁCH ĐƠN =================
         public async Task<IActionResult> Index()
         {
+<<<<<<< HEAD
             var user = await _userManager.GetUserAsync(User);
 
             if (user == null)
@@ -40,6 +43,11 @@ namespace Websitebanhang.Controllers
             }
 
             var orders = await query.ToListAsync();
+=======
+            var orders = await _context.Orders
+                .OrderByDescending(o => o.OrderDate)
+                .ToListAsync();
+>>>>>>> bf5665fb560577c9cb7231b7c9f72f71195e6fcd
 
             return View(orders);
         }

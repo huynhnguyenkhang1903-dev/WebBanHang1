@@ -532,7 +532,6 @@ D:\WebBanHang1\Websitebanhang\obj\Debug\net8.0\refint\Websitebanhang.dll
 D:\WebBanHang1\Websitebanhang\obj\Debug\net8.0\Websitebanhang.pdb
 D:\WebBanHang1\Websitebanhang\obj\Debug\net8.0\Websitebanhang.genruntimeconfig.cache
 D:\WebBanHang1\Websitebanhang\obj\Debug\net8.0\ref\Websitebanhang.dll
-D:\WebBanHang1\Websitebanhang\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
 C:\Users\ADMIN\source\repos\WebBanHang1\Websitebanhang\bin\Debug\net8.0\appsettings.Development.json
 C:\Users\ADMIN\source\repos\WebBanHang1\Websitebanhang\bin\Debug\net8.0\appsettings.json
 C:\Users\ADMIN\source\repos\WebBanHang1\Websitebanhang\bin\Debug\net8.0\Websitebanhang.staticwebassets.runtime.json
@@ -800,4 +799,9 @@ C:\Users\ADMIN\source\repos\WebBanHang1\Websitebanhang\obj\Debug\net8.0\Websiteb
 C:\Users\ADMIN\source\repos\WebBanHang1\Websitebanhang\obj\Debug\net8.0\Websitebanhang.genruntimeconfig.cache
 C:\Users\ADMIN\source\repos\WebBanHang1\Websitebanhang\obj\Debug\net8.0\ref\Websitebanhang.dll
 C:\Users\ADMIN\source\repos\WebBanHang1\Websitebanhang\bin\Debug\net8.0\QRCoder.dll
+<<<<<<< HEAD
 C:\Users\ADMIN\source\repos\WebBanHang1\Websitebanhang\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
+=======
+D:\WebBanHang1\Websitebanhang\bin\Debug\net8.0\QRCoder.dll
+D:\WebBanHang1\Websitebanhang\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
+>>>>>>> bf5665fb560577c9cb7231b7c9f72f71195e6fcd
