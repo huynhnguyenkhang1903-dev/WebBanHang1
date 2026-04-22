@@ -20,6 +20,8 @@ namespace Websitebanhang.Data
 
         public DbSet<UnitOfMeasure> UnitsOfMeasure { get; set; }
 
+        public DbSet<Voucher> Voucher { get; set; } // Add Voucher DbSet
+
         // CONFIG DATABASE
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

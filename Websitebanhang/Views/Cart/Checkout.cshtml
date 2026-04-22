@@ -1,9 +1,12 @@
 @model List<Websitebanhang.Models.CartItem>
 @inject Microsoft.AspNetCore.Identity.UserManager<Websitebanhang.Models.ApplicationUser> UserManager
+@using Websitebanhang.Models
+@using System.Globalization
 @{
     ViewData["Title"] = "Thanh Toán";
     decimal total = Model != null ? Model.Sum(i => i.Price * i.Quantity) : 0;
     var currentUser = await UserManager.GetUserAsync(User);
+    var vouchers = ViewBag.Vouchers as List<Voucher> ?? new List<Voucher>();
 }
 
 <div class="row fade-in">
@@ -29,7 +32,7 @@
 
     @if (Model != null && Model.Count > 0)
     {
-        <form asp-controller="Cart" asp-action="PlaceOrder" method="post" class="row w-100 m-0 p-0">
+        <form asp-controller="Cart" asp-action="PlaceOrder" method="post" class="row w-100 m-0 p-0" id="checkoutForm">
             <!-- Left Side: Shipping Form & Payments -->
             <div class="col-lg-7 mb-4">
                 <div class="bg-white p-4 p-md-5 rounded-4 shadow-sm border-0 mb-4">
@@ -59,13 +62,46 @@
                     </div>
                 </div>
 
+                <div class="bg-white p-4 p-md-5 rounded-4 shadow-sm border-0 mb-4">
+                    <h4 class="text-coffee fw-bold mb-4 border-bottom pb-3"><i class="fa-solid fa-truck me-2"></i>Phương Thức Vận Chuyển</h4>
+
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="radio" name="shippingMethod" id="shipEconomy" value="economy" data-cost="10000" checked>
+                        <label class="form-check-label" for="shipEconomy">Tiết kiệm - 10.000 ₫ (thời gian giao 3-5 ngày)</label>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="radio" name="shippingMethod" id="shipFast" value="fast" data-cost="30000">
+                        <label class="form-check-label" for="shipFast">Nhanh - 30.000 ₫ (giao trong 1 ngày)</label>
+                    </div>
+
+                    <div class="mt-4">
+                        <label class="form-label fw-bold">Voucher giảm giá đơn</label>
+                        <select name="voucherCode" id="orderVoucher" class="form-select mb-2">
+                            <option value="">-- Chọn mã giảm giá --</option>
+                            @foreach (var v in vouchers)
+                            {
+                                <option value="@v.Code" data-discount="@v.DiscountPercent">@v.Code - Giảm @v.DiscountPercent% (HSD: @v.ExpiryDate.ToString("dd/MM/yyyy"))</option>
+                            }
+                        </select>
+
+                        <label class="form-label fw-bold">Voucher giảm phí vận chuyển</label>
+                        <select name="shippingVoucherCode" id="shippingVoucher" class="form-select">
+                            <option value="">-- Chọn mã vận chuyển --</option>
+                            @foreach (var v in vouchers)
+                            {
+                                <option value="@v.Code" data-discount="@v.DiscountPercent">@v.Code - Giảm @v.DiscountPercent% phí vận chuyển (HSD: @v.ExpiryDate.ToString("dd/MM/yyyy"))</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+
                 <div class="bg-white p-4 p-md-5 rounded-4 shadow-sm border-0">
                     <h4 class="text-coffee fw-bold mb-4 border-bottom pb-3"><i class="fa-solid fa-credit-card me-2"></i>Phương Thức Thanh Toán</h4>
                     
                     <div class="payment-methods">
                         <!-- COD -->
                         <div class="form-check border rounded-3 p-3 mb-3 d-flex align-items-center gap-3">
-                            <input class="form-check-input ms-0 fs-5 mt-0" type="radio" name="PaymentMethod" id="payCOD" value="COD" checked>
+                            <input class="form-check-input ms-0 fs-5 mt-0" type="radio" name="paymentMethod" id="payCOD" value="COD" checked>
                             <label class="form-check-label w-100 d-flex align-items-center cursor-pointer" for="payCOD">
                                 <i class="fa-solid fa-money-bill-wave text-success fs-2 me-3"></i>
                                 <div>
@@ -77,7 +113,7 @@
 
                         <!-- Bank -->
                         <div class="form-check border rounded-3 p-3 mb-3 d-flex align-items-center gap-3">
-                            <input class="form-check-input ms-0 fs-5 mt-0" type="radio" name="PaymentMethod" id="payBank" value="Bank">
+                            <input class="form-check-input ms-0 fs-5 mt-0" type="radio" name="paymentMethod" id="payBank" value="bank">
                             <label class="form-check-label w-100 d-flex align-items-center cursor-pointer" for="payBank">
                                 <i class="fa-solid fa-building-columns text-primary fs-2 me-3"></i>
                                 <div>
@@ -89,7 +125,7 @@
 
                         <!-- VNPay -->
                         <div class="form-check border rounded-3 p-3 d-flex align-items-center gap-3">
-                            <input class="form-check-input ms-0 fs-5 mt-0" type="radio" name="PaymentMethod" id="payVNPay" value="VNPay">
+                            <input class="form-check-input ms-0 fs-5 mt-0" type="radio" name="paymentMethod" id="payVNPay" value="VNPay">
                             <label class="form-check-label w-100 d-flex align-items-center cursor-pointer" for="payVNPay">
                                 <i class="fa-solid fa-qrcode text-info fs-2 me-3"></i>
                                 <div>
@@ -107,6 +143,8 @@
                 <div class="cart-summary sticky-top" style="top: 100px;">
                     <h5 class="fw-bold text-coffee border-bottom pb-3 mb-4"><i class="fa-solid fa-bag-shopping me-2"></i>Đơn Hàng Của Bạn</h5>
                     
+                    <input type="hidden" id="subtotalValue" value="@total.ToString(CultureInfo.InvariantCulture)" />
+
                     <div class="order-items-scroll mb-4" style="max-height: 300px; overflow-y: auto;">
                         @foreach (var item in Model)
                         {
@@ -125,20 +163,25 @@
 
                     <div class="d-flex justify-content-between mb-2 text-secondary">
                         <span>Tạm tính:</span>
-                        <span class="fw-medium">@total.ToString("N0") ₫</span>
+                        <span id="subTotal">@total.ToString("N0") ₫</span>
                     </div>
 
                     <div class="d-flex justify-content-between mb-2 text-secondary">
                         <span>Phí vận chuyển:</span>
-                        <span class="text-success fw-medium">0 ₫</span>
+                        <span id="shippingFee" class="text-success fw-medium">0 ₫</span>
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-2 text-secondary" id="discountRow" style="display:none;">
+                        <span>Giảm giá:</span>
+                        <span id="discountAmount" class="text-danger fw-medium">0 ₫</span>
                     </div>
 
                     <div class="border-top pt-3 mt-3 mb-4 d-flex justify-content-between align-items-center">
                         <span class="fw-bold fs-5 text-dark">Tổng Tiền:</span>
-                        <span class="fw-bold fs-3 text-gold">@total.ToString("N0") ₫</span>
+                        <span class="fw-bold fs-3 text-gold" id="finalTotal">@total.ToString("N0") ₫</span>
                     </div>
 
-                    <button type="submit" class="btn btn-primary-custom w-100 py-3 fs-5 rounded-pill shadow-sm mb-3">
+                    <button type="submit" class="btn btn-primary-custom w-100 py-3 fs-5 rounded-pill shadow-sm mb-3" id="submitBtn">
                         <i class="fa-solid fa-check-double me-2"></i>Xác Nhận Đặt Hàng
                     </button>
                     
@@ -157,3 +200,80 @@
         </div>
     }
 </div>
+
+@section Scripts {
+<script>
+    function parseNumber(v) {
+        if (v === null || v === undefined) return 0;
+        // remove any non-digit, non-dot, non-minus characters
+        var cleaned = String(v).replace(/[^0-9.-]/g, '');
+        // If cleaned contains multiple dots (thousand separators) remove all dots
+        var dotCount = (cleaned.match(/\./g) || []).length;
+        if (dotCount > 1) {
+            cleaned = cleaned.replace(/\./g, '');
+        }
+        // If contains comma as decimal separator (e.g. 1.234,56), replace last comma with dot
+        if (cleaned.indexOf(',') !== -1) {
+            cleaned = cleaned.replace(/,/g, '.');
+        }
+        var n = parseFloat(cleaned);
+        return isNaN(n) ? 0 : n;
+    }
+
+    function formatVND(n) {
+        return n.toLocaleString('vi-VN') + ' ₫';
+    }
+
+    function recalc() {
+        var subtotal = parseNumber(document.getElementById('subtotalValue').value);
+
+        // shipping method cost
+        var shipRadio = document.querySelector('input[name="shippingMethod"]:checked');
+        var shipCost = shipRadio ? parseNumber(shipRadio.dataset.cost) : 0;
+
+        // shipping voucher
+        var shipVoucherSelect = document.getElementById('shippingVoucher');
+        var shipVoucherDiscount = 0;
+        if (shipVoucherSelect && shipVoucherSelect.value) {
+            shipVoucherDiscount = parseNumber(shipVoucherSelect.options[shipVoucherSelect.selectedIndex].dataset.discount) || 0;
+        }
+
+        var shipDiscountAmount = Math.round(shipCost * (shipVoucherDiscount / 100));
+        var shippingFinal = Math.max(0, shipCost - shipDiscountAmount);
+        document.getElementById('shippingFee').innerText = formatVND(shippingFinal);
+
+        // order voucher
+        var orderVoucherSelect = document.getElementById('orderVoucher');
+        var orderVoucherDiscount = 0;
+        if (orderVoucherSelect && orderVoucherSelect.value) {
+            orderVoucherDiscount = parseNumber(orderVoucherSelect.options[orderVoucherSelect.selectedIndex].dataset.discount) || 0;
+        }
+
+        var orderDiscountAmount = Math.round(subtotal * (orderVoucherDiscount / 100));
+
+        var final = Math.max(0, subtotal - orderDiscountAmount + shippingFinal);
+
+        // show discount row if any discount applied
+        var discountRow = document.getElementById('discountRow');
+        if (orderDiscountAmount > 0 || shipDiscountAmount > 0) {
+            discountRow.style.display = 'flex';
+            document.getElementById('discountAmount').innerText = formatVND(orderDiscountAmount + shipDiscountAmount);
+        } else {
+            discountRow.style.display = 'none';
+        }
+
+        document.getElementById('finalTotal').innerText = formatVND(final);
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('input[name="shippingMethod"]').forEach(r => r.addEventListener('change', recalc));
+        document.getElementById('orderVoucher').addEventListener('change', recalc);
+        document.getElementById('shippingVoucher').addEventListener('change', recalc);
+
+        // initial calc
+        recalc();
+
+        // before submit ensure final total value is same server-side: no extra handling, PlaceOrder recalculates server-side
+    });
+</script>
+}

@@ -30,5 +30,14 @@ namespace Websitebanhang.Models
         public string? PaymentContent { get; set; }
 
         public List<CartItem>? Items { get; set; }
+
+        // Voucher fields
+        public string? VoucherCode { get; set; }
+        public int? VoucherDiscountPercent { get; set; }
+        public DateTime? VoucherExpires { get; set; }
+
+        // Shipping voucher fields
+        public string? ShippingVoucherCode { get; set; }
+        public int? ShippingVoucherDiscountPercent { get; set; }
     }
 }

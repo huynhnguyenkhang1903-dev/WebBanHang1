@@ -1,0 +1,72 @@
+@model List<Websitebanhang.Models.CartItem>
+@using System.Globalization
+@inject Microsoft.AspNetCore.Identity.UserManager<Websitebanhang.Models.ApplicationUser> UserManager
+@{
+    ViewData["Title"] = "Xác nh?n ??n hàng";
+    var user = await UserManager.GetUserAsync(User);
+    decimal total = Model?.Sum(i => i.Price * i.Quantity) ?? 0m;
+}
+
+<div class="row fade-in">
+    <div class="col-md-8 mx-auto">
+        <div class="bg-white p-4 rounded-4 shadow-sm">
+            <h3 class="mb-3 text-coffee">Xác nh?n ??n hàng</h3>
+
+            <form asp-controller="Cart" asp-action="PlaceOrder" method="post">
+                <div class="row g-3">
+                    <div class="col-md-6 form-floating">
+                        <input type="text" name="name" class="form-control" id="name" value="@user?.FullName" required />
+                        <label for="name">H? và tên</label>
+                    </div>
+                    <div class="col-md-6 form-floating">
+                        <input type="email" name="email" class="form-control" id="email" value="@user?.Email" required />
+                        <label for="email">Email</label>
+                    </div>
+                    <div class="col-12 form-floating">
+                        <input type="text" name="address" class="form-control" id="address" value="@user?.Address" required />
+                        <label for="address">??a ch? giao hàng</label>
+                    </div>
+                    <div class="col-md-6 form-floating">
+                        <input type="tel" name="phone" class="form-control" id="phone" value="@user?.PhoneNumber" required />
+                        <label for="phone">S? ?i?n tho?i</label>
+                    </div>
+
+                    <div class="col-12">
+                        <h5 class="text-coffee">S?n ph?m</h5>
+                        <div class="list-group mb-3">
+                            @foreach (var item in Model)
+                            {
+                                <div class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <div class="fw-bold">@item.Name</div>
+                                        <small class="text-secondary">S? l??ng: @item.Quantity</small>
+                                    </div>
+                                    <div class="fw-bold">@((item.Price * item.Quantity).ToString("N0", CultureInfo.CurrentCulture)) ?</div>
+                                </div>
+                            }
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <div class="fw-bold">T?ng:</div>
+                            <div class="fw-bold text-gold fs-4">@total.ToString("N0", CultureInfo.CurrentCulture) ?</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Ph??ng th?c thanh toán</label>
+                            <select name="paymentMethod" class="form-select" required>
+                                <option value="COD">Thanh toán khi nh?n hàng (COD)</option>
+                                <option value="bank">Chuy?n kho?n ngân hàng</option>
+                                <option value="VNPay">VNPay</option>
+                            </select>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary-custom">Xác nh?n ??t hàng</button>
+                            <a asp-controller="Cart" asp-action="Index" class="btn btn-outline-dark">Quay l?i gi? hàng</a>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

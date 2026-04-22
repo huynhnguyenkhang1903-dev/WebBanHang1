@@ -1,6 +1,7 @@
 @model Websitebanhang.Models.Order
 @{
     ViewData["Title"] = "Chi Tiết Đơn Hàng";
+    var status = Model.Status ?? "Pending";
 }
 
 <div class="row fade-in">
@@ -8,180 +9,203 @@
     <div class="col-12 mb-4">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb mb-0 px-3 py-2 bg-white rounded-pill shadow-sm d-inline-flex">
-                <li class="breadcrumb-item"><a href="/" class="text-secondary"><i class="fa-solid fa-house"></i></a></li>
-                <li class="breadcrumb-item"><a asp-controller="Account" asp-action="Profile" class="text-secondary">Hồ Sơ Của Tôi</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Đơn Hàng #ORD-@Model.Id.ToString("D3")</li>
+                <li class="breadcrumb-item">
+                    <a href="/" class="text-secondary">
+                        <i class="fa-solid fa-house"></i>
+                    </a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a asp-controller="Account" asp-action="Profile" class="text-secondary">
+                        Hồ Sơ Của Tôi
+                    </a>
+                </li>
+                <li class="breadcrumb-item active">
+                    Đơn Hàng #ORD-@(Model.Id == 0 ? "" : Model.Id.ToString("D3"))
+                </li>
             </ol>
         </nav>
     </div>
 
     <div class="col-12 col-lg-8 mx-auto">
-        <div class="bg-white rounded-4 shadow-sm overflow-hidden p-4 p-md-5">
-            <div class="d-flex justify-content-between align-items-center border-bottom pb-4 mb-4">
+        <div class="bg-white rounded-4 shadow-sm p-4 p-md-5">
+
+            <!-- HEADER -->
+            <div class="d-flex justify-content-between border-bottom pb-4 mb-4">
                 <div>
-                    <h3 class="text-coffee fw-bold mb-1">Chi Tiết Đơn Hàng</h3>
-                    <p class="text-muted mb-0">Mã đơn: <span class="fw-bold text-dark">#ORD-@Model.Id.ToString("D3")</span></p>
+                    <h3 class="text-coffee fw-bold">Chi Tiết Đơn Hàng</h3>
+                    <p class="mb-0">
+                        Mã đơn:
+                        <strong>#ORD-@(Model.Id == 0 ? "" : Model.Id.ToString("D3"))</strong>
+                    </p>
                 </div>
+
                 <div class="text-end">
-                    <p class="text-muted mb-1 small">Ngày đặt hàng: @Model.OrderDate.ToString("dd/MM/yyyy HH:mm")</p>
-                    @if (Model.Status == "Pending")
-{
-    <span class="badge bg-warning text-dark">Chờ xác nhận</span>
-}
-else if (Model.Status == "Confirmed")
-{
-    <span class="badge bg-info">Chờ lấy hàng</span>
-}
-else if (Model.Status == "Shipping")
-{
-    <span class="badge bg-primary">Đang giao</span>
-}
-else if (Model.Status == "Delivered")
-{
-    <span class="badge bg-success">Đã giao</span>
-}
-else if (Model.Status == "Cancelled")
-{
-    <span class="badge bg-danger">Đã hủy</span>
-}
-else if (Model.Status == "Returned")
-{
-    <span class="badge bg-warning">Trả hàng</span>
-}
-else
-{
-    <span class="badge bg-secondary">@Model.Status</span>
-}
+                    <p class="small text-muted">
+                        @(Model.OrderDate == default ? "" : Model.OrderDate.ToString("dd/MM/yyyy HH:mm"))
+                    </p>
+
+                    @* STATUS *@
+                    @switch (status)
+                    {
+                        case "Pending":
+                            <span class="badge bg-warning text-dark">Chờ xác nhận</span>
+                            break;
+                        case "Confirmed":
+                            <span class="badge bg-info">Chờ lấy hàng</span>
+                            break;
+                        case "Shipping":
+                            <span class="badge bg-primary">Đang giao</span>
+                            break;
+                        case "Delivered":
+                            <span class="badge bg-success">Đã giao</span>
+                            break;
+                        case "Cancelled":
+                            <span class="badge bg-danger">Đã hủy</span>
+                            break;
+                        default:
+                            <span class="badge bg-secondary">@status</span>
+                            break;
+                    }
                 </div>
             </div>
-             <!-- TIẾN TRÌNH ĐƠN HÀNG -->
-<div class="mb-5 mt-4">
-    <h6 class="text-coffee fw-bold mb-4">
-        <i class="fa-solid fa-truck-fast me-2"></i>Tiến Trình Đơn Hàng
-    </h6>
 
-    @{
-        var status = Model.Status;
+            <!-- TIẾN TRÌNH -->
+            @{
+                bool IsActive(string step)
+                {
+                    var steps = new[] { "Pending", "Confirmed", "Shipping", "Delivered" };
+                    var current = Array.IndexOf(steps, status);
+                    var target = Array.IndexOf(steps, step);
 
-        bool IsActive(string step)
-        {
-            var steps = new[] { "Pending", "Confirmed", "Shipping", "Delivered" };
-            var current = Array.IndexOf(steps, status);
-            var target = Array.IndexOf(steps, step);
+                    if (status == "Cancelled") return false;
 
-            if (status == "Cancelled") return false;
-            if (status == "Returned") return false;
+                    return target <= current;
+                }
+            }
 
-            return target <= current;
-        }
-    }
+            <div class="d-flex justify-content-between text-center mb-4">
+                <div class="flex-fill @(IsActive("Pending") ? "text-success fw-bold" : "text-muted")">
+                    <i class="fa-solid fa-clock"></i>
+                    <div>Chờ xác nhận</div>
+                </div>
+                <div class="flex-fill @(IsActive("Confirmed") ? "text-success fw-bold" : "text-muted")">
+                    <i class="fa-solid fa-box"></i>
+                    <div>Chờ lấy hàng</div>
+                </div>
+                <div class="flex-fill @(IsActive("Shipping") ? "text-success fw-bold" : "text-muted")">
+                    <i class="fa-solid fa-truck"></i>
+                    <div>Đang giao</div>
+                </div>
+                <div class="flex-fill @(IsActive("Delivered") ? "text-success fw-bold" : "text-muted")">
+                    <i class="fa-solid fa-check"></i>
+                    <div>Đã giao</div>
+                </div>
+            </div>
 
-    <div class="d-flex justify-content-between text-center">
+            @if (status == "Cancelled")
+            {
+                <div class="alert alert-danger text-center">Đơn hàng đã bị hủy</div>
+            }
 
-        <div class="flex-fill @(IsActive("Pending") ? "text-success fw-bold" : "text-muted")">
-            <i class="fa-solid fa-clock fa-lg"></i>
-            <div>Chờ xác nhận</div>
-        </div>
-
-        <div class="flex-fill @(IsActive("Confirmed") ? "text-success fw-bold" : "text-muted")">
-            <i class="fa-solid fa-box fa-lg"></i>
-            <div>Chờ lấy hàng</div>
-        </div>
-
-        <div class="flex-fill @(IsActive("Shipping") ? "text-success fw-bold" : "text-muted")">
-            <i class="fa-solid fa-truck fa-lg"></i>
-            <div>Đang giao</div>
-        </div>
-
-        <div class="flex-fill @(IsActive("Delivered") ? "text-success fw-bold" : "text-muted")">
-            <i class="fa-solid fa-circle-check fa-lg"></i>
-            <div>Đã giao</div>
-        </div>
-
-    </div>
-
-    @if (status == "Cancelled")
-    {
-        <div class="alert alert-danger mt-3 text-center">
-            <i class="fa-solid fa-xmark me-2"></i>Đơn hàng đã bị hủy
-        </div>
-    }
-
-    @if (status == "Returned")
-    {
-        <div class="alert alert-warning mt-3 text-center">
-            <i class="fa-solid fa-rotate-left me-2"></i>Đơn hàng đã được trả lại
-        </div>
-    }
-</div>
-            <!-- Customer Details Block -->
+            <!-- CUSTOMER -->
             <div class="row mb-4">
-                <div class="col-md-6 mb-3 mb-md-0">
-                    <div class="p-3 bg-light rounded-3 h-100">
-                        <h6 class="text-coffee fw-bold mb-3"><i class="fa-solid fa-location-dot me-2"></i>Thông Tin Nhận Hàng</h6>
-                        <p class="mb-1"><strong>Người nhận:</strong> @Model.CustomerName</p>
-                        <p class="mb-1"><strong>Số điện thoại:</strong> @Model.Phone</p>
-                        <p class="mb-0"><strong>Địa chỉ:</strong> @Model.Address</p>
+                <div class="col-md-6">
+                    <div class="p-3 bg-light rounded">
+                        <strong>Người nhận:</strong> @Model.CustomerName <br />
+                        <strong>SĐT:</strong> @Model.Phone <br />
+                        <strong>Địa chỉ:</strong> @Model.Address
                     </div>
                 </div>
+
                 <div class="col-md-6">
-                    <div class="p-3 bg-light rounded-3 h-100">
-                        <h6 class="text-coffee fw-bold mb-3"><i class="fa-solid fa-credit-card me-2"></i>Thanh Toán</h6>
-                        <p class="mb-1"><strong>Phương thức:</strong> @Model.PaymentMethod</p>
-                        <p class="mb-0"><strong>Trạng thái:</strong> Chưa thanh toán</p>
+                    <div class="p-3 bg-light rounded">
+                        <strong>Thanh toán:</strong> @Model.PaymentMethod <br />
+                        <strong>Trạng thái:</strong>
+                        @(Model.IsPaid ? "Đã thanh toán" : "Chưa thanh toán")
                     </div>
                 </div>
             </div>
 
-            <h5 class="text-coffee fw-bold mb-3 mt-4">Sản Phẩm Đã Đặt</h5>
-            <div class="table-responsive mb-4">
-                <table class="table align-middle">
-                    <thead class="table-light">
-                        <tr>
-                            <th scope="col">Hình Ảnh</th>
-                            <th scope="col">Sản Phẩm</th>
-                            <th scope="col" class="text-center">Số Lượng</th>
-                            <th scope="col" class="text-end">Đơn Giá</th>
-                            <th scope="col" class="text-end">Thành Tiền</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @if (Model.Items != null && Model.Items.Any())
-                        {
-                            foreach (var item in Model.Items)
-                            {
-                                <tr>
-                                    <td>
-                                        <img src="@item.ImageUrl" alt="@item.Name" class="rounded object-fit-cover shadow-sm" width="60" height="60" onerror="this.onerror=null; this.src='/images/default.jpg'" />
-                                    </td>
-                                    <td class="fw-medium text-dark">@item.Name</td>
-                                    <td class="text-center">@item.Quantity</td>
-                                    <td class="text-end">@item.Price.ToString("N0") ₫</td>
-                                    <td class="text-end fw-bold text-gold">@((item.Price * item.Quantity).ToString("N0")) ₫</td>
-                                </tr>
-                            }
-                        }
-                        else
+            <!-- PRODUCTS -->
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Ảnh</th>
+                        <th>Tên</th>
+                        <th>SL</th>
+                        <th>Giá</th>
+                        <th>Tổng</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Items != null && Model.Items.Any())
+                    {
+                        foreach (var item in Model.Items)
                         {
                             <tr>
-                                <td colspan="5" class="text-center py-4 text-muted">Không có thông tin chi tiết sản phẩm cho đơn hàng này.</td>
+                                <td>
+                                    <img src="@item.ImageUrl" width="60" height="60"
+                                         onerror="this.src='/images/default.jpg'" />
+                                </td>
+                                <td>@item.Name</td>
+                                <td>@item.Quantity</td>
+                                <td>@item.Price.ToString("N0") ₫</td>
+                                <td>@(item.Price * item.Quantity) ₫</td>
                             </tr>
                         }
-                    </tbody>
-                    <tfoot class="table-light">
-                        <tr>
-                            <td colspan="4" class="text-end fw-bold py-3 fs-5">TỔNG CỘNG:</td>
-                            <td class="text-end fw-bold py-3 fs-5 text-danger">@Model.TotalAmount.ToString("N0") ₫</td>
-                        </tr>
-                    </tfoot>
-                </table>
-            </div>
-            
-            <div class="text-center mt-5">
-                <a asp-controller="Account" asp-action="Profile" class="btn btn-outline-dark rounded-pill px-4">
-                    <i class="fa-solid fa-arrow-left me-2"></i>Quay Lại Hồ Sơ
+                    }
+                </tbody>
+            </table>
+
+            <h5 class="text-end text-danger">
+                Tổng: @Model.TotalAmount.ToString("N0") ₫
+            </h5>
+
+            <!-- 🔥 ADMIN ACTION -->
+            @if (User.IsInRole("Admin"))
+            {
+                <div class="mt-4 text-center">
+
+                    @if (status == "Pending")
+                    {
+                        <form asp-controller="Order" asp-action="Confirm" method="post">
+                            <input type="hidden" name="id" value="@Model.Id" />
+                            <button class="btn btn-success">Duyệt đơn</button>
+                        </form>
+                    }
+
+                    @if (status == "Confirmed")
+                    {
+                        <form asp-controller="Order" asp-action="Shipping" method="post">
+                            <input type="hidden" name="id" value="@Model.Id" />
+                            <button class="btn btn-primary">Giao hàng</button>
+                        </form>
+                    }
+
+                    @if (status == "Shipping")
+                    {
+                        <form asp-controller="Order" asp-action="Delivered" method="post">
+                            <input type="hidden" name="id" value="@Model.Id" />
+                            <button class="btn btn-dark">Hoàn thành</button>
+                        </form>
+                    }
+
+                    @if (status != "Delivered" && status != "Cancelled")
+                    {
+                        <form asp-controller="Order" asp-action="Cancel" method="post">
+                            <input type="hidden" name="id" value="@Model.Id" />
+                            <button class="btn btn-danger">Hủy đơn</button>
+                        </form>
+                    }
+                </div>
+            }
+
+            <div class="text-center mt-4">
+                <a asp-controller="Account" asp-action="Profile" class="btn btn-outline-dark">
+                    Quay lại
                 </a>
             </div>
+
         </div>
     </div>
 </div>

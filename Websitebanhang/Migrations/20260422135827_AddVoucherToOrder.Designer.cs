@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Websitebanhang.Data;
 
@@ -11,9 +12,11 @@ using Websitebanhang.Data;
 namespace Websitebanhang.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260422135827_AddVoucherToOrder")]
+    partial class AddVoucherToOrder
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -331,12 +334,6 @@ namespace Websitebanhang.Migrations
                     b.Property<string>("Phone")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ShippingVoucherCode")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("ShippingVoucherDiscountPercent")
-                        .HasColumnType("int");
 
                     b.Property<string>("Status")
                         .IsRequired()

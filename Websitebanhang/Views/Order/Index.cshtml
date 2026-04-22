@@ -23,6 +23,7 @@
                             <th>Phương thức</th>
                             <th>Tổng tiền</th>
                             <th>Trạng thái</th>
+                            <th>Hành động</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -37,9 +38,59 @@
                                 <td><span class="badge bg-secondary">@item.PaymentMethod</span></td>
                                 <td class="text-danger fw-bold">@item.TotalAmount.ToString("N0") ₫</td>
                                 <td>
-                                    <span class="badge @(item.Status == "Pending" ? "bg-warning text-dark" : "bg-success")">
+                                    <span class="badge @(item.Status == "Pending" ? "bg-warning text-dark" : item.Status == "Cancelled" ? "bg-danger" : "bg-success")">
                                         @item.Status
                                     </span>
+                                </td>
+                                <td>
+                                    @if (User.IsInRole("Admin"))
+                                    {
+                                        <div class="d-flex gap-1">
+                                            @* Confirm *@
+                                            @if (item.Status == "Pending")
+                                            {
+                                                <form asp-controller="Order" asp-action="Confirm" method="post" class="m-0 p-0">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="id" value="@item.Id" />
+                                                    <button type="submit" class="btn btn-sm btn-success">Duyệt</button>
+                                                </form>
+                                            }
+
+                                            @* Shipping *@
+                                            @if (item.Status == "Confirmed")
+                                            {
+                                                <form asp-controller="Order" asp-action="Shipping" method="post" class="m-0 p-0">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="id" value="@item.Id" />
+                                                    <button type="submit" class="btn btn-sm btn-primary">Giao</button>
+                                                </form>
+                                            }
+
+                                            @* Delivered *@
+                                            @if (item.Status == "Shipping")
+                                            {
+                                                <form asp-controller="Order" asp-action="Delivered" method="post" class="m-0 p-0">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="id" value="@item.Id" />
+                                                    <button type="submit" class="btn btn-sm btn-dark">Hoàn thành</button>
+                                                </form>
+                                            }
+
+                                            @* Cancel (allow admin to cancel unless already delivered) *@
+                                            @if (item.Status != "Delivered" && item.Status != "Cancelled")
+                                            {
+                                                <form asp-controller="Order" asp-action="Cancel" method="post" class="m-0 p-0" onsubmit="return confirm('Bạn có chắc muốn hủy đơn này?');">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="id" value="@item.Id" />
+                                                    <button type="submit" class="btn btn-sm btn-danger">Hủy</button>
+                                                </form>
+                                            }
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <a asp-controller="Account" asp-action="OrderDetails" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary">Xem</a>
+                                    }
                                 </td>
                             </tr>
                         }

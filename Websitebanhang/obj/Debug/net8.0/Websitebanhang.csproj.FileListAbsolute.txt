@@ -793,7 +793,6 @@ C:\Users\ADMIN\source\repos\WebBanHang1\Websitebanhang\obj\Debug\net8.0\staticwe
 C:\Users\ADMIN\source\repos\WebBanHang1\Websitebanhang\obj\Debug\net8.0\staticwebassets.build.json.cache
 C:\Users\ADMIN\source\repos\WebBanHang1\Websitebanhang\obj\Debug\net8.0\staticwebassets.development.json
 C:\Users\ADMIN\source\repos\WebBanHang1\Websitebanhang\obj\Debug\net8.0\staticwebassets.build.endpoints.json
-C:\Users\ADMIN\source\repos\WebBanHang1\Websitebanhang\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
 C:\Users\ADMIN\source\repos\WebBanHang1\Websitebanhang\obj\Debug\net8.0\Websiteb.3D879D0D.Up2Date
 C:\Users\ADMIN\source\repos\WebBanHang1\Websitebanhang\obj\Debug\net8.0\Websitebanhang.dll
 C:\Users\ADMIN\source\repos\WebBanHang1\Websitebanhang\obj\Debug\net8.0\refint\Websitebanhang.dll
@@ -801,3 +800,4 @@ C:\Users\ADMIN\source\repos\WebBanHang1\Websitebanhang\obj\Debug\net8.0\Websiteb
 C:\Users\ADMIN\source\repos\WebBanHang1\Websitebanhang\obj\Debug\net8.0\Websitebanhang.genruntimeconfig.cache
 C:\Users\ADMIN\source\repos\WebBanHang1\Websitebanhang\obj\Debug\net8.0\ref\Websitebanhang.dll
 C:\Users\ADMIN\source\repos\WebBanHang1\Websitebanhang\bin\Debug\net8.0\QRCoder.dll
+C:\Users\ADMIN\source\repos\WebBanHang1\Websitebanhang\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt

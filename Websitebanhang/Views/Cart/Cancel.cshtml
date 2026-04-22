@@ -1,0 +1,28 @@
+@model Websitebanhang.Models.Order
+@{
+    ViewData["Title"] = "H?y ??n hàng";
+}
+
+<div class="row justify-content-center mt-5">
+    <div class="col-md-8">
+        <div class="bg-white p-4 rounded shadow-sm">
+            <h3 class="text-danger mb-3">H?y ??n hàng #ORD-@Model.Id.ToString("D3")</h3>
+
+            <div class="mb-3">
+                <p>B?n có ch?c mu?n h?y ??n hàng này?</p>
+                <ul>
+                    <li><strong>Khách hàng:</strong> @Model.CustomerName</li>
+                    <li><strong>T?ng ti?n:</strong> @Model.TotalAmount.ToString("N0") ?</li>
+                    <li><strong>Tr?ng thái:</strong> @Model.Status</li>
+                </ul>
+            </div>
+
+            <form asp-controller="Cart" asp-action="CancelOrder" method="post" onsubmit="return confirm('Xác nh?n h?y ??n?');">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="orderId" value="@Model.Id" />
+                <button type="submit" class="btn btn-danger">Xác nh?n h?y ??n</button>
+                <a asp-controller="Account" asp-action="Profile" class="btn btn-outline-secondary ms-2">Quay l?i</a>
+            </form>
+        </div>
+    </div>
+</div>

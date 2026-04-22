@@ -1,57 +1,39 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Websitebanhang.Data;
-using Websitebanhang.Models;
 
 namespace Websitebanhang.Controllers
 {
-    [Authorize]
-    public class OrderController : Controller
+    [Authorize(Roles = "Admin")]
+    public class AdminOrderController : Controller
     {
         private readonly AppDbContext _context;
-        private readonly UserManager<ApplicationUser> _userManager;
 
-        public OrderController(AppDbContext context, UserManager<ApplicationUser> userManager)
+        public AdminOrderController(AppDbContext context)
         {
             _context = context;
-            _userManager = userManager;
         }
 
-        // ================= DANH SÁCH ĐƠN =================
+        // 📋 Danh sách tất cả đơn hàng
         public async Task<IActionResult> Index()
         {
-            var user = await _userManager.GetUserAsync(User);
-
-            if (user == null)
-                return RedirectToAction("Login", "Account");
-
-            var isAdmin = await _userManager.IsInRoleAsync(user, "Admin");
-
-            IQueryable<Order> query = _context.Orders
+            var orders = await _context.Orders
                 .Include(o => o.Items)
-                .OrderByDescending(o => o.OrderDate);
-
-            // 👤 User thường chỉ thấy đơn của mình
-            if (!isAdmin)
-            {
-                query = query.Where(o => o.UserId == user.Id);
-            }
-
-            var orders = await query.ToListAsync();
+                .OrderByDescending(o => o.OrderDate)
+                .ToListAsync();
 
             return View(orders);
         }
 
-        // ================= DUYỆT ĐƠN =================
+        // ✅ DUYỆT ĐƠN
         [HttpPost]
-        [Authorize(Roles = "Admin")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Confirm(int id)
         {
             var order = await _context.Orders.FindAsync(id);
-            if (order == null) return NotFound();
+            if (order == null)
+                return NotFound();
 
             if (order.Status != "Pending")
             {
@@ -66,14 +48,14 @@ namespace Websitebanhang.Controllers
             return RedirectToAction("Index");
         }
 
-        // ================= GIAO HÀNG =================
+        // 🚚 GIAO HÀNG
         [HttpPost]
-        [Authorize(Roles = "Admin")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Shipping(int id)
         {
             var order = await _context.Orders.FindAsync(id);
-            if (order == null) return NotFound();
+            if (order == null)
+                return NotFound();
 
             if (order.Status != "Confirmed")
             {
@@ -84,18 +66,17 @@ namespace Websitebanhang.Controllers
             order.Status = "Shipping";
             await _context.SaveChangesAsync();
 
-            TempData["Success"] = "Đơn đang giao!";
             return RedirectToAction("Index");
         }
 
-        // ================= HOÀN THÀNH =================
+        // 📦 HOÀN THÀNH
         [HttpPost]
-        [Authorize(Roles = "Admin")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delivered(int id)
         {
             var order = await _context.Orders.FindAsync(id);
-            if (order == null) return NotFound();
+            if (order == null)
+                return NotFound();
 
             if (order.Status != "Shipping")
             {
@@ -106,29 +87,27 @@ namespace Websitebanhang.Controllers
             order.Status = "Delivered";
             await _context.SaveChangesAsync();
 
-            TempData["Success"] = "Đã hoàn thành!";
             return RedirectToAction("Index");
         }
 
-        // ================= HỦY ĐƠN (ADMIN) =================
+        // ❌ HỦY ĐƠN (ADMIN)
         [HttpPost]
-        [Authorize(Roles = "Admin")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Cancel(int id)
         {
             var order = await _context.Orders.FindAsync(id);
-            if (order == null) return NotFound();
+            if (order == null)
+                return NotFound();
 
             if (order.Status == "Delivered")
             {
-                TempData["Error"] = "Đơn đã giao không thể hủy!";
+                TempData["Error"] = "Đơn đã giao, không thể hủy!";
                 return RedirectToAction("Index");
             }
 
             order.Status = "Cancelled";
             await _context.SaveChangesAsync();
 
-            TempData["Success"] = "Đã hủy đơn!";
             return RedirectToAction("Index");
         }
     }

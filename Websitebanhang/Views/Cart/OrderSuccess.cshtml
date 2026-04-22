@@ -3,6 +3,32 @@
     ViewData["Title"] = "Đặt Hàng Thành Công";
 }
 
+@if (TempData["Debug_CartHtml"] != null)
+{
+    <div class="container mt-3">
+        <div class="alert alert-secondary">
+            <strong>Debug Cart:</strong>
+            @Html.Raw(TempData["Debug_CartHtml"].ToString())
+        </div>
+    </div>
+}
+
+@if (TempData["Debug_Subtotal"] != null)
+{
+    <div class="container mt-3">
+        <div class="alert alert-info">
+            <strong>Debug Totals:</strong>
+            <ul class="mb-0">
+                <li>Subtotal: @TempData["Debug_Subtotal"]</li>
+                <li>Order Discount: @TempData["Debug_OrderDiscount"]</li>
+                <li>Shipping Cost: @TempData["Debug_ShippingCost"]</li>
+                <li>Shipping Discount: @TempData["Debug_ShippingDiscount"]</li>
+                <li>Final Total: @TempData["Debug_FinalTotal"]</li>
+            </ul>
+        </div>
+    </div>
+}
+
 <div class="row align-items-center justify-content-center fade-in mt-5 mb-5">
     <!-- STEP INDICATOR -->
     <div class="col-12 mb-5">
@@ -74,6 +100,19 @@
                         <div class="col-5 fw-bold text-dark fs-5">Tổng tiền:</div>
                         <div class="col-7 fw-bold text-gold fs-5">@Model.TotalAmount.ToString("N0") ₫</div>
                     </div>
+
+                    @if (!string.IsNullOrEmpty(Model.VoucherCode))
+                    {
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <div class="alert alert-success">
+                                    <h6 class="mb-1">Mã giảm giá của bạn</h6>
+                                    <div class="fw-bold">@Model.VoucherCode</div>
+                                    <div class="small text-muted">Giảm @Model.VoucherDiscountPercent% - Hết hạn: @Model.VoucherExpires?.ToString("dd/MM/yyyy")</div>
+                                </div>
+                            </div>
+                        </div>
+                    }
                 </div>
             }
 

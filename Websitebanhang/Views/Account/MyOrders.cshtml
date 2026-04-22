@@ -1,7 +1,93 @@
-﻿@{
+﻿@model IEnumerable<Websitebanhang.Models.Order>
+@{
     ViewData["Title"] = "Đơn hàng của tôi";
 }
 
-<h2>My Orders</h2>
+<div class="row fade-in">
+    <div class="col-12">
+        <h2 class="mb-4">Đơn hàng của tôi</h2>
 
-<p>Danh sách đơn hàng sẽ hiển thị ở đây...</p>
+        @if (Model == null || !Model.Any())
+        {
+            <div class="text-center py-5">
+                <i class="fa-solid fa-box-open text-muted mb-3" style="font-size: 3rem;"></i>
+                <h5 class="text-muted">Bạn chưa có đơn hàng nào</h5>
+                <p class="text-secondary">Hãy khám phá sản phẩm và đặt hàng ngay.</p>
+                <a asp-controller="Product" asp-action="Index" class="btn btn-primary-custom mt-2 rounded-pill px-4">Mua Sắm Ngay</a>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Mã Đơn</th>
+                            <th>Ngày</th>
+                            <th>Tổng</th>
+                            <th>Thanh toán</th>
+                            <th>Trạng thái</th>
+                            <th>Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var order in Model)
+                        {
+                            <tr>
+                                <td class="fw-bold">#ORD-@order.Id.ToString("D3")</td>
+                                <td>@(order.OrderDate == default ? "-" : order.OrderDate.ToString("dd/MM/yyyy HH:mm"))</td>
+                                <td class="text-gold fw-bold">@order.TotalAmount.ToString("N0") ₫</td>
+                                <td>
+                                    @if (order.IsPaid)
+                                    {
+                                        <span class="badge bg-success">Đã thanh toán</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">@order.PaymentMethod</span>
+                                    }
+                                </td>
+                                <td>
+                                    @switch (order.Status)
+                                    {
+                                        case "Pending":
+                                            <span class="badge bg-warning text-dark">Chờ xử lý</span>
+                                            break;
+                                        case "Confirmed":
+                                            <span class="badge bg-info">Đã duyệt</span>
+                                            break;
+                                        case "Shipping":
+                                            <span class="badge bg-primary">Đang giao</span>
+                                            break;
+                                        case "Delivered":
+                                            <span class="badge bg-success">Đã giao</span>
+                                            break;
+                                        case "Cancelled":
+                                            <span class="badge bg-danger">Đã hủy</span>
+                                            break;
+                                        default:
+                                            <span class="badge bg-secondary">@order.Status</span>
+                                            break;
+                                    }
+                                </td>
+                                <td>
+                                    <a asp-controller="Account" asp-action="OrderDetails" asp-route-id="@order.Id" class="btn btn-sm btn-outline-dark me-2">Chi tiết</a>
+
+                                    @* Cancel only when pending and not paid *@
+                                    @if (!order.IsPaid && order.Status == "Pending")
+                                    {
+                                        <form asp-controller="Account" asp-action="CancelOrder" method="post" class="d-inline-block" onsubmit="return confirm('Bạn có chắc muốn hủy đơn hàng này?');">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="id" value="@order.Id" />
+                                            <button type="submit" class="btn btn-sm btn-danger">Hủy</button>
+                                        </form>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>

@@ -1,52 +1,52 @@
-﻿@{
-    ViewData["Title"] = "Thanh toán chuyển khoản";
+@{
+    ViewData["Title"] = "Thanh to�n chuy?n kho?n";
 }
 
 <div class="container mt-5">
     <div class="row justify-content-center">
         <div class="col-md-8 text-center bg-white p-4 rounded shadow-sm">
-            <h3 class="mb-3">Thanh toán bằng chuyển khoản</h3>
+            <h3 class="mb-3">Thanh to�n b?ng chuy?n kho?n</h3>
 
-            <p class="mb-1"><strong>Số tiền:</strong> @ViewBag.Amount.ToString("N0") ₫</p>
-            <p class="mb-3"><strong>Nội dung chuyển khoản:</strong> <code>@ViewBag.Content</code></p>
+            <p class="mb-1"><strong>S? ti?n:</strong> @ViewBag.Amount.ToString("N0") ?</p>
+            <p class="mb-3"><strong>N?i dung chuy?n kho?n:</strong> <code>@ViewBag.Content</code></p>
 
             <div class="mb-4">
-                <img src="@ViewBag.QRCode" alt="QR Thanh toán" class="img-fluid" style="max-width: 320px;" />
+                <img src="@ViewBag.QRCode" alt="QR Thanh to�n" class="img-fluid" style="max-width: 320px;" />
             </div>
 
             <div class="row mb-3">
                 <div class="col-md-4">
                     <div class="card p-3">
-                        <div class="small text-muted">Ngân hàng</div>
+                        <div class="small text-muted">Ng�n h�ng</div>
                         <div class="fw-bold">@ViewBag.BankCode</div>
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="card p-3">
-                        <div class="small text-muted">Số tài khoản</div>
+                        <div class="small text-muted">S? t�i kho?n</div>
                         <div class="fw-bold">@ViewBag.AccountNumber</div>
-                        <button class="btn btn-sm btn-outline-secondary mt-2" onclick="copyText('@ViewBag.AccountNumber')">Sao chép</button>
+                        <button class="btn btn-sm btn-outline-secondary mt-2" onclick="copyText('@ViewBag.AccountNumber')">Sao ch�p</button>
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="card p-3">
-                        <div class="small text-muted">Chủ tài khoản</div>
+                        <div class="small text-muted">Ch? t�i kho?n</div>
                         <div class="fw-bold">@ViewBag.AccountName</div>
-                        <button class="btn btn-sm btn-outline-secondary mt-2" onclick="copyText('@ViewBag.AccountName')">Sao chép</button>
+                        <button class="btn btn-sm btn-outline-secondary mt-2" onclick="copyText('@ViewBag.AccountName')">Sao ch�p</button>
                     </div>
                 </div>
             </div>
 
             <form asp-controller="Cart" asp-action="CheckPayment" method="get">
                 <input type="hidden" name="orderId" value="@ViewBag.OrderId" />
-                <button type="submit" class="btn btn-success btn-lg me-2">Tôi đã chuyển khoản</button>
+                <button type="submit" class="btn btn-success btn-lg me-2">T�i ?� chuy?n kho?n</button>
             </form>
 
             <form asp-controller="Cart" asp-action="Index" method="get" class="d-inline-block">
-                <button type="submit" class="btn btn-outline-secondary btn-lg">Quay lại cửa hàng</button>
+                <button type="submit" class="btn btn-outline-secondary btn-lg">Quay l?i c?a h�ng</button>
             </form>
 
-            <p class="small text-muted mt-3">Lưu ý: Vui lòng nhập đúng <strong>nội dung</strong> để hệ thống đối soát tự động.</p>
+            <p class="small text-muted mt-3">L?u �: Vui l�ng nh?p ?�ng <strong>n?i dung</strong> ?? h? th?ng ??i so�t t? ??ng.</p>
         </div>
     </div>
 </div>
@@ -55,7 +55,7 @@
     function copyText(text) {
         if (!text) return;
         navigator.clipboard?.writeText(text).then(function() {
-            alert('Đã sao chép: ' + text);
+            alert('?� sao ch�p: ' + text);
         }).catch(function() {
             // fallback
             var temp = document.createElement('textarea');
@@ -64,7 +64,7 @@
             temp.select();
             document.execCommand('copy');
             document.body.removeChild(temp);
-            alert('Đã sao chép: ' + text);
+            alert('?� sao ch�p: ' + text);
         });
     }
 </script>

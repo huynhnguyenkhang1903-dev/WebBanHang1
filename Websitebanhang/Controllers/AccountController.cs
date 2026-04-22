@@ -54,6 +54,40 @@ namespace Websitebanhang.Controllers
             return View(orders);
         }
 
+        // NEW: OrderDetails
+        [Authorize]
+        public async Task<IActionResult> OrderDetails(int id)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var order = await _context.Orders
+                .Include(o => o.Items)
+                .FirstOrDefaultAsync(o => o.Id == id);
+
+            if (order == null)
+            {
+                return NotFound();
+            }
+
+            var isAdmin = await _userManager.IsInRoleAsync(user, "Admin");
+            // Allow admins or the owner (by UserId or Email) to view
+            if (!isAdmin)
+            {
+                if (!string.Equals(order.UserId, user.Id, StringComparison.OrdinalIgnoreCase) &&
+                    !string.Equals(order.Email, user.Email, StringComparison.OrdinalIgnoreCase))
+                {
+                    TempData["Error"] = "Bạn không có quyền xem đơn hàng này.";
+                    return RedirectToAction("Profile");
+                }
+            }
+
+            return View(order);
+        }
+
         [HttpPost]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
