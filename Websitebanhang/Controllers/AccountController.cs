@@ -400,6 +400,28 @@ namespace Websitebanhang.Controllers
             return RedirectToAction("Index", "Home");
         }
 
+        [Authorize]
+        public async Task<IActionResult> OrderDetails(int id)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var order = await _context.Orders
+                .Include(o => o.Items)
+                .FirstOrDefaultAsync(o => o.Id == id && (o.Email == user.Email || o.UserId == user.Id));
+
+            if (order == null)
+            {
+                TempData["Error"] = "Không tìm thấy đơn hàng hoặc bạn không có quyền xem.";
+                return RedirectToAction("Profile", "Account");
+            }
+
+            return View(order);
+        }
+
         // ================= HỦY ĐƠN HÀNG =================
         [HttpPost]
         [Authorize]
