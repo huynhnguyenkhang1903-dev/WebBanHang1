@@ -266,4 +266,3 @@ C:\Users\ADMIN\source\repos\WebBanHang1\Websitebanhang\obj\Debug\net8.0\Websiteb
 C:\Users\ADMIN\source\repos\WebBanHang1\Websitebanhang\obj\Debug\net8.0\Websitebanhang.genruntimeconfig.cache
 C:\Users\ADMIN\source\repos\WebBanHang1\Websitebanhang\obj\Debug\net8.0\ref\Websitebanhang.dll
 C:\Users\ADMIN\source\repos\WebBanHang1\Websitebanhang\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
-C:\Users\ADMIN\source\repos\WebBanHang1\Websitebanhang\obj\Debug\net8.0\Websitebanhang.csproj.GenerateResource.cache

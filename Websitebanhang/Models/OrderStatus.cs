@@ -7,8 +7,10 @@
         public const string Preparing = "Preparing";
         public const string Shipping = "Shipping";
         public const string Delivered = "Delivered";
-        public const string Returned = "Returned";
+        public const string ReturnRequested = "ReturnRequested"; // user requested return
+        public const string ReturnApproved = "ReturnApproved"; // admin approved return but not refunded (COD)
+        public const string Returned = "Returned"; // final returned state
         public const string Cancelled = "Cancelled";
-        public const string Refunded = "Refunded"; // hoàn tiền
+        public const string Refunded = "Refunded"; // completed refund
     }
 }
