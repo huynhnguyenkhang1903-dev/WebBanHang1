@@ -1,0 +1,30 @@
+@model Websitebanhang.Models.Order
+@{
+    ViewData["Title"] = "H?y ??n hàng";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0">H?y ??n hàng #ORD-@Model.Id.ToString("D3")</h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="CancelOrder" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@Model.Id" />
+                        <div class="mb-3">
+                            <label for="CancelReason" class="form-label">Lý do h?y ??n hàng <span class="text-danger">*</span></label>
+                            <textarea class="form-control" id="CancelReason" name="cancelReason" rows="3" required placeholder="Nh?p lý do h?y ??n..."></textarea>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <a asp-controller="Account" asp-action="OrderDetails" asp-route-id="@Model.Id" class="btn btn-secondary">Quay l?i</a>
+                            <button type="submit" class="btn btn-danger">Xác nh?n h?y ??n</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

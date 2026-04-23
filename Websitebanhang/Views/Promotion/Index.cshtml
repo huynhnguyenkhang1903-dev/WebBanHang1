@@ -1,0 +1,32 @@
+﻿@model List<Websitebanhang.Models.Promotion>
+
+<h2>Quản lý khuyến mãi</h2>
+
+<a asp-action="Create" class="btn btn-success">Thêm mới</a>
+
+<table class="table mt-3">
+    <thead>
+        <tr>
+            <th>Tên</th>
+            <th>Giảm (%)</th>
+            <th>Thời gian</th>
+            <th>Trạng thái</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>@item.Name</td>
+            <td>@item.DiscountPercent%</td>
+            <td>@item.StartDate.ToShortDateString() - @item.EndDate.ToShortDateString()</td>
+            <td>@(item.IsActive ? "Hoạt động" : "Tắt")</td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.Id">Sửa</a> |
+                <a asp-action="Delete" asp-route-id="@item.Id">Xóa</a>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>

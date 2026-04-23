@@ -1,0 +1,16 @@
+﻿@model Websitebanhang.Models.Promotion
+
+<h2>Thêm khuyến mãi</h2>
+
+<form asp-action="Create" method="post">
+    <input asp-for="Name" class="form-control" placeholder="Tên" /><br />
+    <input asp-for="DiscountPercent" class="form-control" placeholder="%" /><br />
+    <input asp-for="StartDate" type="date" class="form-control" /><br />
+    <input asp-for="EndDate" type="date" class="form-control" /><br />
+
+    <label>
+        <input asp-for="IsActive" /> Hoạt động
+    </label><br />
+
+    <button class="btn btn-primary">Lưu</button>
+</form>

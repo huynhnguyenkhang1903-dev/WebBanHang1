@@ -1,9 +1,10 @@
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Websitebanhang.Data;
 using Websitebanhang.Models;
 using System.Linq;
 using Websitebanhang.Helpers;
+using System;
 
 namespace Websitebanhang.Controllers
 {
@@ -13,12 +14,11 @@ namespace Websitebanhang.Controllers
 
         public HomeController(AppDbContext context)
         {
-            _context = context;
+            _context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
         public IActionResult Index()
         {
-            // 1. Get Newest Products (Top 6)
             var newProducts = _context.Products
                 .Include(p => p.Category)
                 .OrderByDescending(p => p.Id)
@@ -27,12 +27,11 @@ namespace Websitebanhang.Controllers
 
             ViewBag.NewProducts = newProducts;
 
-            // 2. Get Best Selling Products (Top 6)
-            try 
+            try
             {
                 var bestSellingProductIds = _context.Orders
                     .Include(o => o.Items)
-                    .SelectMany(o => o.Items)
+                    .SelectMany(o => o.Items ?? new List<CartItem>())
                     .GroupBy(i => i.ProductId)
                     .Select(g => new { ProductId = g.Key, TotalQuantity = g.Sum(i => i.Quantity) })
                     .OrderByDescending(g => g.TotalQuantity)
@@ -47,17 +46,22 @@ namespace Websitebanhang.Controllers
 
                 if (!bestSellers.Any())
                 {
-                    bestSellers = _context.Products.Include(p => p.Category).Take(6).ToList();
+                    bestSellers = _context.Products
+                        .Include(p => p.Category)
+                        .Take(6)
+                        .ToList();
                 }
 
                 ViewBag.BestSellers = bestSellers;
             }
             catch
             {
-                ViewBag.BestSellers = _context.Products.Include(p => p.Category).Take(6).ToList();
+                ViewBag.BestSellers = _context.Products
+                    .Include(p => p.Category)
+                    .Take(6)
+                    .ToList();
             }
 
-            // VOUCHERS: auto-generate some vouchers if not enough
             var activeVouchers = _context.Voucher
                 .Where(v => v.ExpiryDate >= DateTime.Now)
                 .OrderBy(v => v.ExpiryDate)
@@ -65,22 +69,22 @@ namespace Websitebanhang.Controllers
 
             if (activeVouchers.Count < 6)
             {
-                // create mix of order vouchers and shipping vouchers
                 for (int i = 0; i < 6 - activeVouchers.Count; i++)
                 {
-                    var isShipping = (i % 2 == 0); // alternate
+                    var isShipping = (i % 2 == 0);
                     var prefix = isShipping ? "SHIP" : "ORD";
                     var code = prefix + "-" + Guid.NewGuid().ToString("N").Substring(0, 8).ToUpper();
-                    var discount = isShipping ? 50 : 10; // shipping vouchers 50% off shipping, order vouchers 10%
 
                     var voucher = new Voucher
                     {
                         Code = code,
-                        DiscountPercent = discount,
+                        DiscountPercent = isShipping ? 50 : 10,
                         ExpiryDate = DateTime.Now.AddDays(7)
                     };
+
                     _context.Voucher.Add(voucher);
                 }
+
                 _context.SaveChanges();
 
                 activeVouchers = _context.Voucher
@@ -98,21 +102,34 @@ namespace Websitebanhang.Controllers
         public IActionResult ClaimVoucher(string code)
         {
             if (string.IsNullOrEmpty(code))
-                return Json(new { success = false, message = "M� kh�ng h?p l?" });
+                return Json(new { success = false, message = "Mã không hợp lệ" });
 
-            var voucher = _context.Voucher.FirstOrDefault(v => v.Code == code && v.ExpiryDate >= DateTime.Now);
+            var voucher = _context.Voucher
+                .FirstOrDefault(v => v.Code == code && v.ExpiryDate >= DateTime.Now);
+
             if (voucher == null)
-                return Json(new { success = false, message = "M� kh�ng t?n t?i ho?c ?� h?t h?n" });
+                return Json(new { success = false, message = "Mã không tồn tại hoặc đã hết hạn" });
 
-            // store claimed vouchers in session for current visitor
-            var claimed = HttpContext.Session.GetObject<List<string>>("ClaimedVouchers") ?? new List<string>();
+            // FIX SESSION
+            var session = HttpContext.Session;
+
+            if (session == null)
+                return Json(new { success = false, message = "Session chưa được cấu hình" });
+
+            var claimed = session.GetObject<List<string>>("ClaimedVouchers") ?? new List<string>();
+
             if (claimed.Contains(code))
-                return Json(new { success = false, message = "B?n ?� nh?n m� n�y" });
+                return Json(new { success = false, message = "Bạn đã nhận mã này" });
 
             claimed.Add(code);
-            HttpContext.Session.SetObject("ClaimedVouchers", claimed);
+            session.SetObject("ClaimedVouchers", claimed);
 
-            return Json(new { success = true, message = "?� nh?n m�: " + code, code = code });
+            return Json(new
+            {
+                success = true,
+                message = "Đã nhận mã: " + code,
+                code = code
+            });
         }
     }
 }

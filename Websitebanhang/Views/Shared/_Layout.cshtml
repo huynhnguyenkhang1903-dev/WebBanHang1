@@ -1,7 +1,10 @@
 @using Microsoft.AspNetCore.Identity
 @using Websitebanhang.Models
+@using Microsoft.Extensions.Localization
+@using Websitebanhang.Resources
 @inject SignInManager<ApplicationUser> SignInManager
 @inject UserManager<ApplicationUser> UserManager
+@inject Microsoft.Extensions.Localization.IStringLocalizer<SharedResource> Localizer
 
 <!DOCTYPE html>
 <html lang="vi">
@@ -10,177 +13,135 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>@ViewData["Title"] - Aura Coffee</title>
 
-    <!-- Bootstrap 5 -->
+    <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
 
-    <!-- Font Awesome -->
+    <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 
-    <!-- Site CSS -->
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/site.css" />
 </head>
 
 <body>
 
-<!-- STICKY NAVBAR -->
+<!-- NAVBAR -->
 <nav id="mainNavbar" class="navbar navbar-expand-lg navbar-custom">
-    <div class="container d-flex align-items-center">
+    <div class="container">
+
         <!-- LOGO -->
-        <a class="navbar-brand d-flex align-items-center gap-2" asp-controller="Home" asp-action="Index">
-            <i class="fa-solid fa-mug-hot text-gold fs-3"></i>
-            <span>Aura Coffee</span>
+        <a class="navbar-brand" asp-controller="Home" asp-action="Index">
+            ☕ Aura Coffee
         </a>
 
-        <!-- MOBILE BUTTON -->
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
         </button>
 
-        <!-- MENU (CENTER) -->
+        <!-- MENU -->
         <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
             <ul class="navbar-nav">
                 <li class="nav-item">
-                    <a class="nav-link" asp-controller="Home" asp-action="Index">Trang Chủ</a>
+                    <a class="nav-link">@Localizer["Home"]</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" asp-controller="Product" asp-action="Index">Hạt Cà Phê</a>
+                    <a class="nav-link">@Localizer["Product"]</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" asp-controller="Category" asp-action="Index">Danh Mục</a>
+                    <a class="nav-link">@Localizer["Category"]</a>
                 </li>
-
-
             </ul>
         </div>
 
-        <!-- RIGHT ACTIONS -->
-        <div class="d-none d-lg-flex align-items-center gap-4">
-            
-            <!-- Search -->
-            <form class="d-flex position-relative" action="/Product/Index" method="get">
-                <input type="text" name="search" class="form-control rounded-pill pe-5 bg-light border-0" placeholder="Tìm kiếm..." style="width: 200px;">
-                <button type="submit" class="btn position-absolute end-0 top-50 translate-middle-y text-muted border-0"><i class="fa-solid fa-magnifying-glass"></i></button>
-            </form>
+        <!-- RIGHT -->
+        <div class="d-flex align-items-center gap-3">
 
-            <!-- Cart -->
-            <a asp-controller="Cart" asp-action="Index" class="text-dark fs-5 cart-icon-wrapper">
-                <i class="fa-solid fa-basket-shopping"></i>
-                <span class="cart-badge shadow-sm">@* Optionally load quantity here *@ 0</span>
-            </a>
+            <!-- LANGUAGE -->
+            <select id="langSelect" class="form-select form-select-sm" style="width:120px;">
+                <option value="vi">🇻🇳 VI</option>
+                <option value="en">🇺🇸 EN</option>
+                <option value="fr">🇫🇷 FR</option>
+                <option value="ja">🇯🇵 JP</option>
+                <option value="ko">🇰🇷 KR</option>
+                <option value="zh-CN">🇨🇳 CN</option>
+            </select>
 
-            <!-- Avatar / Login -->
-            <ul class="navbar-nav m-0 p-0">
+            <!-- DARK MODE -->
+            <button id="themeToggle" class="btn btn-sm btn-outline-secondary">
+                <span id="themeIcon">🌙</span>
+            </button>
+
+            <!-- LOGIN -->
             @if (SignInManager.IsSignedIn(User))
             {
-                var currentUser = await UserManager.GetUserAsync(User);
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle d-flex align-items-center gap-2 p-0" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        @if (currentUser != null && !string.IsNullOrEmpty(currentUser.AvatarUrl))
-                        {
-                            <img src="@currentUser.AvatarUrl" alt="Avatar" class="rounded-circle shadow-sm" style="width: 38px; height: 38px; object-fit: cover;" />
-                        }
-                        else
-                        {
-                            <div class="rounded-circle bg-coffee text-white d-flex align-items-center justify-content-center shadow-sm" style="width: 38px; height: 38px;">
-                                <i class="fa-solid fa-user"></i>
-                            </div>
-                        }
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end border-0 shadow-sm mt-2" aria-labelledby="userDropdown">
-                        <li class="px-3 py-2 text-muted small">Xin chào, <strong>@User.Identity?.Name</strong></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" asp-controller="Account" asp-action="Profile"><i class="fa-regular fa-id-badge me-2 text-coffee"></i>Hồ sơ</a></li>
-                        <li><a class="dropdown-item" asp-controller="Account" asp-action="ChangePassword"><i class="fa-solid fa-shield-halved me-2 text-coffee"></i>Đổi mật khẩu</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li>
-                            <form asp-controller="Account" asp-action="Logout" method="post" class="m-0 p-0">
-                                <button type="submit" class="dropdown-item text-danger">
-                                    <i class="fa-solid fa-arrow-right-from-bracket me-2"></i>Đăng xuất
-                                </button>
-                            </form>
-                        </li>
-                    </ul>
-                </li>
+                var user = await UserManager.GetUserAsync(User);
+                <span>@(user?.UserName ?? "Guest")</span>
             }
             else
             {
-                <li class="nav-item">
-                    <a class="btn btn-outline-dark rounded-pill px-4 btn-sm fw-medium" asp-controller="Account" asp-action="Login">Đăng nhập</a>
-                </li>
+                <a class="btn btn-outline-dark" asp-controller="Account" asp-action="Login">
+                    @Localizer["Login"]
+                </a>
             }
-            </ul>
         </div>
     </div>
 </nav>
 
 <!-- BODY -->
-<main class="container mt-5 mb-5 pb-5">
+<main class="container mt-4">
     @RenderBody()
 </main>
 
 <!-- FOOTER -->
-<footer class="footer-custom">
-    <div class="container">
-        <div class="row gy-4">
-            <div class="col-md-4 text-center text-md-start">
-                <a class="d-flex align-items-center gap-2 justify-content-center justify-content-md-start text-white mb-3" asp-controller="Home" asp-action="Index">
-                    <i class="fa-solid fa-mug-hot text-gold fs-3"></i>
-                    <span class="fs-4 fw-bold">Aura Coffee</span>
-                </a>
-                <p class="small text-white-50">Mang đến trải nghiệm cà phê nguyên bản, đậm vị và đầy cảm hứng cho người Việt.</p>
-            </div>
-            <div class="col-md-4 text-center">
-                <h5 class="text-gold mb-3">Liên Kết</h5>
-                <ul class="list-unstyled d-flex flex-column gap-2">
-                    <li><a href="/">Trang Chủ</a></li>
-                    <li><a href="/Product">Cà Phê</a></li>
-                    <li><a href="#">Về Chúng Tôi</a></li>
-                </ul>
-            </div>
-            <div class="col-md-4 text-center text-md-end">
-                <h5 class="text-gold mb-3">Kết Nối</h5>
-                <div class="d-flex justify-content-center justify-content-md-end gap-3 fs-4">
-                    <a href="#"><i class="fa-brands fa-facebook"></i></a>
-                    <a href="#"><i class="fa-brands fa-instagram"></i></a>
-                    <a href="#"><i class="fa-brands fa-tiktok"></i></a>
-                </div>
-                <p class="small text-white-50 mt-3 mb-0">© 2026 Aura Coffee. All Rights Reserved.</p>
-            </div>
-        </div>
-    </div>
+<footer class="text-center mt-5 p-4 bg-dark text-white">
+    <p>@Localizer["FooterText"]</p>
 </footer>
 
-<!-- BACK TO TOP BUTTON -->
-<button id="backToTop" title="Lên đầu trang"><i class="fa-solid fa-arrow-up"></i></button>
-
-<!-- Bootstrap JS -->
+<!-- JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
-<!-- Scripts for Sticky Navbar & BackToTop -->
+<!-- DARK MODE -->
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        const navbar = document.getElementById("mainNavbar");
-        const backToTopBtn = document.getElementById("backToTop");
+    document.addEventListener("DOMContentLoaded", function () {
+        const btn = document.getElementById("themeToggle");
+        const icon = document.getElementById("themeIcon");
 
-        window.addEventListener("scroll", function() {
-            // Sticky Navbar
-            if (window.scrollY > 50) {
-                navbar.classList.add("sticky");
+        function setTheme(theme) {
+            if (theme === "dark") {
+                document.body.classList.add("dark-mode");
+                icon.textContent = "☀️";
             } else {
-                navbar.classList.remove("sticky");
+                document.body.classList.remove("dark-mode");
+                icon.textContent = "🌙";
             }
+        }
 
-            // Back To Top Button
-            if (window.scrollY > 300) {
-                backToTopBtn.style.display = "flex";
-            } else {
-                backToTopBtn.style.display = "none";
-            }
+        const saved = localStorage.getItem("theme") || "light";
+        setTheme(saved);
+
+        btn.addEventListener("click", function () {
+            const newTheme = document.body.classList.contains("dark-mode") ? "light" : "dark";
+            setTheme(newTheme);
+            localStorage.setItem("theme", newTheme);
         });
+    });
+</script>
 
-        // Smooth scroll to top
-        backToTopBtn.addEventListener("click", function() {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+<!-- LANGUAGE -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const langSelect = document.getElementById("langSelect");
+
+        function getCurrentCulture() {
+            const match = document.cookie.match(/\.AspNetCore\.Culture=c=([^|]+)/);
+            return match ? match[1] : "vi";
+        }
+
+        langSelect.value = getCurrentCulture();
+
+        langSelect.addEventListener("change", function () {
+            const lang = this.value;
+            document.cookie = `.AspNetCore.Culture=c=${lang}|uic=${lang}; path=/`;
+            location.reload();
         });
     });
 </script>

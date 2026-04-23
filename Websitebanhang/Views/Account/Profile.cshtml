@@ -45,6 +45,15 @@
                     <p class="text-muted small">Thành viên thân thiết</p>
                 </div>
 
+                <!-- Delete avatar button -->
+                @if (currentUser != null && !string.IsNullOrEmpty(currentUser.AvatarUrl))
+                {
+                    <form asp-controller="Account" asp-action="DeleteAvatar" method="post" class="text-center mt-2">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-outline-danger btn-sm">Xóa ảnh đại diện</button>
+                    </form>
+                }
+
                 <!-- Vertical Tabs Menu -->
                 <div class="nav flex-column nav-pills custom-tabs" id="v-pills-tab" role="tablist" aria-orientation="vertical">
                     <button class="nav-link active text-start fw-medium rounded-3 mb-2" id="v-pills-info-tab" data-bs-toggle="pill" data-bs-target="#v-pills-info" type="button" role="tab">

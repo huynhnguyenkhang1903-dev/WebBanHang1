@@ -1,7 +1,6 @@
 wwwroot\css\admin.css
 wwwroot\css\site.css
 wwwroot\favicon.ico
-wwwroot\images\avatars\4804b9e8-3c91-4b4e-9049-e562fb578484_cd4258ed-9028-4caa-a541-b35706efcd3d.jpg
 wwwroot\images\avatars\cd4a5ffd-72dc-435e-8e49-6cf0efbb7a34_z7718201688879_04a3bcbd10694de590388485a4da98aa.jpg
 wwwroot\images\avatars\e6cbf9c7-bfe5-45d8-895e-3725602522c6_z7718201688879_04a3bcbd10694de590388485a4da98aa.jpg
 wwwroot\images\coffee1.jpg
@@ -67,3 +66,4 @@ wwwroot\lib\jquery\dist\jquery.js
 wwwroot\lib\jquery\dist\jquery.min.js
 wwwroot\lib\jquery\dist\jquery.min.map
 wwwroot\lib\jquery\LICENSE.txt
+wwwroot\uploads\740da63b-7cf7-43ef-84d4-750bc3f74dae.jpg

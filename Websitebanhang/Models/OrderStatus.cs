@@ -9,5 +9,6 @@
         public const string Delivered = "Delivered";
         public const string Returned = "Returned";
         public const string Cancelled = "Cancelled";
+        public const string Refunded = "Refunded"; // hoàn tiền
     }
 }

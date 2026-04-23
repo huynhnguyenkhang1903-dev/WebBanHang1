@@ -1,0 +1,81 @@
+@model Websitebanhang.Models.ViewModels.RevenueViewModel
+@{
+    ViewData["Title"] = "Th?ng kê doanh thu";
+}
+
+<div class="container mt-4">
+    <h2 class="mb-4">Th?ng kê doanh thu</h2>
+
+    <form method="get" class="row g-2 mb-4">
+        <div class="col-auto">
+            <input type="date" name="from" class="form-control" value="@ViewBag.From" />
+        </div>
+        <div class="col-auto">
+            <input type="date" name="to" class="form-control" value="@ViewBag.To" />
+        </div>
+        <div class="col-auto">
+            <button class="btn btn-primary">L?c</button>
+        </div>
+    </form>
+
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card p-3">
+                <h5>T?ng doanh thu</h5>
+                <h3 class="text-danger">@Model.TotalRevenue.ToString("N0") ?</h3>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card p-3">
+                <h5>T?ng ??n</h5>
+                <h3>@Model.OrdersCount</h3>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card p-3">
+                <h5>??n ?ã thanh toán/hoàn thành</h5>
+                <h3>@Model.PaidOrdersCount</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5>Doanh thu theo ngày</h5>
+            <table class="table">
+                <thead>
+                    <tr><th>Ngày</th><th>Doanh thu</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var d in Model.RevenueByDay)
+                    {
+                        <tr>
+                            <td>@d.Date.ToString("dd/MM/yyyy")</td>
+                            <td>@d.Amount.ToString("N0") ?</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5>Doanh thu theo tháng</h5>
+            <table class="table">
+                <thead>
+                    <tr><th>Tháng</th><th>Doanh thu</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var m in Model.RevenueByMonth)
+                    {
+                        <tr>
+                            <td>@m.Month.ToString("D2")/@m.Year</td>
+                            <td>@m.Amount.ToString("N0") ?</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

@@ -223,7 +223,7 @@ namespace Websitebanhang.Controllers
                     // prefer user's email from account if form email is empty or different
                     if (string.IsNullOrEmpty(order.Email) || !string.Equals(order.Email, appUser.Email, StringComparison.OrdinalIgnoreCase))
                     {
-                        order.Email = appUser.Email;
+                        order.Email = appUser.Email ?? "";
                     }
                 }
             }

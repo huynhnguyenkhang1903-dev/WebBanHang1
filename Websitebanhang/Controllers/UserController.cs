@@ -32,13 +32,13 @@ namespace Websitebanhang.Controllers
                 userViewModels.Add(new UserViewModel
                 {
                     Id = user.Id,
-                    FullName = user.FullName,
-                    Email = user.Email,
-                    PhoneNumber = user.PhoneNumber,
+                    FullName = user.FullName ?? "",
+                    Email = user.Email ?? "",
+                    PhoneNumber = user.PhoneNumber ?? "",
                     Role = roles.FirstOrDefault() ?? "",
                     IsLocked = user.LockoutEnd != null && user.LockoutEnd > DateTimeOffset.UtcNow,
                     DateOfBirth = user.DateOfBirth,
-                    AvatarUrl = user.AvatarUrl
+                    AvatarUrl = user.AvatarUrl ?? ""
                 });
             }
 
@@ -83,9 +83,9 @@ namespace Websitebanhang.Controllers
             var model = new UserViewModel
             {
                 Id = user.Id,
-                FullName = user.FullName,
-                Email = user.Email,
-                PhoneNumber = user.PhoneNumber,
+                FullName = user.FullName ?? "",
+                Email = user.Email ?? "",
+                PhoneNumber = user.PhoneNumber ?? "",
                 Role = roles.FirstOrDefault() ?? "User"
             };
 

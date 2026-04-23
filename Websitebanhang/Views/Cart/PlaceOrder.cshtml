@@ -34,7 +34,7 @@
                     <div class="col-12">
                         <h5 class="text-coffee">S?n ph?m</h5>
                         <div class="list-group mb-3">
-                            @foreach (var item in Model)
+                            @foreach (var item in Model ?? new List<Websitebanhang.Models.CartItem>())
                             {
                                 <div class="list-group-item d-flex justify-content-between align-items-center">
                                     <div>

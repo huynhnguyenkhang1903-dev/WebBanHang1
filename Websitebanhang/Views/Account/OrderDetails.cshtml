@@ -104,7 +104,13 @@
 
             @if (status == "Cancelled")
             {
-                <div class="alert alert-danger text-center">Đơn hàng đã bị hủy</div>
+                <div class="alert alert-danger text-center">
+                    Đơn hàng đã bị hủy
+                    @if (!string.IsNullOrWhiteSpace(Model.CancelReason))
+                    {
+                        <div class="mt-2 small text-danger">Lý do: @Model.CancelReason</div>
+                    }
+                </div>
             }
 
             <!-- CUSTOMER -->
@@ -168,7 +174,7 @@
 
                     @if (status == "Pending")
                     {
-                        <form asp-controller="Order" asp-action="Confirm" method="post">
+                        <form asp-controller="AdminOrder" asp-action="Confirm" method="post">
                             <input type="hidden" name="id" value="@Model.Id" />
                             <button class="btn btn-success">Duyệt đơn</button>
                         </form>
@@ -176,7 +182,7 @@
 
                     @if (status == "Confirmed")
                     {
-                        <form asp-controller="Order" asp-action="Shipping" method="post">
+                        <form asp-controller="AdminOrder" asp-action="Shipping" method="post">
                             <input type="hidden" name="id" value="@Model.Id" />
                             <button class="btn btn-primary">Giao hàng</button>
                         </form>
@@ -184,20 +190,45 @@
 
                     @if (status == "Shipping")
                     {
-                        <form asp-controller="Order" asp-action="Delivered" method="post">
+                        <form asp-controller="AdminOrder" asp-action="Delivered" method="post">
                             <input type="hidden" name="id" value="@Model.Id" />
                             <button class="btn btn-dark">Hoàn thành</button>
                         </form>
                     }
 
+                    @if (status == "Delivered")
+                    {
+                        <form asp-controller="AdminOrder" asp-action="ProcessReturn" method="post" class="d-inline-block">
+                            <input type="hidden" name="id" value="@Model.Id" />
+                            <button class="btn btn-warning">Xử lý trả/hoàn tiền</button>
+                        </form>
+                    }
+
                     @if (status != "Delivered" && status != "Cancelled")
                     {
-                        <form asp-controller="Order" asp-action="Cancel" method="post">
+                        <form asp-controller="AdminOrder" asp-action="Cancel" method="post">
                             <input type="hidden" name="id" value="@Model.Id" />
                             <button class="btn btn-danger">Hủy đơn</button>
                         </form>
                     }
                 </div>
+            }
+            else
+            {
+                // User actions
+                if (!Model.IsPaid && status == "Pending")
+                {
+                    <form asp-controller="Account" asp-action="CancelOrder" method="post" class="d-inline-block" onsubmit="return confirm('Bạn có chắc muốn hủy đơn hàng này?');">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@Model.Id" />
+                        <button type="submit" class="btn btn-danger">Hủy</button>
+                    </form>
+                }
+
+                if (status == "Delivered")
+                {
+                    <button class="btn btn-outline-warning" data-bs-toggle="modal" data-bs-target="#returnModal">Yêu cầu trả hàng</button>
+                }
             }
 
             <div class="text-center mt-4">
@@ -208,4 +239,30 @@
 
         </div>
     </div>
+</div>
+
+<!-- Modal for return request -->
+<div class="modal fade" id="returnModal" tabindex="-1" aria-labelledby="returnModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form asp-controller="Account" asp-action="RequestReturn" method="post">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="id" value="@Model.Id" />
+        <div class="modal-header">
+          <h5 class="modal-title" id="returnModalLabel">Yêu cầu trả hàng</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="returnReason" class="form-label">Lý do trả hàng</label>
+            <textarea class="form-control" id="returnReason" name="returnReason" rows="3" required></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+          <button type="submit" class="btn btn-warning">Gửi yêu cầu</button>
+        </div>
+      </form>
+    </div>
+  </div>
 </div>

@@ -17,6 +17,7 @@ namespace Websitebanhang.Data
         public DbSet<Category> Categories { get; set; }
 
         public DbSet<Order> Orders { get; set; }
+        public DbSet<Promotion> Promotions { get; set; }
 
         public DbSet<UnitOfMeasure> UnitsOfMeasure { get; set; }
 

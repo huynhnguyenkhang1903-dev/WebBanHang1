@@ -1,16 +1,16 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
 namespace Websitebanhang.Migrations
 {
     /// <inheritdoc />
-    public partial class UpdateOrder : Migration
+    public partial class AddOrderReturnFields : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            // migration created to add CancelReason, ReturnReason, ReturnRequestedAt
             migrationBuilder.AddColumn<string>(
                 name: "CancelReason",
                 table: "Orders",

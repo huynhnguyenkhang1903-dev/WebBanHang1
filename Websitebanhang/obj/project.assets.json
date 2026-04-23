@@ -8234,23 +8234,23 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\Vinh\\.nuget\\packages\\": {},
+    "C:\\Users\\ADMIN\\.nuget\\packages\\": {},
     "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\WebBanHang1\\Websitebanhang\\Websitebanhang.csproj",
+      "projectUniqueName": "C:\\Users\\ADMIN\\source\\repos\\WebBanHang1\\Websitebanhang\\Websitebanhang.csproj",
       "projectName": "Websitebanhang",
-      "projectPath": "D:\\WebBanHang1\\Websitebanhang\\Websitebanhang.csproj",
-      "packagesPath": "C:\\Users\\Vinh\\.nuget\\packages\\",
-      "outputPath": "D:\\WebBanHang1\\Websitebanhang\\obj\\",
+      "projectPath": "C:\\Users\\ADMIN\\source\\repos\\WebBanHang1\\Websitebanhang\\Websitebanhang.csproj",
+      "packagesPath": "C:\\Users\\ADMIN\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\ADMIN\\source\\repos\\WebBanHang1\\Websitebanhang\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\Vinh\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\ADMIN\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
@@ -8277,7 +8277,7 @@
         "auditLevel": "low",
         "auditMode": "direct"
       },
-      "SdkAnalysisLevel": "10.0.200"
+      "SdkAnalysisLevel": "9.0.300"
     },
     "frameworks": {
       "net8.0": {
@@ -8343,7 +8343,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.201/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.305/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

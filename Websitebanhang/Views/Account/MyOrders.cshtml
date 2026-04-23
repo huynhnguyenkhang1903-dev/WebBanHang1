@@ -76,11 +76,7 @@
                                     @* Cancel only when pending and not paid *@
                                     @if (!order.IsPaid && order.Status == "Pending")
                                     {
-                                        <form asp-controller="Account" asp-action="CancelOrder" method="post" class="d-inline-block" onsubmit="return confirm('Bạn có chắc muốn hủy đơn hàng này?');">
-                                            @Html.AntiForgeryToken()
-                                            <input type="hidden" name="id" value="@order.Id" />
-                                            <button type="submit" class="btn btn-sm btn-danger">Hủy</button>
-                                        </form>
+                                        <a asp-action="CancelOrder" asp-route-id="@order.Id" class="btn btn-sm btn-danger">Hủy</a>
                                     }
                                 </td>
                             </tr>
