@@ -1,30 +1,17 @@
-@model Websitebanhang.Models.Order
-@{
-    ViewData["Title"] = "H?y ??n h�ng";
-}
+﻿@model Websitebanhang.Models.Order
 
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card shadow-sm">
-                <div class="card-header bg-danger text-white">
-                    <h4 class="mb-0">H?y ??n h�ng #ORD-@Model.Id.ToString("D3")</h4>
-                </div>
-                <div class="card-body">
-                    <form asp-action="CancelOrder" method="post">
-                        @Html.AntiForgeryToken()
-                        <input type="hidden" name="id" value="@Model.Id" />
-                        <div class="mb-3">
-                            <label for="CancelReason" class="form-label">L� do h?y ??n h�ng <span class="text-danger">*</span></label>
-                            <textarea class="form-control" id="CancelReason" name="cancelReason" rows="3" required placeholder="Nh?p l� do h?y ??n..."></textarea>
-                        </div>
-                        <div class="d-flex justify-content-between">
-                            <a asp-controller="Account" asp-action="OrderDetails" asp-route-id="@Model.Id" class="btn btn-secondary">Quay l?i</a>
-                            <button type="submit" class="btn btn-danger">X�c nh?n h?y ??n</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
+<h3>Hủy đơn hàng</h3>
+
+<form asp-action="CancelOrder" method="post">
+    @Html.AntiForgeryToken()
+
+    <input type="hidden" name="id" value="@Model.Id" />
+
+    <div class="mb-3">
+        <label class="form-label">Lý do hủy đơn</label>
+        <textarea name="cancelReason" class="form-control" rows="4" required></textarea>
     </div>
-</div>
+
+    <button type="submit" class="btn btn-danger">Xác nhận hủy</button>
+    <a asp-action="Profile" class="btn btn-secondary">Quay lại</a>
+</form>

@@ -18,7 +18,7 @@ namespace Websitebanhang.Controllers
             _context = context;
         }
 
-        // 📋 Danh sách tất cả đơn hàng
+        // ================= DANH SÁCH =================
         public async Task<IActionResult> Index()
         {
             var orders = await _context.Orders
@@ -29,15 +29,28 @@ namespace Websitebanhang.Controllers
             return View(orders);
         }
 
-        // NEW: Thống kê doanh thu
+        // ================= CHI TIẾT =================
+        public async Task<IActionResult> Details(int id)
+        {
+            var order = await _context.Orders
+                .Include(o => o.Items)
+                .FirstOrDefaultAsync(o => o.Id == id);
+
+            if (order == null)
+                return NotFound();
+
+            return View(order);
+        }
+
+        // ================= DOANH THU =================
         public async Task<IActionResult> Revenue(DateTime? from, DateTime? to)
         {
             var start = (from ?? DateTime.Now.AddDays(-30)).Date;
             var end = (to ?? DateTime.Now).Date.AddDays(1).AddSeconds(-1);
 
-            // Tổng doanh thu (tính chỉ những đơn đã thanh toán hoặc Delivered)
             var totalRevenue = await _context.Orders
-                .Where(o => o.OrderDate >= start && o.OrderDate <= end && (o.IsPaid || o.Status == "Delivered"))
+                .Where(o => o.OrderDate >= start && o.OrderDate <= end &&
+                            (o.IsPaid || o.Status == "Delivered"))
                 .SumAsync(o => (decimal?)o.TotalAmount) ?? 0m;
 
             var ordersCount = await _context.Orders
@@ -45,23 +58,34 @@ namespace Websitebanhang.Controllers
                 .CountAsync();
 
             var paidOrdersCount = await _context.Orders
-                .Where(o => o.OrderDate >= start && o.OrderDate <= end && (o.IsPaid || o.Status == "Delivered"))
+                .Where(o => o.OrderDate >= start && o.OrderDate <= end &&
+                            (o.IsPaid || o.Status == "Delivered"))
                 .CountAsync();
 
-            // Doanh thu theo ngày
             var revenueByDay = await _context.Orders
-                .Where(o => o.OrderDate >= start && o.OrderDate <= end && (o.IsPaid || o.Status == "Delivered"))
-                .GroupBy(o => new { d = o.OrderDate.Date })
-                .Select(g => new DailyRevenue { Date = g.Key.d, Amount = g.Sum(x => x.TotalAmount) })
-                .OrderBy(d => d.Date)
+                .Where(o => o.OrderDate >= start && o.OrderDate <= end &&
+                            (o.IsPaid || o.Status == "Delivered"))
+                .GroupBy(o => o.OrderDate.Date)
+                .Select(g => new DailyRevenue
+                {
+                    Date = g.Key,
+                    Amount = g.Sum(x => x.TotalAmount)
+                })
+                .OrderBy(x => x.Date)
                 .ToListAsync();
 
-            // Doanh thu theo tháng (6 tháng gần nhất)
             var revenueByMonth = await _context.Orders
-                .Where(o => o.OrderDate >= start && o.OrderDate <= end && (o.IsPaid || o.Status == "Delivered"))
-                .GroupBy(o => new { y = o.OrderDate.Year, m = o.OrderDate.Month })
-                .Select(g => new MonthlyRevenue { Year = g.Key.y, Month = g.Key.m, Amount = g.Sum(x => x.TotalAmount) })
-                .OrderBy(m => m.Year).ThenBy(m => m.Month)
+                .Where(o => o.OrderDate >= start && o.OrderDate <= end &&
+                            (o.IsPaid || o.Status == "Delivered"))
+                .GroupBy(o => new { o.OrderDate.Year, o.OrderDate.Month })
+                .Select(g => new MonthlyRevenue
+                {
+                    Year = g.Key.Year,
+                    Month = g.Key.Month,
+                    Amount = g.Sum(x => x.TotalAmount)
+                })
+                .OrderBy(x => x.Year)
+                .ThenBy(x => x.Month)
                 .ToListAsync();
 
             var model = new RevenueViewModel
@@ -79,92 +103,104 @@ namespace Websitebanhang.Controllers
             return View(model);
         }
 
-        // ✅ DUYỆT ĐƠN
+        // ================= DUYỆT =================
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Confirm(int id)
         {
             var order = await _context.Orders.FindAsync(id);
-            if (order == null)
-                return NotFound();
+            if (order == null) return NotFound();
 
             if (order.Status != "Pending")
             {
                 TempData["Error"] = "Chỉ duyệt đơn đang chờ!";
-                return RedirectToAction("Index");
+                return RedirectToAction("Details", new { id });
             }
 
             order.Status = "Confirmed";
             await _context.SaveChangesAsync();
 
             TempData["Success"] = "Đã duyệt đơn!";
-            return RedirectToAction("Index");
+            return RedirectToAction("Details", new { id });
         }
 
-        // 🚚 GIAO HÀNG
+        // ================= GIAO =================
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Shipping(int id)
         {
             var order = await _context.Orders.FindAsync(id);
-            if (order == null)
-                return NotFound();
+            if (order == null) return NotFound();
 
             if (order.Status != "Confirmed")
             {
                 TempData["Error"] = "Phải duyệt trước!";
-                return RedirectToAction("Index");
+                return RedirectToAction("Details", new { id });
             }
 
             order.Status = "Shipping";
             await _context.SaveChangesAsync();
 
-            return RedirectToAction("Index");
+            TempData["Success"] = "Đang giao hàng!";
+            return RedirectToAction("Details", new { id });
         }
 
-        // 📦 HOÀN THÀNH
+        // ================= HOÀN THÀNH =================
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delivered(int id)
         {
             var order = await _context.Orders.FindAsync(id);
-            if (order == null)
-                return NotFound();
+            if (order == null) return NotFound();
 
             if (order.Status != "Shipping")
             {
                 TempData["Error"] = "Đơn chưa giao!";
-                return RedirectToAction("Index");
+                return RedirectToAction("Details", new { id });
             }
 
             order.Status = "Delivered";
             await _context.SaveChangesAsync();
 
-            return RedirectToAction("Index");
+            TempData["Success"] = "Đã giao thành công!";
+            return RedirectToAction("Details", new { id });
         }
 
-        // ❌ HỦY ĐƠN (ADMIN)
+        // ================= HỦY (CÓ LÝ DO) =================
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Cancel(int id)
+        public async Task<IActionResult> Cancel(int id, string cancelReason)
         {
             var order = await _context.Orders.FindAsync(id);
+
             if (order == null)
-                return NotFound();
+            {
+                TempData["Error"] = "Không tìm thấy đơn!";
+                return RedirectToAction("Index");
+            }
 
             if (order.Status == "Delivered")
             {
                 TempData["Error"] = "Đơn đã giao, không thể hủy!";
-                return RedirectToAction("Index");
+                return RedirectToAction("Details", new { id });
+            }
+
+            if (string.IsNullOrWhiteSpace(cancelReason))
+            {
+                TempData["Error"] = "Phải nhập lý do hủy!";
+                return RedirectToAction("Details", new { id });
             }
 
             order.Status = "Cancelled";
+            order.CancelReason = cancelReason;
+
             await _context.SaveChangesAsync();
 
-            return RedirectToAction("Index");
+            TempData["Success"] = "Đã hủy đơn!";
+            return RedirectToAction("Details", new { id });
         }
 
-        // ADMIN: Xử lý trả hàng / hoàn tiền
+        // ================= TRẢ HÀNG =================
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ProcessReturn(int id)
@@ -172,32 +208,29 @@ namespace Websitebanhang.Controllers
             var order = await _context.Orders.FindAsync(id);
             if (order == null) return NotFound();
 
-            // Only process returns for Returned (requested) or Delivered states
-            if (order.Status != OrderStatus.Delivered && order.Status != OrderStatus.Returned)
+            if (order.Status != OrderStatus.Delivered &&
+                order.Status != OrderStatus.Returned)
             {
-                TempData["Error"] = "Chỉ xử lý trả hàng cho đơn đã giao hoặc đã yêu cầu trả hàng.";
-                return RedirectToAction("Index");
+                TempData["Error"] = "Chỉ xử lý đơn đã giao!";
+                return RedirectToAction("Details", new { id });
             }
 
-            // If the return was requested by user (ReturnReason present) or admin decides, process refund if needed
-            if (order.IsPaid && string.Equals(order.PaymentMethod, "bank", StringComparison.OrdinalIgnoreCase))
+            if (order.IsPaid &&
+                string.Equals(order.PaymentMethod, "bank", StringComparison.OrdinalIgnoreCase))
             {
-                // perform refund simulation
                 order.Status = OrderStatus.Refunded;
                 order.IsPaid = false;
                 order.TransactionId = null;
-                await _context.SaveChangesAsync();
-
-                TempData["Success"] = "Đã hoàn tiền cho đơn (chuyển khoản).";
-                return RedirectToAction("Index");
+            }
+            else
+            {
+                order.Status = OrderStatus.Returned;
             }
 
-            // Otherwise mark as Returned
-            order.Status = OrderStatus.Returned;
             await _context.SaveChangesAsync();
 
-            TempData["Success"] = "Đã ghi nhận trả hàng.";
-            return RedirectToAction("Index");
+            TempData["Success"] = "Đã xử lý trả hàng!";
+            return RedirectToAction("Details", new { id });
         }
     }
 }

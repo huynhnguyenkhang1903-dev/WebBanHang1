@@ -17,7 +17,7 @@ namespace Websitebanhang.Models
 
         [StringLength(1000)]
         public string Description { get; set; } = string.Empty;
-
+        public string Unit { get; set; } = string.Empty;
         // Quốc gia sản phẩm
         public string Country { get; set; } = "Vietnam";
 

@@ -203,6 +203,19 @@
                             <button class="btn btn-warning">Xử lý trả/hoàn tiền</button>
                         </form>
                     }
+                    @if (status != "Delivered" && status != "Cancelled")
+                    {
+                        <form asp-controller="AdminOrder" asp-action="Cancel" method="post" class="mt-2">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@Model.Id" />
+
+                            <div class="mb-2">
+                                <textarea name="cancelReason" class="form-control" placeholder="Nhập lý do hủy..." required></textarea>
+                            </div>
+
+                            <button class="btn btn-danger">Hủy đơn</button>
+                        </form>
+                    }
 
                     @if (status != "Delivered" && status != "Cancelled")
                     {

@@ -1,0 +1,251 @@
+﻿@model Websitebanhang.Models.Order
+@{
+    ViewData["Title"] = "Chi Tiết Đơn Hàng";
+    var status = Model?.Status ?? "Pending";
+}
+
+<div class="container mt-4">
+
+    <!-- 🔔 THÔNG BÁO -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">@TempData["Success"]</div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">@TempData["Error"]</div>
+    }
+
+    <!-- HEADER -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body d-flex justify-content-between">
+            <div>
+                <h4>Đơn hàng #ORD-@Model.Id.ToString("D3")</h4>
+                <p class="mb-0">
+                    Ngày đặt:
+                    @(Model.OrderDate == default ? "" : Model.OrderDate.ToString("dd/MM/yyyy HH:mm"))
+                </p>
+            </div>
+
+            <div>
+                @switch (status)
+                {
+                    case "Pending":
+                        <span class="badge bg-warning text-dark">Chờ xác nhận</span>
+                        break;
+                    case "Confirmed":
+                        <span class="badge bg-info">Đã duyệt</span>
+                        break;
+                    case "Shipping":
+                        <span class="badge bg-primary">Đang giao</span>
+                        break;
+                    case "Delivered":
+                        <span class="badge bg-success">Đã giao</span>
+                        break;
+                    case "Cancelled":
+                        <span class="badge bg-danger">Đã hủy</span>
+                        break;
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- THÔNG TIN -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card p-3">
+                <strong>Khách hàng:</strong> @Model.CustomerName <br />
+                <strong>SĐT:</strong> @Model.Phone <br />
+                <strong>Địa chỉ:</strong> @Model.Address
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card p-3">
+                <strong>Thanh toán:</strong> @Model.PaymentMethod <br />
+                <strong>Trạng thái:</strong>
+                @(Model.IsPaid ? "Đã thanh toán" : "Chưa thanh toán")
+            </div>
+        </div>
+    </div>
+
+    <!-- DANH SÁCH SẢN PHẨM -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Ảnh</th>
+                        <th>Tên</th>
+                        <th>SL</th>
+                        <th>Giá</th>
+                        <th>Tổng</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Items != null && Model.Items.Any())
+                    {
+                        foreach (var item in Model.Items)
+                        {
+                            <tr>
+                                <td>
+                                    <img src="@item.ImageUrl" width="60"
+                                         onerror="this.src='/images/default.jpg'" />
+                                </td>
+                                <td>@item.Name</td>
+                                <td>@item.Quantity</td>
+                                <td>@item.Price.ToString("N0") ₫</td>
+                                <td>@(item.Price* item.Quantity) ₫</td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center text-muted">
+                                Không có sản phẩm
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <h5 class="text-end text-danger">
+                Tổng: @Model.TotalAmount.ToString("N0") ₫
+            </h5>
+        </div>
+    </div>
+
+    <!-- ❌ HIỂN THỊ LÝ DO HỦY -->
+    @if (status == "Cancelled" && !string.IsNullOrEmpty(Model.CancelReason))
+    {
+        <div class="alert alert-danger text-center">
+            Lý do hủy: @Model.CancelReason
+        </div>
+    }
+
+    <!-- ================= ACTION ================= -->
+
+    <div class="text-center">
+
+        @if (User.IsInRole("Admin"))
+        {
+            <!-- ADMIN ACTION -->
+            @if (status == "Pending")
+            {
+                <form asp-action="Confirm" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <button class="btn btn-success">Duyệt</button>
+                </form>
+            }
+
+            @if (status == "Confirmed")
+            {
+                <form asp-action="Shipping" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <button class="btn btn-primary">Giao hàng</button>
+                </form>
+            }
+
+            @if (status == "Shipping")
+            {
+                <form asp-action="Delivered" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <button class="btn btn-dark">Hoàn thành</button>
+                </form>
+            }
+
+            @if (status != "Delivered" && status != "Cancelled")
+            {
+                <!-- HỦY + LÝ DO -->
+                <form asp-action="Cancel" method="post" class="mt-3">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.Id" />
+
+                    <textarea name="cancelReason"
+                      class="form-control mb-2"
+                      placeholder="Nhập lý do hủy..."
+                      required></textarea>
+
+                    <button class="btn btn-danger">Hủy đơn</button>
+                </form>
+            }
+
+            @if (status == "Delivered")
+            {
+                <form asp-action="ProcessReturn" method="post" class="mt-2">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <button class="btn btn-warning">Hoàn tiền</button>
+                </form>
+            }
+        }
+        else
+        {
+            <!-- USER ACTION -->
+            @if (!Model.IsPaid && status == "Pending")
+            {
+                <form asp-controller="Account"
+                      asp-action="CancelOrder"
+                      method="post"
+                      onsubmit="return confirm('Bạn chắc chắn muốn hủy?')">
+
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.Id" />
+
+                    <textarea name="cancelReason"
+                      class="form-control mb-2"
+                      placeholder="Nhập lý do hủy..."
+                      required></textarea>
+
+                    <button class="btn btn-danger">Hủy đơn</button>
+                </form>
+            }
+
+            @if (status == "Delivered")
+            {
+                <button class="btn btn-warning"
+                        data-bs-toggle="modal"
+                        data-bs-target="#returnModal">
+                    Trả hàng
+                </button>
+            }
+        }
+    </div>
+
+    <!-- BACK -->
+    <div class="text-center mt-4">
+        <a asp-action="Index" class="btn btn-outline-dark">Quay lại</a>
+    </div>
+</div>
+
+<!-- MODAL TRẢ HÀNG -->
+<div class="modal fade" id="returnModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-controller="Account" asp-action="RequestReturn" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="id" value="@Model.Id" />
+
+                <div class="modal-header">
+                    <h5>Trả hàng</h5>
+                </div>
+
+                <div class="modal-body">
+                    <textarea name="returnReason"
+                              class="form-control"
+                              placeholder="Lý do trả hàng"
+                              required></textarea>
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button class="btn btn-warning">Gửi</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

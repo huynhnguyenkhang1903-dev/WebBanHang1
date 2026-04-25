@@ -288,7 +288,24 @@ namespace Websitebanhang.Controllers
             }
 
             order.Status = "Cancelled";
+            // ✅ LUÔN gán trước
             order.CancelReason = cancelReason;
+
+            // If order was paid by bank, perform refund
+            if (order.IsPaid && string.Equals(order.PaymentMethod, "bank", StringComparison.OrdinalIgnoreCase))
+            {
+                order.Status = Models.OrderStatus.Refunded;
+                order.IsPaid = false;
+                order.TransactionId = null;
+
+                await _context.SaveChangesAsync();
+
+                TempData["SuccessMessage"] = "Đã hủy đơn và hoàn tiền (chuyển khoản).";
+                return RedirectToAction("Profile");
+            }
+
+            order.Status = "Cancelled";
+
             await _context.SaveChangesAsync();
 
             TempData["SuccessMessage"] = "Đã hủy đơn!";

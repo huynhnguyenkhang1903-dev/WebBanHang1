@@ -5,30 +5,34 @@ using Websitebanhang.Models;
 using Websitebanhang.Repositores;
 using Websitebanhang.Services;
 
+using Microsoft.AspNetCore.Localization;
+using System.Globalization;
+
 var builder = WebApplication.CreateBuilder(args);
 
+// ================= LOCALIZATION =================
+builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
 
 // ================= MVC =================
-
 builder.Services.AddControllersWithViews()
+    .AddViewLocalization() // 🔥 THÊM
+    .AddDataAnnotationsLocalization() // 🔥 THÊM
     .AddJsonOptions(options =>
     {
-        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.ReferenceHandler =
+            System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
     });
+
 builder.Services.AddRazorPages();
 
-
 // ================= DATABASE =================
-
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("DefaultConnection"),
         sqlOptions => sqlOptions.EnableRetryOnFailure()
     ));
 
-
 // ================= IDENTITY =================
-
 builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
 {
     options.SignIn.RequireConfirmedAccount = false;
@@ -38,21 +42,21 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
     options.Password.RequireLowercase = false;
     options.Password.RequireNonAlphanumeric = false;
     options.Password.RequiredLength = 6;
-    
-    options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+ áàảãạăắằẳẵặâấầẩẫậéèẻẽẹêếềểễệíìỉĩịóòỏõọôốồổỗộơớờởỡợúùủũụưứừửữựýỳỷỹỵđÁÀẢÃẠĂẮẰẲẴẶÂẤẦẨẪẬÉÈẺẼẸÊẾỀỂỄỆÍÌỈĨỊÓÒỎÕỌÔỐỒỔỖỘƠỚỜỞỠỢÚÙỦŨỤƯỨỪỬỮỰÝỲỶỸỴĐ";
+
+    options.User.AllowedUserNameCharacters =
+        "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+ áàảãạăắằẳẵặâấầẩẫậéèẻẽẹêếềểễệíìỉĩịóòỏõọôốồổỗộơớờởỡợúùủũụưứừửữựýỳỷỹỵđÁÀẢÃẠĂẮẰẲẴẶÂẤẦẨẪẬÉÈẺẼẸÊẾỀỂỄỆÍÌỈĨỊÓÒỎÕỌÔỐỒỔỖỘƠỚỜỞỠỢÚÙỦŨỤƯỨỪỬỮỰÝỲỶỸỴĐ";
 })
 .AddRoles<IdentityRole>()
 .AddEntityFrameworkStores<AppDbContext>();
 
-
-// ================= SESSION =================
-
+// ================= COOKIE =================
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.LoginPath = "/Account/Login";
     options.AccessDeniedPath = "/Account/Login";
 });
 
+// ================= SESSION =================
 builder.Services.AddDistributedMemoryCache();
 
 builder.Services.AddSession(options =>
@@ -62,19 +66,41 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
-
 // ================= REPOSITORY =================
-
 builder.Services.AddScoped<IProductRepository, EFProductRepository>();
 builder.Services.AddScoped<ICategoryRepository, EFCategoryRepository>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 
-
 var app = builder.Build();
 
+// ================= LOCALIZATION MIDDLEWARE =================
+var supportedCultures = new[]
+{
+    new CultureInfo("vi"),     // 🇻🇳 Vietnamese
+    new CultureInfo("en"),     // 🇺🇸 English
+    new CultureInfo("fr"),     // 🇫🇷 French
+    new CultureInfo("de"),     // 🇩🇪 German
+    new CultureInfo("es"),     // 🇪🇸 Spanish
+    new CultureInfo("it"),     // 🇮🇹 Italian
+    new CultureInfo("pt"),     // 🇵🇹 Portuguese
+    new CultureInfo("ru"),     // 🇷🇺 Russian
+    new CultureInfo("ja"),     // 🇯🇵 Japanese
+    new CultureInfo("ko"),     // 🇰🇷 Korean
+    new CultureInfo("zh-CN"),  // 🇨🇳 Chinese Simplified
+    new CultureInfo("zh-TW"),  // 🇹🇼 Chinese Traditional
+    new CultureInfo("th"),     // 🇹🇭 Thai
+    new CultureInfo("id"),     // 🇮🇩 Indonesian
+    new CultureInfo("ms")      // 🇲🇾 Malay
+};
+
+app.UseRequestLocalization(new RequestLocalizationOptions
+{
+    DefaultRequestCulture = new RequestCulture("vi"),
+    SupportedCultures = supportedCultures,
+    SupportedUICultures = supportedCultures
+});
 
 // ================= MIDDLEWARE =================
-
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -91,18 +117,14 @@ app.UseAuthorization();
 
 app.UseSession();
 
-
 // ================= ROUTE =================
-
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.MapRazorPages();
 
-
 // ================= SEED DATA =================
-
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
@@ -114,18 +136,14 @@ using (var scope = app.Services.CreateScope())
     // APPLY MIGRATION
     context.Database.Migrate();
 
-
     // ===== CREATE ROLES =====
-
     if (!await roleManager.RoleExistsAsync("Admin"))
         await roleManager.CreateAsync(new IdentityRole("Admin"));
 
     if (!await roleManager.RoleExistsAsync("User"))
         await roleManager.CreateAsync(new IdentityRole("User"));
 
-
-    // ===== CREATE ADMIN ACCOUNT =====
-
+    // ===== CREATE ADMIN =====
     var adminEmail = "admin@gmail.com";
 
     if (await userManager.FindByEmailAsync(adminEmail) == null)
@@ -141,12 +159,10 @@ using (var scope = app.Services.CreateScope())
         };
 
         await userManager.CreateAsync(admin, "123456");
-
         await userManager.AddToRoleAsync(admin, "Admin");
     }
 
-
-    // ===== DB INITIALIZER =====
+    // ===== SEED DATA =====
     DbInitializer.Seed(context);
 }
 

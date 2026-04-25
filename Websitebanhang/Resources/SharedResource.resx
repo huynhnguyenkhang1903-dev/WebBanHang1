@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+	<data name="Home" xml:space="preserve">
+    <value>Trang chủ</value>
+  </data>
+	<data name="Product" xml:space="preserve">
+    <value>Sản phẩm</value>
+  </data>
+	<data name="Category" xml:space="preserve">
+    <value>Danh mục</value>
+  </data>
+</root>

@@ -7,9 +7,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <EmbeddedResource Remove="Resources\SharedResource.resx" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Folder Include="Areas\Identity\Pages\Account\" />
-    <Folder Include="Resources\" />
     <Folder Include="wwwroot\images\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Resources\SharedResource.resx" />
   </ItemGroup>
 
   <ItemGroup>
