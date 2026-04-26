@@ -119,13 +119,22 @@ namespace Websitebanhang.Controllers
         // ================= PLACE ORDER (GET) =================
         [Authorize]
         [HttpGet]
-        public IActionResult PlaceOrder()
+        public async Task<IActionResult> PlaceOrder()
         {
             var cart = HttpContext.Session.GetObject<List<CartItem>>("Cart") ?? new List<CartItem>();
             if (cart.Count == 0)
             {
                 TempData["Error"] = "Giỏ hàng trống.";
                 return RedirectToAction("Index");
+            }
+
+            var user = await _userManager.GetUserAsync(User);
+            if (user != null)
+            {
+                ViewBag.UserAddresses = await _context.UserAddresses
+                    .Where(a => a.UserId == user.Id)
+                    .OrderByDescending(a => a.IsDefault)
+                    .ToListAsync();
             }
 
             return View(cart);

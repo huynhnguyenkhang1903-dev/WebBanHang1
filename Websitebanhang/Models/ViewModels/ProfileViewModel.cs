@@ -27,5 +27,7 @@ namespace Websitebanhang.Models.ViewModels
         public DateTime? DateOfBirth { get; set; }
 
         public System.Collections.Generic.List<Websitebanhang.Models.Order>? Orders { get; set; }
+
+        public System.Collections.Generic.List<Websitebanhang.Models.UserAddress>? Addresses { get; set; }
     }
 }

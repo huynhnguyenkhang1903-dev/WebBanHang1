@@ -4,7 +4,8 @@
     <div class="row justify-content-center">
         <div class="col-md-8 col-lg-6">
             <h2 class="text-center mb-4">Đăng Ký Tài Khoản</h2>
-            <form asp-action="Register" method="post" class="card shadow-sm p-4">
+            <div class="card shadow-sm p-4">
+            <form asp-action="Register" method="post">
                 <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
                 <div class="mb-3">
@@ -60,6 +61,18 @@
                     <a asp-action="Login">Đăng nhập ngay</a>
                 </div>
             </form>
+            
+            <hr class="my-4" />
+            <div class="text-center mb-3">Hoặc đăng ký bằng</div>
+            <form asp-action="ExternalLogin" method="post" class="d-flex flex-column gap-2">
+                <button type="submit" class="btn btn-outline-danger w-100" name="provider" value="Google">
+                    Đăng ký bằng Google
+                </button>
+                <button type="submit" class="btn btn-outline-primary w-100" name="provider" value="Facebook">
+                    Đăng ký bằng Facebook
+                </button>
+            </form>
+            </div>
         </div>
     </div>
 </div>

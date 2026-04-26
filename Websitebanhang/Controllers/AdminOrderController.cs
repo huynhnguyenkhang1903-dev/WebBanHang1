@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Websitebanhang.Data;
@@ -231,6 +231,20 @@ namespace Websitebanhang.Controllers
 
             TempData["Success"] = "Đã xử lý trả hàng!";
             return RedirectToAction("Details", new { id });
+        }
+
+        // ================= IN HÓA ĐƠN =================
+        [HttpGet]
+        public async Task<IActionResult> PrintInvoice(int id)
+        {
+            var order = await _context.Orders
+                .Include(o => o.Items)
+                .FirstOrDefaultAsync(o => o.Id == id);
+
+            if (order == null)
+                return NotFound();
+
+            return View("PrintInvoice", order);
         }
     }
 }

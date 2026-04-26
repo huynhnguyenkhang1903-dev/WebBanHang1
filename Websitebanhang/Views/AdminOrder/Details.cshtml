@@ -1,4 +1,4 @@
-﻿@model Websitebanhang.Models.Order
+@model Websitebanhang.Models.Order
 @{
     ViewData["Title"] = "Chi Tiết Đơn Hàng";
     var status = Model?.Status ?? "Pending";
@@ -216,8 +216,11 @@
         }
     </div>
 
-    <!-- BACK -->
+    <!-- BACK & PRINT -->
     <div class="text-center mt-4">
+        <a asp-action="PrintInvoice" asp-route-id="@Model.Id" target="_blank" class="btn btn-info me-2 text-white">
+            <i class="fa-solid fa-print"></i> In hóa đơn
+        </a>
         <a asp-action="Index" class="btn btn-outline-dark">Quay lại</a>
     </div>
 </div>

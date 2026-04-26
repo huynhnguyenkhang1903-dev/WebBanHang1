@@ -11,6 +11,7 @@ using System.IO;
 using System;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace Websitebanhang.Controllers
 {
@@ -150,6 +151,92 @@ namespace Websitebanhang.Controllers
             return View(model);
         }
 
+        [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public IActionResult ExternalLogin(string provider, string? returnUrl = null)
+        {
+            var redirectUrl = Url.Action(nameof(ExternalLoginCallback), "Account", new { returnUrl });
+            var properties = _signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
+            return Challenge(properties, provider);
+        }
+
+        [AllowAnonymous]
+        public async Task<IActionResult> ExternalLoginCallback(string? returnUrl = null, string? remoteError = null)
+        {
+            returnUrl = returnUrl ?? Url.Content("~/");
+            if (remoteError != null)
+            {
+                ModelState.AddModelError(string.Empty, $"Lỗi từ nhà cung cấp ngoài: {remoteError}");
+                return View("Login");
+            }
+
+            var info = await _signInManager.GetExternalLoginInfoAsync();
+            if (info == null)
+            {
+                return RedirectToAction(nameof(Login));
+            }
+
+            // Thử đăng nhập với tài khoản liên kết
+            var result = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: false, bypassTwoFactor: true);
+            if (result.Succeeded)
+            {
+                var user = await _userManager.FindByLoginAsync(info.LoginProvider, info.ProviderKey);
+                if (user != null)
+                {
+                    var roles = await _userManager.GetRolesAsync(user);
+                    if (roles.Contains("Admin"))
+                        return RedirectToAction("Index", "Admin");
+                }
+                return LocalRedirect(returnUrl);
+            }
+            if (result.IsLockedOut)
+            {
+                return View("Lockout");
+            }
+            else
+            {
+                // Nếu chưa có tài khoản, tự tạo mới
+                var email = info.Principal.FindFirstValue(System.Security.Claims.ClaimTypes.Email);
+                var name = info.Principal.FindFirstValue(System.Security.Claims.ClaimTypes.Name);
+
+                if (email != null)
+                {
+                    var user = await _userManager.FindByEmailAsync(email);
+                    if (user == null)
+                    {
+                        user = new ApplicationUser
+                        {
+                            UserName = email,
+                            Email = email,
+                            FullName = name ?? string.Empty
+                        };
+                        var createResult = await _userManager.CreateAsync(user);
+                        if (createResult.Succeeded)
+                        {
+                            await _userManager.AddToRoleAsync(user, "User");
+                        }
+                        else
+                        {
+                            foreach (var error in createResult.Errors)
+                                ModelState.AddModelError(string.Empty, error.Description);
+                            return View("Login");
+                        }
+                    }
+
+                    var linkResult = await _userManager.AddLoginAsync(user, info);
+                    if (linkResult.Succeeded)
+                    {
+                        await _signInManager.SignInAsync(user, isPersistent: false);
+                        return LocalRedirect(returnUrl);
+                    }
+                }
+
+                ModelState.AddModelError(string.Empty, "Không thể xác thực bằng tài khoản mạng xã hội.");
+                return View("Login");
+            }
+        }
+
         [Authorize]
         public async Task<IActionResult> Profile()
         {
@@ -163,6 +250,10 @@ namespace Websitebanhang.Controllers
                 .OrderByDescending(o => o.OrderDate)
                 .ToListAsync();
 
+            var addresses = await _context.UserAddresses
+                .Where(a => a.UserId == user.Id)
+                .ToListAsync();
+
             var model = new ProfileViewModel
             {
                 Email = user.Email,
@@ -171,7 +262,8 @@ namespace Websitebanhang.Controllers
                 Address = user.Address,
                 PhoneNumber = user.PhoneNumber,
                 DateOfBirth = user.DateOfBirth,
-                Orders = orders
+                Orders = orders,
+                Addresses = addresses
             };
 
             return View(model);
@@ -480,6 +572,133 @@ namespace Websitebanhang.Controllers
             }
 
             TempData["Error"] = "Không thể xóa ảnh đại diện.";
+            return RedirectToAction("Profile");
+        }
+
+        // ================= IN HÓA ĐƠN =================
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> PrintInvoice(int id)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+                return RedirectToAction("Login", "Account");
+
+            var order = await _context.Orders
+                .Include(o => o.Items)
+                .FirstOrDefaultAsync(o => o.Id == id && o.Email == user.Email);
+
+            if (order == null)
+                return NotFound();
+
+            return View("PrintInvoice", order);
+        }
+
+        // ================= ADDRESS BOOK =================
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddAddress(UserAddress model)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return RedirectToAction("Login");
+
+            model.UserId = user.Id;
+
+            var existingAddressesCount = await _context.UserAddresses.CountAsync(a => a.UserId == user.Id);
+            if (existingAddressesCount == 0 || model.IsDefault)
+            {
+                if (model.IsDefault)
+                {
+                    var oldDefaults = await _context.UserAddresses.Where(a => a.UserId == user.Id && a.IsDefault).ToListAsync();
+                    foreach (var addr in oldDefaults) addr.IsDefault = false;
+                }
+                else if (existingAddressesCount == 0)
+                {
+                    model.IsDefault = true;
+                }
+            }
+
+            _context.UserAddresses.Add(model);
+            await _context.SaveChangesAsync();
+            TempData["SuccessMessage"] = "Đã thêm địa chỉ mới!";
+            return RedirectToAction("Profile");
+        }
+
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditAddress(int id, UserAddress model)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return RedirectToAction("Login");
+
+            var addr = await _context.UserAddresses.FirstOrDefaultAsync(a => a.Id == id && a.UserId == user.Id);
+            if (addr == null) return NotFound();
+
+            addr.FullName = model.FullName;
+            addr.PhoneNumber = model.PhoneNumber;
+            addr.AddressLine = model.AddressLine;
+
+            if (model.IsDefault && !addr.IsDefault)
+            {
+                var oldDefaults = await _context.UserAddresses.Where(a => a.UserId == user.Id && a.IsDefault).ToListAsync();
+                foreach (var old in oldDefaults) old.IsDefault = false;
+                addr.IsDefault = true;
+            }
+
+            await _context.SaveChangesAsync();
+            TempData["SuccessMessage"] = "Đã cập nhật địa chỉ!";
+            return RedirectToAction("Profile");
+        }
+
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteAddress(int id)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return RedirectToAction("Login");
+
+            var addr = await _context.UserAddresses.FirstOrDefaultAsync(a => a.Id == id && a.UserId == user.Id);
+            if (addr != null)
+            {
+                _context.UserAddresses.Remove(addr);
+                await _context.SaveChangesAsync();
+
+                if (addr.IsDefault)
+                {
+                    var firstRemaining = await _context.UserAddresses.FirstOrDefaultAsync(a => a.UserId == user.Id);
+                    if (firstRemaining != null)
+                    {
+                        firstRemaining.IsDefault = true;
+                        await _context.SaveChangesAsync();
+                    }
+                }
+                TempData["SuccessMessage"] = "Đã xóa địa chỉ!";
+            }
+            return RedirectToAction("Profile");
+        }
+
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SetDefaultAddress(int id)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return RedirectToAction("Login");
+
+            var oldDefaults = await _context.UserAddresses.Where(a => a.UserId == user.Id && a.IsDefault).ToListAsync();
+            foreach (var old in oldDefaults) old.IsDefault = false;
+
+            var addr = await _context.UserAddresses.FirstOrDefaultAsync(a => a.Id == id && a.UserId == user.Id);
+            if (addr != null)
+            {
+                addr.IsDefault = true;
+            }
+
+            await _context.SaveChangesAsync();
+            TempData["SuccessMessage"] = "Đã đặt làm địa chỉ mặc định!";
             return RedirectToAction("Profile");
         }
     }

@@ -1,4 +1,4 @@
-﻿@model List<Websitebanhang.Models.CartItem>
+@model List<Websitebanhang.Models.CartItem>
 @using System.Globalization
 @inject Microsoft.AspNetCore.Identity.UserManager<Websitebanhang.Models.ApplicationUser> UserManager
 @{
@@ -14,6 +14,34 @@
 
             <form asp-controller="Cart" asp-action="PlaceOrder" method="post">
                 <div class="row g-3">
+                    @{
+                        var addresses = ViewBag.UserAddresses as List<Websitebanhang.Models.UserAddress>;
+                        if (addresses != null && addresses.Any())
+                        {
+                            <div class="col-12 mb-3">
+                                <label class="form-label fw-bold">Chọn từ sổ địa chỉ</label>
+                                <select class="form-select border-warning" id="savedAddressSelect" onchange="fillAddressForm()">
+                                    <option value="">-- Nhập địa chỉ mới bên dưới --</option>
+                                    @foreach (var addr in addresses)
+                                    {
+                                        if (addr.IsDefault)
+                                        {
+                                            <option value="@addr.Id" data-name="@addr.FullName" data-phone="@addr.PhoneNumber" data-address="@addr.AddressLine" selected>
+                                                [Mặc định] @addr.FullName - @addr.PhoneNumber - @addr.AddressLine
+                                            </option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@addr.Id" data-name="@addr.FullName" data-phone="@addr.PhoneNumber" data-address="@addr.AddressLine">
+                                                @addr.FullName - @addr.PhoneNumber - @addr.AddressLine
+                                            </option>
+                                        }
+                                    }
+                                </select>
+                            </div>
+                        }
+                    }
+
                     <div class="col-md-6 form-floating">
                         <input type="text" name="name" class="form-control" id="name" value="@user?.FullName" required />
                         <label for="name">H? v� t�n</label>
@@ -70,3 +98,30 @@
         </div>
     </div>
 </div>
+
+<script>
+    function fillAddressForm() {
+        var select = document.getElementById('savedAddressSelect');
+        if (!select) return;
+        
+        var option = select.options[select.selectedIndex];
+        if (option.value) {
+            document.getElementById('name').value = option.getAttribute('data-name');
+            document.getElementById('phone').value = option.getAttribute('data-phone');
+            document.getElementById('address').value = option.getAttribute('data-address');
+        } else {
+            // Clear input so user can type new one
+            document.getElementById('name').value = '@(user?.FullName)';
+            document.getElementById('phone').value = '@(user?.PhoneNumber)';
+            document.getElementById('address').value = '@(user?.Address)';
+        }
+    }
+
+    // Auto-fill on load if default is selected
+    window.addEventListener('DOMContentLoaded', function() {
+        var select = document.getElementById('savedAddressSelect');
+        if (select && select.value) {
+            fillAddressForm();
+        }
+    });
+</script>

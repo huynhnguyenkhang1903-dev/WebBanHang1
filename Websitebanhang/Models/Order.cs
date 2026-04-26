@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
@@ -22,6 +22,9 @@ namespace Websitebanhang.Models
         public DateTime OrderDate { get; set; }
 
         public string Status { get; set; } = OrderStatus.Pending;
+
+        public string? ShippingProvider { get; set; }
+        public decimal ShippingCost { get; set; }
 
         public bool IsPaid { get; set; } = false;
         public string? TransactionId { get; set; }

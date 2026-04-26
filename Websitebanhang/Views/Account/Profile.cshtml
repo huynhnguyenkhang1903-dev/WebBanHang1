@@ -62,6 +62,9 @@
                     <button class="nav-link text-start fw-medium rounded-3 mb-2" id="v-pills-password-tab" data-bs-toggle="pill" data-bs-target="#v-pills-password" type="button" role="tab">
                         <i class="fa-solid fa-shield-halved me-2 w-20px text-center"></i> Đổi Mật Khẩu
                     </button>
+                    <button class="nav-link text-start fw-medium rounded-3 mb-2" id="v-pills-address-tab" data-bs-toggle="pill" data-bs-target="#v-pills-address" type="button" role="tab">
+                        <i class="fa-solid fa-map-location-dot me-2 w-20px text-center"></i> Sổ Địa Chỉ
+                    </button>
                     <button class="nav-link text-start fw-medium rounded-3" id="v-pills-orders-tab" data-bs-toggle="pill" data-bs-target="#v-pills-orders" type="button" role="tab">
                         <i class="fa-solid fa-receipt me-2 w-20px text-center"></i> Lịch Sử Đơn Hàng
                     </button>
@@ -126,6 +129,107 @@
                         </form>
                     </div>
 
+                    <!-- TAB: Address Book -->
+                    <div class="tab-pane fade" id="v-pills-address" role="tabpanel">
+                        <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-2">
+                            <h4 class="text-coffee fw-bold mb-0">Sổ Địa Chỉ</h4>
+                            <button type="button" class="btn btn-primary-custom rounded-pill px-3 py-1" data-bs-toggle="modal" data-bs-target="#addAddressModal">
+                                <i class="fa-solid fa-plus me-1"></i> Thêm địa chỉ mới
+                            </button>
+                        </div>
+                        
+                        @if (Model?.Addresses != null && Model.Addresses.Any())
+                        {
+                            <div class="row g-3">
+                                @foreach (var addr in Model.Addresses)
+                                {
+                                    <div class="col-md-12">
+                                        <div class="card h-100 border @(addr.IsDefault ? "border-warning shadow-sm" : "")">
+                                            <div class="card-body position-relative">
+                                                @if (addr.IsDefault)
+                                                {
+                                                    <span class="badge bg-warning text-dark position-absolute top-0 end-0 m-2">Mặc định</span>
+                                                }
+                                                <h6 class="card-title fw-bold text-coffee mb-1">@addr.FullName</h6>
+                                                <p class="card-text small text-muted mb-2"><i class="fa-solid fa-phone me-1"></i> @addr.PhoneNumber</p>
+                                                <p class="card-text mb-3">@addr.AddressLine</p>
+                                                
+                                                <div class="d-flex gap-2">
+                                                    <!-- Edit Button -->
+                                                    <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#editAddressModal_@addr.Id">
+                                                        <i class="fa-regular fa-pen-to-square"></i> Sửa
+                                                    </button>
+                                                    
+                                                    <!-- Delete Form -->
+                                                    <form asp-action="DeleteAddress" method="post" onsubmit="return confirm('Bạn có chắc chắn muốn xóa địa chỉ này?');">
+                                                        <input type="hidden" name="id" value="@addr.Id" />
+                                                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                            <i class="fa-regular fa-trash-can"></i> Xóa
+                                                        </button>
+                                                    </form>
+                                                    
+                                                    <!-- Set Default Form -->
+                                                    @if (!addr.IsDefault)
+                                                    {
+                                                        <form asp-action="SetDefaultAddress" method="post">
+                                                            <input type="hidden" name="id" value="@addr.Id" />
+                                                            <button type="submit" class="btn btn-sm btn-outline-primary">Thiết lập mặc định</button>
+                                                        </form>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Edit Address Modal -->
+                                    <div class="modal fade" id="editAddressModal_@addr.Id" tabindex="-1">
+                                      <div class="modal-dialog">
+                                        <div class="modal-content">
+                                          <form asp-action="EditAddress" method="post">
+                                              <input type="hidden" name="id" value="@addr.Id" />
+                                              <div class="modal-header">
+                                                <h5 class="modal-title text-coffee">Chỉnh sửa địa chỉ</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                              </div>
+                                              <div class="modal-body">
+                                                <div class="mb-3">
+                                                    <label class="form-label">Họ và tên</label>
+                                                    <input type="text" class="form-control" name="FullName" value="@addr.FullName" required />
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label">Số điện thoại</label>
+                                                    <input type="tel" class="form-control" name="PhoneNumber" value="@addr.PhoneNumber" required />
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label">Địa chỉ cụ thể</label>
+                                                    <textarea class="form-control" name="AddressLine" rows="3" required>@addr.AddressLine</textarea>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" name="IsDefault" value="true" @(addr.IsDefault ? "checked" : "") id="checkDefault_@addr.Id">
+                                                    <label class="form-check-label" for="checkDefault_@addr.Id">Đặt làm địa chỉ mặc định</label>
+                                                </div>
+                                              </div>
+                                              <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                                <button type="submit" class="btn btn-primary-custom">Lưu thay đổi</button>
+                                              </div>
+                                          </form>
+                                        </div>
+                                      </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="text-center py-5">
+                                <i class="fa-regular fa-map text-muted mb-3" style="font-size: 3rem;"></i>
+                                <h5 class="text-muted">Bạn chưa có địa chỉ nào</h5>
+                                <p class="text-secondary">Thêm địa chỉ giao hàng để thuận tiện hơn khi đặt hàng.</p>
+                            </div>
+                        }
+                    </div>
+
                     <!-- TAB: Order History -->
                     <div class="tab-pane fade" id="v-pills-orders" role="tabpanel">
                         <h4 class="text-coffee fw-bold mb-4 border-bottom pb-2">Lịch Sử Đơn Hàng</h4>
@@ -188,6 +292,42 @@
             </div>
         </div>
     </div>
+</div>
+
+<!-- Add Address Modal -->
+<div class="modal fade" id="addAddressModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form asp-action="AddAddress" method="post">
+          <div class="modal-header">
+            <h5 class="modal-title text-coffee">Thêm địa chỉ mới</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-3">
+                <label class="form-label">Họ và tên</label>
+                <input type="text" class="form-control" name="FullName" required />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Số điện thoại</label>
+                <input type="tel" class="form-control" name="PhoneNumber" required />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Địa chỉ cụ thể</label>
+                <textarea class="form-control" name="AddressLine" rows="3" required></textarea>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="IsDefault" value="true" id="checkDefaultNew">
+                <label class="form-check-label" for="checkDefaultNew">Đặt làm địa chỉ mặc định</label>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+            <button type="submit" class="btn btn-primary-custom">Thêm địa chỉ</button>
+          </div>
+      </form>
+    </div>
+  </div>
 </div>
 
 <style>

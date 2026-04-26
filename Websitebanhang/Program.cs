@@ -49,6 +49,20 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
 .AddRoles<IdentityRole>()
 .AddEntityFrameworkStores<AppDbContext>();
 
+builder.Services.AddAuthentication()
+    .AddGoogle(options =>
+    {
+        var googleAuthNSection = builder.Configuration.GetSection("Authentication:Google");
+        options.ClientId = googleAuthNSection["ClientId"]!;
+        options.ClientSecret = googleAuthNSection["ClientSecret"]!;
+    })
+    .AddFacebook(options =>
+    {
+        var facebookAuthNSection = builder.Configuration.GetSection("Authentication:Facebook");
+        options.AppId = facebookAuthNSection["AppId"]!;
+        options.AppSecret = facebookAuthNSection["AppSecret"]!;
+    });
+
 // ================= COOKIE =================
 builder.Services.ConfigureApplicationCookie(options =>
 {

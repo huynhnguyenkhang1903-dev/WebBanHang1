@@ -23,6 +23,8 @@ namespace Websitebanhang.Data
 
         public DbSet<Voucher> Voucher { get; set; } // Add Voucher DbSet
 
+        public DbSet<UserAddress> UserAddresses { get; set; }
+
         // CONFIG DATABASE
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
