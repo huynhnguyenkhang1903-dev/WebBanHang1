@@ -143,7 +143,7 @@ namespace Websitebanhang.Controllers
         // ================= ĐẶT HÀNG =================
         [HttpPost]
         [Authorize]
-        public async Task<IActionResult> PlaceOrder(string name, string email, string address, string phone, string paymentMethod, string shippingMethod, string? voucherCode, string? shippingVoucherCode)
+        public async Task<IActionResult> PlaceOrder(string name, string email, string address, string phone, string paymentMethod, string shippingProvider, string? voucherCode, string? shippingVoucherCode)
         {
             var cart = HttpContext.Session.GetObject<List<CartItem>>("Cart") ?? new List<CartItem>();
             if (cart.Count == 0) return RedirectToAction("Index");
@@ -160,12 +160,12 @@ namespace Websitebanhang.Controllers
             sb.AppendLine($"</tbody><tfoot><tr><th colspan=3>Tạm tính</th><th>{subtotal.ToString("N0")} ₫</th></tr></tfoot></table>");
             TempData["Debug_CartHtml"] = sb.ToString();
 
-            // Determine shipping cost server-side (must match client JS)
+            // Determine shipping cost server-side
             decimal shippingCost = 0m;
-            if (string.Equals(shippingMethod, "fast", StringComparison.OrdinalIgnoreCase))
-                shippingCost = 30000m;
-            else
-                shippingCost = 10000m; // economy default
+            if (shippingProvider == "Viettel Post") shippingCost = 20000m;
+            else if (shippingProvider == "GHN") shippingCost = 25000m;
+            else if (shippingProvider == "Hỏa tốc") shippingCost = 50000m;
+            else shippingCost = 15000m; // GHTK default
 
             // Apply order voucher discount if provided
             Voucher? appliedVoucher = null;
@@ -209,6 +209,8 @@ namespace Websitebanhang.Controllers
                 Phone = phone,
                 PaymentMethod = paymentMethod,
                 TotalAmount = finalTotal,
+                ShippingProvider = shippingProvider ?? "GHTK",
+                ShippingCost = shippingCost,
                 OrderDate = DateTime.Now,
                 Status = "Pending",
                 IsPaid = false,

@@ -81,6 +81,14 @@
             </tbody>
             <tfoot>
                 <tr>
+                    <td colspan="4" class="text-end fw-bold">Tạm tính:</td>
+                    <td class="text-end fw-bold">@((Model.TotalAmount - Model.ShippingCost).ToString("N0")) ₫</td>
+                </tr>
+                <tr>
+                    <td colspan="4" class="text-end fw-bold">Phí vận chuyển (@(string.IsNullOrEmpty(Model.ShippingProvider) ? "Mặc định" : Model.ShippingProvider)):</td>
+                    <td class="text-end fw-bold">@Model.ShippingCost.ToString("N0") ₫</td>
+                </tr>
+                <tr>
                     <td colspan="4" class="text-end fw-bold">Tổng cộng:</td>
                     <td class="text-end fw-bold text-danger">@Model.TotalAmount.ToString("N0") ₫</td>
                 </tr>

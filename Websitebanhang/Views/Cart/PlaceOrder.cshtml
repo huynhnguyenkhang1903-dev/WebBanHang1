@@ -74,9 +74,27 @@
                             }
                         </div>
 
-                        <div class="d-flex justify-content-between align-items-center mb-4">
-                            <div class="fw-bold">T?ng:</div>
-                            <div class="fw-bold text-gold fs-4">@total.ToString("N0", CultureInfo.CurrentCulture) ?</div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Đơn vị vận chuyển</label>
+                            <select name="shippingProvider" id="shippingProvider" class="form-select border-info" required onchange="calculateTotal()">
+                                <option value="GHTK" data-cost="15000" selected>Giao Hàng Tiết Kiệm (15.000 ₫)</option>
+                                <option value="Viettel Post" data-cost="20000">Viettel Post (20.000 ₫)</option>
+                                <option value="GHN" data-cost="25000">Giao Hàng Nhanh (25.000 ₫)</option>
+                                <option value="Hỏa tốc" data-cost="50000">Giao Hỏa Tốc (50.000 ₫)</option>
+                            </select>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div class="text-secondary">Tạm tính:</div>
+                            <div class="fw-bold" id="subTotalDisplay" data-value="@total">@total.ToString("N0", CultureInfo.CurrentCulture) ₫</div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div class="text-secondary">Phí vận chuyển:</div>
+                            <div class="fw-bold text-info" id="shippingCostDisplay">15.000 ₫</div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-4 border-top pt-2">
+                            <div class="fw-bold fs-5">Tổng cộng:</div>
+                            <div class="fw-bold text-gold fs-4" id="finalTotalDisplay">@((total + 15000).ToString("N0", CultureInfo.CurrentCulture)) ₫</div>
                         </div>
 
                         <div class="mb-3">
@@ -117,11 +135,24 @@
         }
     }
 
+    function calculateTotal() {
+        var subTotal = parseFloat(document.getElementById('subTotalDisplay').getAttribute('data-value')) || 0;
+        var select = document.getElementById('shippingProvider');
+        var option = select.options[select.selectedIndex];
+        var shippingCost = parseFloat(option.getAttribute('data-cost')) || 0;
+
+        document.getElementById('shippingCostDisplay').innerText = new Intl.NumberFormat('vi-VN').format(shippingCost) + ' ₫';
+        
+        var finalTotal = subTotal + shippingCost;
+        document.getElementById('finalTotalDisplay').innerText = new Intl.NumberFormat('vi-VN').format(finalTotal) + ' ₫';
+    }
+
     // Auto-fill on load if default is selected
     window.addEventListener('DOMContentLoaded', function() {
         var select = document.getElementById('savedAddressSelect');
         if (select && select.value) {
             fillAddressForm();
         }
+        calculateTotal();
     });
 </script>
