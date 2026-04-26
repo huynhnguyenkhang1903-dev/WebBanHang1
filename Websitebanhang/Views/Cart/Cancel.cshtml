@@ -1,27 +1,23 @@
-@model Websitebanhang.Models.Order
+﻿@model Websitebanhang.Models.Order
 @{
-    ViewData["Title"] = "H?y ??n h�ng";
+    ViewData["Title"] = "Hủy đơn hàng";
 }
 
-<div class="row justify-content-center mt-5">
-    <div class="col-md-8">
-        <div class="bg-white p-4 rounded shadow-sm">
-            <h3 class="text-danger mb-3">H?y ??n h�ng #ORD-@Model.Id.ToString("D3")</h3>
-
-            <div class="mb-3">
-                <p>B?n c� ch?c mu?n h?y ??n h�ng n�y?</p>
-                <ul>
-                    <li><strong>Kh�ch h�ng:</strong> @Model.CustomerName</li>
-                    <li><strong>T?ng ti?n:</strong> @Model.TotalAmount.ToString("N0") ?</li>
-                    <li><strong>Tr?ng th�i:</strong> @Model.Status</li>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 bg-white p-4 rounded shadow-sm text-center">
+            <h3 class="text-danger mb-3">Hủy đơn hàng #ORD-@Model.Id.ToString("D3")</h3>
+            <div class="alert alert-warning">
+                <p>Bạn có chắc muốn hủy đơn hàng này?</p>
+                <ul class="list-unstyled text-start ms-4">
+                    <li><strong>Tổng tiền:</strong> @Model.TotalAmount.ToString("N0") ₫</li>
+                    <li><strong>Trạng thái:</strong> @Model.Status</li>
                 </ul>
             </div>
-
-            <form asp-controller="Cart" asp-action="CancelOrder" method="post" onsubmit="return confirm('X�c nh?n h?y ??n?');">
-                @Html.AntiForgeryToken()
+            <form asp-controller="Cart" asp-action="CancelOrder" method="post" onsubmit="return confirm('Xác nhận hủy đơn?');">
                 <input type="hidden" name="orderId" value="@Model.Id" />
-                <button type="submit" class="btn btn-danger">X�c nh?n h?y ??n</button>
-                <a asp-controller="Account" asp-action="Profile" class="btn btn-outline-secondary ms-2">Quay l?i</a>
+                <button type="submit" class="btn btn-danger">Xác nhận hủy đơn</button>
+                <a asp-controller="Account" asp-action="Profile" class="btn btn-outline-secondary ms-2">Quay lại</a>
             </form>
         </div>
     </div>

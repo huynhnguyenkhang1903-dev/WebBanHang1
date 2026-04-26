@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace Websitebanhang.Models.ViewModels
 {
@@ -23,6 +23,7 @@ namespace Websitebanhang.Models.ViewModels
         public string Email { get; set; } = string.Empty;
 
         [Required]
+        [MinLength(8, ErrorMessage = "Mật khẩu phải dài ít nhất 8 ký tự")]
         [DataType(DataType.Password)]
         public string Password { get; set; } = string.Empty;
 

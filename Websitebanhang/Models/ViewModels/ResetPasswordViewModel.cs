@@ -11,7 +11,7 @@ namespace Websitebanhang.Models.ViewModels
         public string Token { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Mật khẩu mới không được để trống")]
-        [StringLength(100, ErrorMessage = "{0} phải dài ít nhất {2} ký tự.", MinimumLength = 6)]
+        [StringLength(100, ErrorMessage = "{0} phải dài ít nhất {2} ký tự.", MinimumLength = 8)]
         [DataType(DataType.Password)]
         [Display(Name = "Mật khẩu mới")]
         public string Password { get; set; } = string.Empty;

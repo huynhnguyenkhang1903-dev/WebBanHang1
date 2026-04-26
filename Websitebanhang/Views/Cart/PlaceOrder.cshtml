@@ -1,8 +1,8 @@
-@model List<Websitebanhang.Models.CartItem>
+ï»¿@model List<Websitebanhang.Models.CartItem>
 @using System.Globalization
 @inject Microsoft.AspNetCore.Identity.UserManager<Websitebanhang.Models.ApplicationUser> UserManager
 @{
-    ViewData["Title"] = "Xác nh?n ??n hàng";
+    ViewData["Title"] = "Xï¿½c nh?n ??n hï¿½ng";
     var user = await UserManager.GetUserAsync(User);
     decimal total = Model?.Sum(i => i.Price * i.Quantity) ?? 0m;
 }
@@ -10,13 +10,13 @@
 <div class="row fade-in">
     <div class="col-md-8 mx-auto">
         <div class="bg-white p-4 rounded-4 shadow-sm">
-            <h3 class="mb-3 text-coffee">Xác nh?n ??n hàng</h3>
+            <h3 class="mb-3 text-coffee">Xï¿½c nh?n ??n hï¿½ng</h3>
 
             <form asp-controller="Cart" asp-action="PlaceOrder" method="post">
                 <div class="row g-3">
                     <div class="col-md-6 form-floating">
                         <input type="text" name="name" class="form-control" id="name" value="@user?.FullName" required />
-                        <label for="name">H? và tên</label>
+                        <label for="name">H? vï¿½ tï¿½n</label>
                     </div>
                     <div class="col-md-6 form-floating">
                         <input type="email" name="email" class="form-control" id="email" value="@user?.Email" required />
@@ -24,7 +24,7 @@
                     </div>
                     <div class="col-12 form-floating">
                         <input type="text" name="address" class="form-control" id="address" value="@user?.Address" required />
-                        <label for="address">??a ch? giao hàng</label>
+                        <label for="address">??a ch? giao hï¿½ng</label>
                     </div>
                     <div class="col-md-6 form-floating">
                         <input type="tel" name="phone" class="form-control" id="phone" value="@user?.PhoneNumber" required />
@@ -52,17 +52,17 @@
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Ph??ng th?c thanh toán</label>
+                            <label class="form-label fw-bold">Ph??ng th?c thanh toï¿½n</label>
                             <select name="paymentMethod" class="form-select" required>
-                                <option value="COD">Thanh toán khi nh?n hàng (COD)</option>
-                                <option value="bank">Chuy?n kho?n ngân hàng</option>
+                                <option value="COD">Thanh toï¿½n khi nh?n hï¿½ng (COD)</option>
+                                <option value="bank">Chuyá»ƒn khoáº£n ngÃ¢n hÃ ng</option>
                                 <option value="VNPay">VNPay</option>
                             </select>
                         </div>
 
                         <div class="d-flex gap-2">
-                            <button type="submit" class="btn btn-primary-custom">Xác nh?n ??t hàng</button>
-                            <a asp-controller="Cart" asp-action="Index" class="btn btn-outline-dark">Quay l?i gi? hàng</a>
+                            <button type="submit" class="btn btn-primary-custom">Xï¿½c nh?n ??t hï¿½ng</button>
+                            <a asp-controller="Cart" asp-action="Index" class="btn btn-outline-dark">Quay l?i gi? hï¿½ng</a>
                         </div>
                     </div>
                 </div>

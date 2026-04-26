@@ -12,7 +12,7 @@ namespace Websitebanhang.Models.ViewModels
         [Required(ErrorMessage = "Mật khẩu mới không được để trống")]
         [DataType(DataType.Password)]
         [Display(Name = "Mật khẩu mới")]
-        [MinLength(6, ErrorMessage = "Mật khẩu phải dài ít nhất 6 ký tự")]
+        [MinLength(8, ErrorMessage = "Mật khẩu phải dài ít nhất 8 ký tự")]
         public string NewPassword { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Xác nhận mật khẩu không được để trống")]
