@@ -1,0 +1,125 @@
+@{
+    ViewData["Title"] = "Liên Hệ Aura Coffee";
+}
+
+<div class="container mt-5 mb-5 fade-in">
+    <div class="row text-center mb-5">
+        <div class="col-12">
+            <h1 class="display-4 fw-bold text-coffee mb-3">Liên Hệ Với Chúng Tôi</h1>
+            <p class="lead text-secondary mx-auto" style="max-width: 600px;">
+                Cảm ơn bạn đã quan tâm đến Aura Coffee. Hãy để lại thông tin hoặc liên hệ trực tiếp với chúng tôi qua các kênh dưới đây để được hỗ trợ nhanh nhất.
+            </p>
+        </div>
+    </div>
+
+    <div class="row g-5">
+        <!-- Thông tin liên hệ -->
+        <div class="col-md-5">
+            <div class="bg-light p-5 rounded-4 shadow-sm h-100">
+                <h3 class="mb-4 text-coffee">Thông Tin Cửa Hàng</h3>
+                
+                <div class="d-flex align-items-center mb-4">
+                    <div class="bg-white rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 50px; height: 50px; min-width: 50px;">
+                        <i class="fa-solid fa-location-dot text-gold fs-5"></i>
+                    </div>
+                    <div class="ms-3">
+                        <h6 class="mb-1 fw-bold">Địa Chỉ</h6>
+                        <p class="text-muted mb-0">123 Đường Cà Phê, Quận 1, TP. Hồ Chí Minh</p>
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-center mb-4">
+                    <div class="bg-white rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 50px; height: 50px; min-width: 50px;">
+                        <i class="fa-solid fa-phone text-gold fs-5"></i>
+                    </div>
+                    <div class="ms-3">
+                        <h6 class="mb-1 fw-bold">Hotline</h6>
+                        <p class="text-muted mb-0">0123 456 789 (Zalo/Viber)</p>
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-center mb-4">
+                    <div class="bg-white rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 50px; height: 50px; min-width: 50px;">
+                        <i class="fa-solid fa-envelope text-gold fs-5"></i>
+                    </div>
+                    <div class="ms-3">
+                        <h6 class="mb-1 fw-bold">Email</h6>
+                        <p class="text-muted mb-0">support@auracoffee.vn</p>
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-center">
+                    <div class="bg-white rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 50px; height: 50px; min-width: 50px;">
+                        <i class="fa-regular fa-clock text-gold fs-5"></i>
+                    </div>
+                    <div class="ms-3">
+                        <h6 class="mb-1 fw-bold">Giờ Mở Cửa</h6>
+                        <p class="text-muted mb-0">Thứ 2 - Chủ Nhật: 7:00 Sáng - 10:00 Tối</p>
+                    </div>
+                </div>
+                
+                <hr class="my-4">
+                
+                <h6 class="fw-bold text-coffee mb-3">Kết nối Mạng Xã Hội</h6>
+                <div class="d-flex gap-3 fs-4">
+                    <a href="#" class="text-coffee"><i class="fa-brands fa-facebook"></i></a>
+                    <a href="#" class="text-coffee"><i class="fa-brands fa-instagram"></i></a>
+                    <a href="#" class="text-coffee"><i class="fa-brands fa-tiktok"></i></a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form gửi tin nhắn -->
+        <div class="col-md-7">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-body p-5">
+                    <h3 class="mb-4 text-coffee">Gửi Tin Nhắn Cho Aura Coffee</h3>
+                    <form onsubmit="alert('Cảm ơn bạn đã liên hệ! Chúng tôi sẽ phản hồi sớm nhất.'); return false;">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Họ và Tên</label>
+                                <input type="text" class="form-control" placeholder="Nhập tên của bạn" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Số Điện Thoại</label>
+                                <input type="tel" class="form-control" placeholder="Nhập số điện thoại" required>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-bold">Email</label>
+                                <input type="email" class="form-control" placeholder="Nhập địa chỉ email">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-bold">Chủ Đề</label>
+                                <input type="text" class="form-control" placeholder="Nhập chủ đề liên hệ" required>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-bold">Nội Dung</label>
+                                <textarea class="form-control" rows="5" placeholder="Nhập nội dung chi tiết..." required></textarea>
+                            </div>
+                            <div class="col-12 mt-4">
+                                <button type="submit" class="btn btn-primary-custom px-5 py-2 w-100">Gửi Tin Nhắn <i class="fa-solid fa-paper-plane ms-2"></i></button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bản đồ -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="rounded-4 overflow-hidden shadow-sm" style="height: 400px; background-color: #f8f9fa;">
+                <iframe 
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3919.46739958316!2d106.69744431525997!3d10.77543009232321!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31752f385570472f%3A0x1787491df0ed8d6a!2sDinh%20%C4%90%E1%BB%99c%20L%E1%BA%ADp!5e0!3m2!1svi!2s!4v1689234567890!5m2!1svi!2s" 
+                    width="100%" 
+                    height="100%" 
+                    style="border:0;" 
+                    allowfullscreen="" 
+                    loading="lazy" 
+                    referrerpolicy="no-referrer-when-downgrade">
+                </iframe>
+            </div>
+        </div>
+    </div>
+</div>

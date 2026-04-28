@@ -22,13 +22,19 @@
                         </div>
 
                         <div class="row">
-                            <div class="col-md-6 mb-3">
+                            <div class="col-md-4 mb-3">
                                 <label asp-for="Price" class="form-label fw-bold">Giá (VNĐ)</label>
                                 <input asp-for="Price" type="number" class="form-control" />
                                 <span asp-validation-for="Price" class="text-danger"></span>
                             </div>
 
-                            <div class="col-md-6 mb-3">
+                            <div class="col-md-4 mb-3">
+                                <label asp-for="Stock" class="form-label fw-bold">Tồn kho</label>
+                                <input asp-for="Stock" type="number" class="form-control" value="0" min="0" />
+                                <span asp-validation-for="Stock" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-4 mb-3">
                                 <label asp-for="CategoryId" class="form-label fw-bold">Danh mục</label>
                                 <select asp-for="CategoryId" class="form-select" asp-items="@(new SelectList(ViewBag.Categories, "Id", "Name"))">
                                     <option value="">-- Chọn danh mục --</option>

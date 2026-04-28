@@ -44,7 +44,7 @@
 
                 <div class="row g-4 mb-4">
                     <!-- Price -->
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <div class="form-floating">
                             <input asp-for="Price" type="number" class="form-control bg-light border-0 fw-bold text-coffee" id="floatingPrice" placeholder="Giá">
                             <label for="floatingPrice" class="ps-4">Giá (VNĐ)</label>
@@ -52,8 +52,17 @@
                         <span asp-validation-for="Price" class="text-danger small mt-1 d-block"></span>
                     </div>
 
+                    <!-- Stock -->
+                    <div class="col-md-4">
+                        <div class="form-floating">
+                            <input asp-for="Stock" type="number" class="form-control bg-light border-0 fw-bold text-coffee" id="floatingStock" placeholder="Tồn kho" min="0">
+                            <label for="floatingStock" class="ps-4">Tồn Kho</label>
+                        </div>
+                        <span asp-validation-for="Stock" class="text-danger small mt-1 d-block"></span>
+                    </div>
+
                     <!-- Category -->
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <div class="form-floating">
                             <select asp-for="CategoryId" class="form-select bg-light border-0" id="floatingCategory" asp-items="@(new SelectList(ViewBag.Categories, "Id", "Name", Model.CategoryId))">
                                 <option value="">-- Chọn danh mục --</option>

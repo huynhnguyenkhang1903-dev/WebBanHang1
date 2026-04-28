@@ -274,6 +274,32 @@ namespace Websitebanhang.Controllers
 
             HttpContext.Session.Remove("Cart");
 
+            // --- SEND CONFIRMATION EMAIL ---
+            try
+            {
+                string emailBody = $@"
+                    <h2>Xác nhận đơn hàng #{order.Id}</h2>
+                    <p>Chào {order.CustomerName},</p>
+                    <p>Cảm ơn bạn đã đặt hàng tại Coffee Shop. Đơn hàng của bạn đang được xử lý.</p>
+                    <h3>Chi tiết đơn hàng:</h3>
+                    <ul>
+                        <li><strong>Tổng tiền:</strong> {order.TotalAmount:N0} ₫</li>
+                        <li><strong>Phương thức thanh toán:</strong> {(order.PaymentMethod == "bank" ? "Chuyển khoản ngân hàng" : "Thanh toán khi nhận hàng (COD)")}</li>
+                        <li><strong>Địa chỉ giao hàng:</strong> {order.Address}</li>
+                    </ul>
+                    <p>Chúng tôi sẽ liên hệ với bạn trong thời gian sớm nhất.</p>
+                    <br/>
+                    <p>Trân trọng,</p>
+                    <p><strong>Đội ngũ Coffee Shop</strong></p>
+                ";
+                await _emailService.SendEmailAsync(order.Email, $"Coffee Shop - Xác nhận đơn hàng #{order.Id}", emailBody);
+            }
+            catch
+            {
+                // Ignore email sending error so order process doesn't fail
+            }
+            // -------------------------------
+
             // 🔥 BANK
             if (paymentMethod == "bank")
             {
@@ -385,6 +411,30 @@ namespace Websitebanhang.Controllers
         }
 
         public IActionResult PaymentSuccess(int id)
+        {
+            ViewBag.OrderId = id;
+            return View();
+        }
+
+        // ================= FAILED PAYMENT =================
+        [HttpPost]
+        public async Task<IActionResult> FailPayment(int orderId)
+        {
+            var order = await _context.Orders.FindAsync(orderId);
+            if (order == null) return NotFound();
+
+            if (order.IsPaid || order.Status == "Cancelled")
+            {
+                return BadRequest("Không thể báo lỗi thanh toán cho đơn hàng này.");
+            }
+
+            // Could change status to 'Payment Failed' or keep as 'Pending' so they can retry.
+            // Let's just keep it as Pending so they can retry or cancel from Profile.
+            
+            return RedirectToAction("PaymentFailed", new { id = orderId });
+        }
+
+        public IActionResult PaymentFailed(int id)
         {
             ViewBag.OrderId = id;
             return View();

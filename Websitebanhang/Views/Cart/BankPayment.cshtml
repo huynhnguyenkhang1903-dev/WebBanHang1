@@ -1,4 +1,4 @@
-﻿@{
+@{
     ViewData["Title"] = "Thanh toán chuyển khoản";
 }
 
@@ -48,8 +48,13 @@
                     <button type="submit" class="btn btn-success btn-lg px-4">Tôi đã chuyển khoản</button>
                 </form>
 
+                <form asp-controller="Cart" asp-action="FailPayment" method="post">
+                    <input type="hidden" name="orderId" value="@ViewBag.OrderId" />
+                    <button type="submit" class="btn btn-danger btn-lg px-4">Gặp sự cố / Huỷ</button>
+                </form>
+
                 <form asp-controller="Home" asp-action="Index" method="get">
-                    <button type="submit" class="btn btn-outline-secondary btn-lg px-4">Quay lại cửa hàng</button>
+                    <button type="submit" class="btn btn-outline-secondary btn-lg px-4">Để sau</button>
                 </form>
             </div>
 

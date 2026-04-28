@@ -5,6 +5,7 @@ using Websitebanhang.Data;
 using Websitebanhang.Models.ViewModels;
 using System.Globalization;
 using Websitebanhang.Models;
+using Websitebanhang.Services;
 
 namespace Websitebanhang.Controllers
 {
@@ -12,10 +13,12 @@ namespace Websitebanhang.Controllers
     public class AdminOrderController : Controller
     {
         private readonly AppDbContext _context;
+        private readonly IEmailService _emailService;
 
-        public AdminOrderController(AppDbContext context)
+        public AdminOrderController(AppDbContext context, IEmailService emailService)
         {
             _context = context;
+            _emailService = emailService;
         }
 
         // ================= DANH SÁCH =================
@@ -88,13 +91,31 @@ namespace Websitebanhang.Controllers
                 .ThenBy(x => x.Month)
                 .ToListAsync();
 
+            var topProducts = await _context.Orders
+                .Where(o => o.OrderDate >= start && o.OrderDate <= end &&
+                            (o.IsPaid || o.Status == "Delivered"))
+                .Include(o => o.Items)
+                .SelectMany(o => o.Items ?? new List<CartItem>())
+                .GroupBy(i => new { i.ProductId, i.Name })
+                .Select(g => new TopSellingProduct
+                {
+                    ProductId = g.Key.ProductId,
+                    ProductName = g.Key.Name,
+                    TotalQuantity = g.Sum(i => i.Quantity),
+                    TotalRevenue = g.Sum(i => i.Quantity * i.Price)
+                })
+                .OrderByDescending(p => p.TotalQuantity)
+                .Take(10)
+                .ToListAsync();
+
             var model = new RevenueViewModel
             {
                 TotalRevenue = totalRevenue,
                 OrdersCount = ordersCount,
                 PaidOrdersCount = paidOrdersCount,
                 RevenueByDay = revenueByDay,
-                RevenueByMonth = revenueByMonth
+                RevenueByMonth = revenueByMonth,
+                TopProducts = topProducts
             };
 
             ViewBag.From = start.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
@@ -120,7 +141,36 @@ namespace Websitebanhang.Controllers
             order.Status = "Confirmed";
             await _context.SaveChangesAsync();
 
-            TempData["Success"] = "Đã duyệt đơn!";
+            // --- GỬI EMAIL XÁC NHẬN KHI ADMIN DUYỆT ĐƠN ---
+            try
+            {
+                if (!string.IsNullOrEmpty(order.Email))
+                {
+                    string emailBody = $@"
+                        <h2>Xác nhận duyệt đơn hàng #{order.Id}</h2>
+                        <p>Chào {order.CustomerName},</p>
+                        <p>Đơn hàng của bạn đã được cửa hàng xác nhận và đang trong quá trình chuẩn bị.</p>
+                        <h3>Chi tiết đơn hàng:</h3>
+                        <ul>
+                            <li><strong>Tổng tiền:</strong> {order.TotalAmount:N0} ₫</li>
+                            <li><strong>Phương thức thanh toán:</strong> {(order.PaymentMethod == "bank" ? "Chuyển khoản ngân hàng" : "Thanh toán khi nhận hàng (COD)")}</li>
+                            <li><strong>Địa chỉ giao hàng:</strong> {order.Address}</li>
+                        </ul>
+                        <p>Chúng tôi sẽ thông báo cho bạn khi đơn hàng bắt đầu được giao.</p>
+                        <br/>
+                        <p>Trân trọng,</p>
+                        <p><strong>Đội ngũ Coffee Shop</strong></p>
+                    ";
+                    await _emailService.SendEmailAsync(order.Email, $"Coffee Shop - Đơn hàng #{order.Id} đã được duyệt", emailBody);
+                }
+            }
+            catch
+            {
+                // Bỏ qua lỗi gửi email để không chặn luồng duyệt đơn
+            }
+            // ------------------------------------------------
+
+            TempData["Success"] = "Đã duyệt đơn và gửi email xác nhận!";
             return RedirectToAction("Details", new { id });
         }
 

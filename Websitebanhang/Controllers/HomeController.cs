@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Websitebanhang.Data;
 using Websitebanhang.Models;
@@ -61,6 +61,17 @@ namespace Websitebanhang.Controllers
                     .Take(6)
                     .ToList();
             }
+
+            // Products on promotion (has valid voucher)
+            var promoProducts = _context.Products
+                .Include(p => p.Category)
+                .Include(p => p.Voucher)
+                .Where(p => p.VoucherId != null && p.Voucher != null && p.Voucher.ExpiryDate >= DateTime.Now)
+                .OrderByDescending(p => p.Id)
+                .Take(6)
+                .ToList();
+            
+            ViewBag.PromoProducts = promoProducts;
 
             var activeVouchers = _context.Voucher
                 .Where(v => v.ExpiryDate >= DateTime.Now)
@@ -130,6 +141,11 @@ namespace Websitebanhang.Controllers
                 message = "Đã nhận mã: " + code,
                 code = code
             });
+        }
+
+        public IActionResult Contact()
+        {
+            return View();
         }
     }
 }

@@ -1,0 +1,90 @@
+@model IEnumerable<Websitebanhang.Controllers.BackupFileViewModel>
+@{
+    ViewData["Title"] = "Sao lưu & Khôi phục";
+    Layout = "_AdminLayout";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold"><i class="fa-solid fa-database text-primary me-2"></i> Sao Lưu & Khôi Phục Dữ Liệu</h2>
+        <form asp-action="Create" method="post">
+            <button type="submit" class="btn btn-primary">
+                <i class="fa-solid fa-cloud-arrow-up me-1"></i> Tạo Bản Sao Lưu Mới
+            </button>
+        </form>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fa-solid fa-circle-check me-2"></i> @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fa-solid fa-triangle-exclamation me-2"></i> @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
+            <div class="alert alert-warning border-warning border-start border-4 border-end-0 border-top-0 border-bottom-0 bg-light">
+                <h5 class="alert-heading fw-bold text-warning"><i class="fa-solid fa-triangle-exclamation me-2"></i>Cảnh báo quan trọng!</h5>
+                <p class="mb-0">Khôi phục dữ liệu (Restore) sẽ <strong>GHI ĐÈ</strong> toàn bộ thông tin hiện tại (sản phẩm, tài khoản, đơn hàng...) bằng dữ liệu từ thời điểm sao lưu. Quá trình này sẽ khiến website tạm ngưng hoạt động trong vài giây. Hãy cẩn trọng!</p>
+            </div>
+
+            <div class="table-responsive mt-4">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Tên File</th>
+                            <th>Dung lượng</th>
+                            <th>Ngày tạo</th>
+                            <th class="text-end">Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            foreach (var file in Model)
+                            {
+                                <tr>
+                                    <td><i class="fa-solid fa-file-zipper text-secondary me-2"></i> <strong>@file.FileName</strong></td>
+                                    <td>@file.SizeMB MB</td>
+                                    <td>@file.CreationTime.ToString("dd/MM/yyyy HH:mm:ss")</td>
+                                    <td class="text-end">
+                                        <!-- Form Khôi phục -->
+                                        <form asp-action="Restore" method="post" class="d-inline-block" onsubmit="return confirm('CẢNH BÁO: Toàn bộ dữ liệu hiện tại sẽ bị mất và ghi đè bằng file này! Bạn có chắc chắn muốn KHÔI PHỤC không?');">
+                                            <input type="hidden" name="fileName" value="@file.FileName" />
+                                            <button type="submit" class="btn btn-sm btn-outline-warning">
+                                                <i class="fa-solid fa-clock-rotate-left"></i> Khôi phục
+                                            </button>
+                                        </form>
+
+                                        <!-- Form Xóa -->
+                                        <form asp-action="Delete" method="post" class="d-inline-block ms-1" onsubmit="return confirm('Bạn có chắc chắn muốn xóa bản sao lưu này không?');">
+                                            <input type="hidden" name="fileName" value="@file.FileName" />
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                <i class="fa-solid fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="4" class="text-center text-muted py-4">Chưa có bản sao lưu nào.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,44 @@
+@{
+    ViewData["Title"] = "Thanh Toán Thất Bại";
+}
+
+<div class="container mt-5 mb-5 fade-in">
+    <div class="row justify-content-center">
+        <div class="col-md-8 text-center bg-white p-5 rounded-4 shadow-sm border-0 position-relative overflow-hidden">
+            <!-- Decorative header background -->
+            <div class="position-absolute top-0 start-0 w-100 bg-danger opacity-10" style="height: 120px;"></div>
+            
+            <div class="position-relative z-index-1">
+                <div class="d-inline-flex align-items-center justify-content-center bg-white rounded-circle shadow-sm mb-4" style="width: 80px; height: 80px;">
+                    <i class="fa-solid fa-triangle-exclamation text-danger" style="font-size: 2.5rem;"></i>
+                </div>
+                
+                <h2 class="text-danger fw-bold mb-3">Thanh Toán Chưa Thành Công</h2>
+                
+                <p class="text-secondary fs-5 mb-4">
+                    Giao dịch thanh toán cho đơn hàng <strong>#ORD-@ViewBag.OrderId</strong> đã bị hủy hoặc gặp sự cố.
+                </p>
+
+                <div class="bg-light rounded-3 p-4 text-start mb-4 mx-auto" style="max-width: 500px;">
+                    <h6 class="fw-bold mb-2"><i class="fa-solid fa-circle-info text-primary me-2"></i>Nguyên nhân có thể:</h6>
+                    <ul class="text-muted small mb-0 ps-3">
+                        <li class="mb-1">Bạn đã chủ động hủy quá trình thanh toán.</li>
+                        <li class="mb-1">Lỗi kết nối ngân hàng hoặc thời gian chờ quá lâu.</li>
+                        <li>Số dư tài khoản không đủ để thực hiện giao dịch.</li>
+                    </ul>
+                </div>
+
+                <p class="text-muted mb-5">Đơn hàng của bạn vẫn được lưu trong hệ thống ở trạng thái <span class="badge bg-warning text-dark">Chờ thanh toán</span>. Bạn có thể thử thanh toán lại hoặc chọn phương thức khác.</p>
+
+                <div class="d-flex justify-content-center gap-3">
+                    <a href="/Account/Profile" class="btn btn-outline-dark btn-lg px-4 rounded-pill">
+                        <i class="fa-solid fa-user me-2"></i> Quản Lý Đơn Hàng
+                    </a>
+                    <a href="/" class="btn btn-primary-custom btn-lg px-4 rounded-pill">
+                        <i class="fa-solid fa-house me-2"></i> Về Trang Chủ
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -21,6 +21,10 @@ namespace Websitebanhang.Models
         // Quốc gia sản phẩm
         public string Country { get; set; } = "Vietnam";
 
+        [Required(ErrorMessage = "Số lượng tồn kho không được để trống")]
+        [Range(0, int.MaxValue, ErrorMessage = "Tồn kho không hợp lệ")]
+        public int Stock { get; set; } = 0;
+
         // Category
         [Required]
         public int CategoryId { get; set; }

@@ -51,6 +51,28 @@
     </div>
 </div>
 
+<!-- PROMO BANNERS -->
+<div class="row g-4 mb-5 fade-in delay-2">
+    <div class="col-md-6">
+        <div class="position-relative overflow-hidden rounded-4 shadow-sm" style="height: 200px;">
+            <img src="https://images.unsplash.com/photo-1559525839-b184a4d698c7?auto=format&fit=crop&w=800&q=80" alt="Banner 1" class="w-100 h-100 object-fit-cover" style="transition: transform 0.3s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+            <div class="position-absolute top-0 start-0 w-100 h-100 d-flex flex-column justify-content-center p-4 bg-dark bg-opacity-50">
+                <h3 class="text-white fw-bold mb-2">Combo Sáng Sớm</h3>
+                <p class="text-white mb-0">Giảm 15% khi mua kèm bánh ngọt</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="position-relative overflow-hidden rounded-4 shadow-sm" style="height: 200px;">
+            <img src="https://images.unsplash.com/photo-1447933601403-0c6688de566e?auto=format&fit=crop&w=800&q=80" alt="Banner 2" class="w-100 h-100 object-fit-cover" style="transition: transform 0.3s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+            <div class="position-absolute top-0 start-0 w-100 h-100 d-flex flex-column justify-content-center p-4 bg-dark bg-opacity-50 text-end">
+                <h3 class="text-white fw-bold mb-2">Freeship Nội Thành</h3>
+                <p class="text-white mb-0">Cho mọi đơn hàng từ 150K</p>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- NEWEST PRODUCTS -->
 <div class="mb-5 fade-in delay-2">
     <div class="d-flex justify-content-between align-items-end mb-4">
@@ -103,6 +125,54 @@
         <a asp-controller="Product" asp-action="Index" class="btn btn-outline-dark rounded-pill btn-sm w-100">Xem Tất Cả</a>
     </div>
 </div>
+
+<!-- PROMO PRODUCTS -->
+@{
+    var promoProducts = ViewBag.PromoProducts as List<Websitebanhang.Models.Product>;
+}
+@if (promoProducts != null && promoProducts.Any())
+{
+    <div class="mb-5 fade-in delay-2">
+        <div class="d-flex justify-content-between align-items-end mb-4">
+            <div>
+                <h2 class="mb-1 text-danger"><i class="fa-solid fa-tags"></i> Đang Khuyến Mãi</h2>
+                <p class="text-muted mb-0">Săn sale ngay hôm nay</p>
+            </div>
+            <a asp-controller="Product" asp-action="Index" class="btn btn-outline-danger rounded-pill btn-sm d-none d-md-block">Xem Tất Cả</a>
+        </div>
+
+        <div class="row g-4">
+            @foreach (var item in promoProducts)
+            {
+                <div class="col-6 col-md-4 col-lg-2">
+                    <div class="product-card border border-danger">
+                        <div class="product-img-wrapper bg-light">
+                            <span class="badge bg-danger position-absolute top-0 start-0 m-2 z-index-2 shadow-sm">-@item.Voucher?.DiscountPercent%</span>
+                            <img src="@(string.IsNullOrEmpty(item.ImageUrl) ? "/images/placeholder.jpg" : item.ImageUrl)" alt="@item.Name" />
+                        </div>
+                        <div class="p-3 d-flex flex-column flex-grow-1">
+                            <h6 class="mb-1 text-truncate pe-none">@item.Name</h6>
+                            <div class="text-danger fw-bold mb-1 mt-auto">
+                                @((item.Price - item.Price * (item.Voucher?.DiscountPercent ?? 0) / 100).ToString("N0")) ₫
+                            </div>
+                            <div class="text-muted text-decoration-line-through small mb-3">@item.Price.ToString("N0") ₫</div>
+                            <div class="d-flex gap-2">
+                                <a asp-controller="Product" asp-action="Display" asp-route-id="@item.Id" class="btn btn-outline-danger btn-sm flex-grow-1">Xem</a>
+                                <form action="/Cart/AddToCart" method="post" class="m-0">
+                                    <input type="hidden" name="id" value="@item.Id" />
+                                    <button type="submit" class="btn btn-danger btn-sm"><i class="fa-solid fa-cart-plus"></i></button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+        <div class="text-center mt-4 d-block d-md-none">
+            <a asp-controller="Product" asp-action="Index" class="btn btn-outline-danger rounded-pill btn-sm w-100">Xem Tất Cả</a>
+        </div>
+    </div>
+}
 
 <!-- BEST SELLERS -->
 <div class="mb-5 fade-in delay-3">

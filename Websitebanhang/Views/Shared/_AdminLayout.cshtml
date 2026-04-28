@@ -180,6 +180,12 @@
                     Khách hàng
                 </a>
             </li>
+            <li class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "AdminBackup" ? "active" : "")">
+                <a asp-controller="AdminBackup" asp-action="Index">
+                    <i class="fa-solid fa-database text-warning"></i>
+                    Sao lưu dữ liệu
+                </a>
+            </li>
         </ul>
 
         <ul class="list-unstyled CTAs px-3 mt-4">

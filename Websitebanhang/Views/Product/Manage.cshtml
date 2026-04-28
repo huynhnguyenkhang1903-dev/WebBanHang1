@@ -21,6 +21,7 @@
                             <th>Tên sản phẩm</th>
                             <th>Giá (VNĐ)</th>
                             <th>Danh mục</th>
+                            <th>Tồn kho</th>
                             <th>Hành động</th>
                         </tr>
                     </thead>
@@ -41,6 +42,16 @@
                                 <td class="fw-bold">@item.Name</td>
                                 <td class="text-success fw-bold">@item.Price.ToString("N0") ₫</td>
                                 <td>@(item.Category != null ? item.Category.Name : "Không có")</td>
+                                <td>
+                                    @if (item.Stock > 0)
+                                    {
+                                        <span class="badge bg-success">@item.Stock</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger">Hết hàng</span>
+                                    }
+                                </td>
                                 <td>
                                     <a asp-action="Update" asp-route-id="@item.Id" class="btn btn-sm btn-outline-warning"><i class="fa fa-edit"></i> Sửa</a>
                                     <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger"><i class="fa fa-trash"></i> Xóa</a>

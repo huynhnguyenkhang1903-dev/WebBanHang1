@@ -1,10 +1,10 @@
 @model Websitebanhang.Models.ViewModels.RevenueViewModel
 @{
-    ViewData["Title"] = "Th?ng k� doanh thu";
+    ViewData["Title"] = "Thống kê doanh thu";
 }
 
 <div class="container mt-4">
-    <h2 class="mb-4">Th?ng k� doanh thu</h2>
+    <h2 class="mb-4">Thống kê doanh thu</h2>
 
     <form method="get" class="row g-2 mb-4">
         <div class="col-auto">
@@ -14,26 +14,26 @@
             <input type="date" name="to" class="form-control" value="@ViewBag.To" />
         </div>
         <div class="col-auto">
-            <button class="btn btn-primary">L?c</button>
+            <button class="btn btn-primary">Lọc</button>
         </div>
     </form>
 
     <div class="row mb-4">
         <div class="col-md-4">
             <div class="card p-3">
-                <h5>T?ng doanh thu</h5>
-                <h3 class="text-danger">@Model.TotalRevenue.ToString("N0") ?</h3>
+                <h5>Tổng doanh thu</h5>
+                <h3 class="text-danger">@Model.TotalRevenue.ToString("N0") đ</h3>
             </div>
         </div>
         <div class="col-md-4">
             <div class="card p-3">
-                <h5>T?ng ??n</h5>
+                <h5>Tổng đơn</h5>
                 <h3>@Model.OrdersCount</h3>
             </div>
         </div>
         <div class="col-md-4">
             <div class="card p-3">
-                <h5>??n ?� thanh to�n/ho�n th�nh</h5>
+                <h5>Đơn đã thanh toán/hoàn thành</h5>
                 <h3>@Model.PaidOrdersCount</h3>
             </div>
         </div>
@@ -41,17 +41,17 @@
 
     <div class="card mb-4">
         <div class="card-body">
-            <h5>Doanh thu theo ng�y</h5>
+            <h5>Doanh thu theo ngày</h5>
             <table class="table">
                 <thead>
-                    <tr><th>Ng�y</th><th>Doanh thu</th></tr>
+                    <tr><th>Ngày</th><th>Doanh thu</th></tr>
                 </thead>
                 <tbody>
                     @foreach (var d in Model.RevenueByDay)
                     {
                         <tr>
                             <td>@d.Date.ToString("dd/MM/yyyy")</td>
-                            <td>@d.Amount.ToString("N0") ?</td>
+                            <td>@d.Amount.ToString("N0") đ</td>
                         </tr>
                     }
                 </tbody>
@@ -61,17 +61,51 @@
 
     <div class="card mb-4">
         <div class="card-body">
-            <h5>Doanh thu theo th�ng</h5>
+            <h5>Doanh thu theo tháng</h5>
             <table class="table">
                 <thead>
-                    <tr><th>Th�ng</th><th>Doanh thu</th></tr>
+                    <tr><th>Tháng</th><th>Doanh thu</th></tr>
                 </thead>
                 <tbody>
                     @foreach (var m in Model.RevenueByMonth)
                     {
                         <tr>
                             <td>@m.Month.ToString("D2")/@m.Year</td>
-                            <td>@m.Amount.ToString("N0") ?</td>
+                            <td>@m.Amount.ToString("N0") đ</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5>Top Sản Phẩm Bán Chạy</h5>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Tên sản phẩm</th>
+                        <th>Đã bán</th>
+                        <th>Doanh thu (ước tính)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.TopProducts != null && Model.TopProducts.Any())
+                    {
+                        foreach (var p in Model.TopProducts)
+                        {
+                            <tr>
+                                <td>@p.ProductName</td>
+                                <td>@p.TotalQuantity</td>
+                                <td class="text-danger fw-bold">@p.TotalRevenue.ToString("N0") đ</td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="3" class="text-center text-muted">Chưa có dữ liệu</td>
                         </tr>
                     }
                 </tbody>

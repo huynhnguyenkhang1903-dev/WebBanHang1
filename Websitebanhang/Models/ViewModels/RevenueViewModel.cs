@@ -16,6 +16,14 @@ namespace Websitebanhang.Models.ViewModels
         public decimal Amount { get; set; }
     }
 
+    public class TopSellingProduct
+    {
+        public int ProductId { get; set; }
+        public string ProductName { get; set; } = string.Empty;
+        public int TotalQuantity { get; set; }
+        public decimal TotalRevenue { get; set; }
+    }
+
     public class RevenueViewModel
     {
         public decimal TotalRevenue { get; set; }
@@ -23,5 +31,6 @@ namespace Websitebanhang.Models.ViewModels
         public int PaidOrdersCount { get; set; }
         public List<DailyRevenue> RevenueByDay { get; set; } = new List<DailyRevenue>();
         public List<MonthlyRevenue> RevenueByMonth { get; set; } = new List<MonthlyRevenue>();
+        public List<TopSellingProduct> TopProducts { get; set; } = new List<TopSellingProduct>();
     }
 }
