@@ -78,6 +78,13 @@ namespace Websitebanhang.Controllers
             return RedirectToAction("Index");
         }
 
+        public IActionResult Clear()
+        {
+            HttpContext.Session.Remove("Cart");
+            TempData["Success"] = "Đã làm trống giỏ hàng!";
+            return RedirectToAction("Index");
+        }
+
         [HttpPost]
         public IActionResult UpdateQuantity(int productId, int quantity)
         {

@@ -150,6 +150,12 @@
                     Bảng điều khiển
                 </a>
             </li>
+            <li class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "AdminOrder" && ViewContext.RouteData.Values["Action"]?.ToString() == "Revenue" ? "active" : "")">
+                <a asp-controller="AdminOrder" asp-action="Revenue">
+                    <i class="fa-solid fa-chart-bar"></i>
+                    Thống kê doanh thu
+                </a>
+            </li>
             <li class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Product" && ViewContext.RouteData.Values["Action"]?.ToString() == "Manage" ? "active" : "")">
                 <a asp-controller="Product" asp-action="Manage">
                     <i class="fa-solid fa-box-open"></i>

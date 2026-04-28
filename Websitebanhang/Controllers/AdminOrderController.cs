@@ -108,6 +108,18 @@ namespace Websitebanhang.Controllers
                 .Take(10)
                 .ToListAsync();
 
+            var revenueByYear = await _context.Orders
+                .Where(o => o.OrderDate >= start && o.OrderDate <= end &&
+                            (o.IsPaid || o.Status == "Delivered"))
+                .GroupBy(o => o.OrderDate.Year)
+                .Select(g => new YearlyRevenue
+                {
+                    Year = g.Key,
+                    Amount = g.Sum(x => x.TotalAmount)
+                })
+                .OrderBy(x => x.Year)
+                .ToListAsync();
+
             var model = new RevenueViewModel
             {
                 TotalRevenue = totalRevenue,
@@ -115,6 +127,7 @@ namespace Websitebanhang.Controllers
                 PaidOrdersCount = paidOrdersCount,
                 RevenueByDay = revenueByDay,
                 RevenueByMonth = revenueByMonth,
+                RevenueByYear = revenueByYear,
                 TopProducts = topProducts
             };
 

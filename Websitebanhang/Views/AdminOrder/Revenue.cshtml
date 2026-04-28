@@ -81,6 +81,26 @@
 
     <div class="card mb-4">
         <div class="card-body">
+            <h5>Doanh thu theo năm</h5>
+            <table class="table">
+                <thead>
+                    <tr><th>Năm</th><th>Doanh thu</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var y in Model.RevenueByYear)
+                    {
+                        <tr>
+                            <td>@y.Year</td>
+                            <td>@y.Amount.ToString("N0") đ</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
             <h5>Top Sản Phẩm Bán Chạy</h5>
             <table class="table table-striped">
                 <thead>

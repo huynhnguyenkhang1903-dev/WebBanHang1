@@ -146,6 +146,13 @@
                     Tiếp tục mua hàng
                 </a>
 
+                <a asp-controller="Cart" asp-action="Clear"
+                   class="btn btn-outline-danger w-100 mt-2 rounded-pill"
+                   onclick="return confirm('Bạn có chắc chắn muốn làm trống giỏ hàng không?');">
+                    <i class="fa-solid fa-trash me-2"></i>
+                    Làm trống giỏ hàng
+                </a>
+
                 <!-- 🔥 THÊM TIẾN TRÌNH ĐƠN HÀNG -->
                 <a asp-controller="Account" asp-action="MyOrders"
                    class="btn btn-outline-warning w-100 mt-3 rounded-pill">
