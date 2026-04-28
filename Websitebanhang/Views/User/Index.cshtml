@@ -211,6 +211,7 @@
                                 }
                             </td>
                             <td>
+                                <a asp-action="Details" asp-route-id="@user.Id" class="action-btn form-inline" title="Xem chi tiết" style="text-decoration:none; padding: 6px 12px; background-color: #6c757d; margin-right: 5px;">Chi tiết</a>
                                 <a asp-action="Update" asp-route-id="@user.Id" class="action-btn btn-update form-inline" title="Sửa thông tin" style="text-decoration:none; padding: 6px 12px; background-color: #17a2b8; margin-right: 5px;">Sửa</a>
                                 
                                 <form asp-action="LockUnlock" method="post" class="form-inline">

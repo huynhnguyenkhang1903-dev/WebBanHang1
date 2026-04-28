@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Websitebanhang.Models;
 using Websitebanhang.Models.ViewModels;
+using Websitebanhang.Data;
 
 namespace Websitebanhang.Controllers
 {
@@ -15,10 +16,12 @@ namespace Websitebanhang.Controllers
     public class UserController : Controller
     {
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly AppDbContext _context;
 
-        public UserController(UserManager<ApplicationUser> userManager)
+        public UserController(UserManager<ApplicationUser> userManager, AppDbContext context)
         {
             _userManager = userManager;
+            _context = context;
         }
 
         public async Task<IActionResult> Index()
@@ -43,6 +46,48 @@ namespace Websitebanhang.Controllers
             }
 
             return View(userViewModels);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Details(string id)
+        {
+            if (string.IsNullOrEmpty(id)) return NotFound();
+
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null) return NotFound();
+
+            var roles = await _userManager.GetRolesAsync(user);
+
+            var userViewModel = new UserViewModel
+            {
+                Id = user.Id,
+                FullName = user.FullName ?? "",
+                Email = user.Email ?? "",
+                PhoneNumber = user.PhoneNumber ?? "",
+                Role = roles.FirstOrDefault() ?? "",
+                IsLocked = user.LockoutEnd != null && user.LockoutEnd > DateTimeOffset.UtcNow,
+                DateOfBirth = user.DateOfBirth,
+                AvatarUrl = user.AvatarUrl ?? ""
+            };
+
+            var addresses = await _context.UserAddresses
+                .Where(a => a.UserId == user.Id)
+                .ToListAsync();
+
+            var orders = await _context.Orders
+                .Where(o => o.UserId == user.Id)
+                .OrderByDescending(o => o.OrderDate)
+                .Take(10) // Get top 10 recent orders
+                .ToListAsync();
+
+            var model = new UserDetailsViewModel
+            {
+                User = userViewModel,
+                Addresses = addresses,
+                RecentOrders = orders
+            };
+
+            return View(model);
         }
 
         [HttpPost]

@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\ADMIN\\source\\repos\\WebBanHang1\\Websitebanhang\\Websitebanhang.csproj": {}
+    "c:\\Users\\ADMIN\\source\\repos\\WebBanHang1\\Websitebanhang\\Websitebanhang.csproj": {}
   },
   "projects": {
-    "C:\\Users\\ADMIN\\source\\repos\\WebBanHang1\\Websitebanhang\\Websitebanhang.csproj": {
+    "c:\\Users\\ADMIN\\source\\repos\\WebBanHang1\\Websitebanhang\\Websitebanhang.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\ADMIN\\source\\repos\\WebBanHang1\\Websitebanhang\\Websitebanhang.csproj",
+        "projectUniqueName": "c:\\Users\\ADMIN\\source\\repos\\WebBanHang1\\Websitebanhang\\Websitebanhang.csproj",
         "projectName": "Websitebanhang",
-        "projectPath": "C:\\Users\\ADMIN\\source\\repos\\WebBanHang1\\Websitebanhang\\Websitebanhang.csproj",
+        "projectPath": "c:\\Users\\ADMIN\\source\\repos\\WebBanHang1\\Websitebanhang\\Websitebanhang.csproj",
         "packagesPath": "C:\\Users\\ADMIN\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\ADMIN\\source\\repos\\WebBanHang1\\Websitebanhang\\obj\\",
+        "outputPath": "c:\\Users\\ADMIN\\source\\repos\\WebBanHang1\\Websitebanhang\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
