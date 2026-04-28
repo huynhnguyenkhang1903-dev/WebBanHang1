@@ -72,7 +72,8 @@ namespace Websitebanhang.Controllers
                 .Select(g => new DailyRevenue
                 {
                     Date = g.Key,
-                    Amount = g.Sum(x => x.TotalAmount)
+                    Amount = g.Sum(x => x.TotalAmount),
+                    OrderCount = g.Count()
                 })
                 .OrderBy(x => x.Date)
                 .ToListAsync();
@@ -85,7 +86,8 @@ namespace Websitebanhang.Controllers
                 {
                     Year = g.Key.Year,
                     Month = g.Key.Month,
-                    Amount = g.Sum(x => x.TotalAmount)
+                    Amount = g.Sum(x => x.TotalAmount),
+                    OrderCount = g.Count()
                 })
                 .OrderBy(x => x.Year)
                 .ThenBy(x => x.Month)
@@ -115,7 +117,8 @@ namespace Websitebanhang.Controllers
                 .Select(g => new YearlyRevenue
                 {
                     Year = g.Key,
-                    Amount = g.Sum(x => x.TotalAmount)
+                    Amount = g.Sum(x => x.TotalAmount),
+                    OrderCount = g.Count()
                 })
                 .OrderBy(x => x.Year)
                 .ToListAsync();

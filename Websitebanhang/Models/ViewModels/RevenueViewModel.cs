@@ -7,6 +7,7 @@ namespace Websitebanhang.Models.ViewModels
     {
         public DateTime Date { get; set; }
         public decimal Amount { get; set; }
+        public int OrderCount { get; set; }
     }
 
     public class MonthlyRevenue
@@ -14,12 +15,14 @@ namespace Websitebanhang.Models.ViewModels
         public int Year { get; set; }
         public int Month { get; set; }
         public decimal Amount { get; set; }
+        public int OrderCount { get; set; }
     }
 
     public class YearlyRevenue
     {
         public int Year { get; set; }
         public decimal Amount { get; set; }
+        public int OrderCount { get; set; }
     }
 
     public class TopSellingProduct
