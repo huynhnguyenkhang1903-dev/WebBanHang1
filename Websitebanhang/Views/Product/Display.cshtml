@@ -11,6 +11,31 @@
         .ToList();
 }
 
+@section Styles {
+    <style>
+        .rating-stars {
+            display: flex;
+            flex-direction: row-reverse;
+            justify-content: flex-end;
+        }
+        .rating-stars input {
+            display: none;
+        }
+        .rating-stars label {
+            cursor: pointer;
+            font-size: 1.5rem;
+            color: #ddd;
+            margin-right: 5px;
+            transition: color 0.2s;
+        }
+        .rating-stars input:checked ~ label,
+        .rating-stars label:hover,
+        .rating-stars label:hover ~ label {
+            color: #ffc107;
+        }
+    </style>
+}
+
 <div class="row fade-in">
     <!-- Breadcrumb -->
     <div class="col-12 mb-4">
@@ -43,15 +68,19 @@
                 <!-- Right: Information -->
                 <div class="col-md-6">
                     <h1 class="display-5 text-coffee fw-bold mb-2">@Model.Name</h1>
+                    @{
+                        var totalReviews = Model.Reviews?.Count ?? 0;
+                        double avgRating = totalReviews > 0 ? Model.Reviews.Average(r => r.Rating) : 0;
+                        int roundedRating = (int)Math.Round(avgRating);
+                    }
                     <div class="d-flex align-items-center gap-3 mb-4">
                         <div class="text-warning">
-                            <i class="fa-solid fa-star"></i>
-                            <i class="fa-solid fa-star"></i>
-                            <i class="fa-solid fa-star"></i>
-                            <i class="fa-solid fa-star"></i>
-                            <i class="fa-solid fa-star-half-stroke"></i>
+                            @for(int i=1; i<=5; i++) {
+                                if (i <= roundedRating) { <i class="fa-solid fa-star"></i> }
+                                else { <i class="fa-regular fa-star"></i> }
+                            }
                         </div>
-                        <span class="text-muted small border-start ps-3">(150+ đánh giá)</span>
+                        <span class="text-muted small border-start ps-3">(@totalReviews đánh giá)</span>
                     </div>
 
                     <div class="display-4 text-gold fw-bold mb-4">@Model.Price.ToString("N0") <span class="fs-4 text-secondary">₫</span></div>
@@ -97,6 +126,109 @@
                             <button class="btn btn-secondary btn-lg w-100 shadow-sm fs-5" disabled>
                                 <i class="fa-solid fa-phone me-2"></i> Liên Hệ Nhập Hàng
                             </button>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+        </div>
+    </div>
+
+    <!-- Reviews Section -->
+    <div class="col-12 mb-5 fade-in delay-1">
+        <div class="bg-white p-4 p-md-5 rounded-4 shadow-sm">
+            <h3 class="text-coffee fw-bold border-bottom pb-3 mb-4">Đánh Giá Sản Phẩm</h3>
+            
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success">@TempData["Success"]</div>
+            }
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger">@TempData["Error"]</div>
+            }
+
+            <div class="row">
+                <!-- Review Form -->
+                <div class="col-md-5 mb-5 mb-md-0">
+                    <h5 class="fw-bold mb-3">Gửi đánh giá của bạn</h5>
+                    @if (User.Identity != null && User.Identity.IsAuthenticated)
+                    {
+                        <form asp-controller="Product" asp-action="AddReview" method="post" class="p-4 bg-light rounded-4">
+                            <input type="hidden" name="productId" value="@Model.Id" />
+                            <div class="mb-3">
+                                <label class="form-label fw-medium">Đánh giá sao</label>
+                                <div class="rating-stars mb-2">
+                                    <input type="radio" name="rating" id="r5" value="5" required checked /><label for="r5" class="fa-solid fa-star"></label>
+                                    <input type="radio" name="rating" id="r4" value="4" /><label for="r4" class="fa-solid fa-star"></label>
+                                    <input type="radio" name="rating" id="r3" value="3" /><label for="r3" class="fa-solid fa-star"></label>
+                                    <input type="radio" name="rating" id="r2" value="2" /><label for="r2" class="fa-solid fa-star"></label>
+                                    <input type="radio" name="rating" id="r1" value="1" /><label for="r1" class="fa-solid fa-star"></label>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-medium">Bình luận của bạn</label>
+                                <textarea name="comment" class="form-control" rows="4" placeholder="Nhận xét về chất lượng, hương vị..." required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary-custom px-4 rounded-pill">Gửi Đánh Giá</button>
+                        </form>
+                    }
+                    else
+                    {
+                        <div class="p-4 bg-light rounded-4 text-center">
+                            <i class="fa-regular fa-comment-dots fs-1 text-muted mb-3"></i>
+                            <p class="mb-3">Vui lòng đăng nhập để có thể đánh giá và bình luận sản phẩm.</p>
+                            <a href="/Account/Login" class="btn btn-outline-dark rounded-pill px-4">Đăng Nhập</a>
+                        </div>
+                    }
+                </div>
+
+                <!-- Comments List -->
+                <div class="col-md-7 ps-md-5">
+                    <h5 class="fw-bold mb-4">Tất cả bình luận (@totalReviews)</h5>
+                    
+                    @if (Model.Reviews != null && Model.Reviews.Any())
+                    {
+                        <div class="review-list" style="max-height: 500px; overflow-y: auto;">
+                            @foreach (var review in Model.Reviews.OrderByDescending(r => r.CreatedAt))
+                            {
+                                <div class="d-flex mb-4 pb-4 border-bottom">
+                                    <div class="flex-shrink-0">
+                                        @if (!string.IsNullOrEmpty(review.User?.AvatarUrl))
+                                        {
+                                            <img src="@review.User.AvatarUrl" class="rounded-circle" style="width: 50px; height: 50px; object-fit: cover;" alt="Avatar" />
+                                        }
+                                        else
+                                        {
+                                            <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; font-size: 1.2rem;">
+                                                @(review.User?.FullName?.FirstOrDefault() ?? 'U')
+                                            </div>
+                                        }
+                                    </div>
+                                    <div class="flex-grow-1 ms-3">
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <h6 class="fw-bold mb-0">@(review.User?.FullName ?? review.User?.UserName ?? "Khách hàng")</h6>
+                                            <small class="text-muted">@review.CreatedAt.ToString("dd/MM/yyyy HH:mm")</small>
+                                        </div>
+                                        <div class="text-warning small mb-2">
+                                            @for(int i=1; i<=5; i++) {
+                                                if (i <= review.Rating) { <i class="fa-solid fa-star"></i> }
+                                                else { <i class="fa-regular fa-star"></i> }
+                                            }
+                                        </div>
+                                        <p class="mb-0 text-secondary">@review.Comment</p>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5 text-muted">
+                            <i class="fa-solid fa-comments fs-2 mb-3"></i>
+                            <p>Chưa có đánh giá nào. Hãy trở thành người đầu tiên!</p>
                         </div>
                     }
                 </div>

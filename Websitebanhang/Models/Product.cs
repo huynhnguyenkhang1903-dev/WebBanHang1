@@ -37,5 +37,7 @@ namespace Websitebanhang.Models
         public int? VoucherId { get; set; }
 
         public Voucher? Voucher { get; set; }
+
+        public ICollection<Review> Reviews { get; set; } = new List<Review>();
     }
 }

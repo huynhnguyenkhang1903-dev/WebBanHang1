@@ -4,6 +4,9 @@ using System.Linq;
 using Websitebanhang.Repositores;
 using X.PagedList;
 using X.PagedList.Extensions;
+using Microsoft.AspNetCore.Identity;
+using Websitebanhang.Models;
+using Websitebanhang.Data;
 // alias
 using ProductModel = Websitebanhang.Models.Product;
 
@@ -13,13 +16,19 @@ namespace Websitebanhang.Controllers
     {
         private readonly IProductRepository _productRepository;
         private readonly ICategoryRepository _categoryRepository;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly AppDbContext _context;
 
         public ProductController(
             IProductRepository productRepository,
-            ICategoryRepository categoryRepository)
+            ICategoryRepository categoryRepository,
+            UserManager<ApplicationUser> userManager,
+            AppDbContext context)
         {
             _productRepository = productRepository;
             _categoryRepository = categoryRepository;
+            _userManager = userManager;
+            _context = context;
         }
 
         [AllowAnonymous]
@@ -97,6 +106,42 @@ namespace Websitebanhang.Controllers
             if (product == null) return NotFound();
 
             return View(product);
+        }
+
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddReview(int productId, int rating, string comment)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Challenge();
+
+            if (rating < 1 || rating > 5)
+            {
+                TempData["Error"] = "Đánh giá không hợp lệ.";
+                return RedirectToAction("Display", new { id = productId });
+            }
+
+            if (string.IsNullOrWhiteSpace(comment))
+            {
+                TempData["Error"] = "Vui lòng nhập bình luận.";
+                return RedirectToAction("Display", new { id = productId });
+            }
+
+            var review = new Review
+            {
+                ProductId = productId,
+                UserId = user.Id,
+                Rating = rating,
+                Comment = comment,
+                CreatedAt = System.DateTime.Now
+            };
+
+            _context.Reviews.Add(review);
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Cảm ơn bạn đã đánh giá sản phẩm!";
+            return RedirectToAction("Display", new { id = productId });
         }
 
         // ================= ADMIN =================

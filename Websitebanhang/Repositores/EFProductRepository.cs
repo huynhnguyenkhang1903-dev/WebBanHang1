@@ -20,7 +20,11 @@ namespace Websitebanhang.Repositores
 
         public Product? GetById(int id)
         {
-            return _context.Products.FirstOrDefault(p => p.Id == id);
+            return _context.Products
+                .Include(p => p.Category)
+                .Include(p => p.Reviews)
+                    .ThenInclude(r => r.User)
+                .FirstOrDefault(p => p.Id == id);
         }
 
         public void Add(Product product)
