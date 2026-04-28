@@ -95,7 +95,11 @@
                 <div class="col-6 col-md-4 col-lg-2">
                     <!-- Updated to use new product card logic -->
                     <div class="product-card">
-                        <div class="product-img-wrapper bg-light">
+                        <div class="product-img-wrapper bg-light position-relative">
+                            <a asp-controller="Wishlist" asp-action="Add" asp-route-id="@item.Id" asp-route-returnUrl="@Context.Request.Path"
+                               class="position-absolute top-0 end-0 m-2 btn btn-light btn-sm rounded-circle shadow-sm z-index-3 text-danger" style="z-index: 3;" title="Thêm vào yêu thích">
+                                <i class="fa-regular fa-heart"></i>
+                            </a>
                             @if (!string.IsNullOrEmpty(item.Category?.Name))
                             {
                                 <span class="badge-category shadow-sm">@item.Category.Name</span>
@@ -150,7 +154,11 @@
             {
                 <div class="col-6 col-md-4 col-lg-2">
                     <div class="product-card border border-danger">
-                        <div class="product-img-wrapper bg-light">
+                        <div class="product-img-wrapper bg-light position-relative">
+                            <a asp-controller="Wishlist" asp-action="Add" asp-route-id="@item.Id" asp-route-returnUrl="@Context.Request.Path"
+                               class="position-absolute top-0 end-0 m-2 btn btn-light btn-sm rounded-circle shadow-sm z-index-3 text-danger" style="z-index: 3;" title="Thêm vào yêu thích">
+                                <i class="fa-regular fa-heart"></i>
+                            </a>
                             <span class="badge bg-danger position-absolute top-0 start-0 m-2 z-index-2 shadow-sm">-@item.Voucher?.DiscountPercent%</span>
                             <img src="@(string.IsNullOrEmpty(item.ImageUrl) ? "/images/placeholder.jpg" : item.ImageUrl)" alt="@item.Name" />
                         </div>
@@ -194,7 +202,11 @@
             {
                 <div class="col-6 col-md-4 col-lg-2">
                     <div class="product-card">
-                        <div class="product-img-wrapper bg-light">
+                        <div class="product-img-wrapper bg-light position-relative">
+                            <a asp-controller="Wishlist" asp-action="Add" asp-route-id="@item.Id" asp-route-returnUrl="@Context.Request.Path"
+                               class="position-absolute top-0 start-0 m-2 btn btn-light btn-sm rounded-circle shadow-sm z-index-3 text-danger" style="z-index: 3;" title="Thêm vào yêu thích">
+                                <i class="fa-regular fa-heart"></i>
+                            </a>
                             <span class="badge bg-danger position-absolute top-0 end-0 m-2 z-index-2 shadow-sm rounded-pill"><i class="fa-solid fa-fire me-1"></i>Hot</span>
                             <img src="@(string.IsNullOrEmpty(item.ImageUrl) ? "/images/placeholder.jpg" : item.ImageUrl)" alt="@item.Name" />
                         </div>

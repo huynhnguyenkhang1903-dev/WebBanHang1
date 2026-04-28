@@ -117,6 +117,10 @@
                                 <button type="submit" class="btn btn-primary-custom btn-lg flex-grow-1 shadow-sm fs-5">
                                     <i class="fa-solid fa-cart-arrow-down me-2"></i> Thêm Vào Giỏ Hàng
                                 </button>
+                                
+                                <a asp-controller="Wishlist" asp-action="Add" asp-route-id="@Model.Id" asp-route-returnUrl="@Context.Request.Path" class="btn btn-outline-danger btn-lg shadow-sm px-4" title="Thêm vào yêu thích">
+                                    <i class="fa-regular fa-heart"></i>
+                                </a>
                             </div>
                         </form>
                     }

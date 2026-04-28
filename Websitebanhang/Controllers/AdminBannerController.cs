@@ -121,6 +121,20 @@ namespace Websitebanhang.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateOrder(int id, int orderIndex)
+        {
+            var banner = await _context.Banners.FindAsync(id);
+            if (banner != null)
+            {
+                banner.OrderIndex = orderIndex;
+                await _context.SaveChangesAsync();
+                TempData["Success"] = "Đã cập nhật thứ tự banner.";
+            }
+            return RedirectToAction(nameof(Index));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {
             var banner = await _context.Banners.FindAsync(id);

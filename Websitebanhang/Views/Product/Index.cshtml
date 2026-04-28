@@ -90,7 +90,11 @@
                 foreach (var item in Model)
                 {
                     <div class="col-6 col-md-4 col-xl-3">
-                        <div class="card h-100 shadow-sm">
+                        <div class="card h-100 shadow-sm position-relative">
+                            <a asp-controller="Wishlist" asp-action="Add" asp-route-id="@item.Id" asp-route-returnUrl="@Context.Request.Path"
+                               class="position-absolute top-0 end-0 m-2 btn btn-light btn-sm rounded-circle shadow-sm z-index-3 text-danger" style="z-index: 3;" title="Thêm vào yêu thích">
+                                <i class="fa-regular fa-heart"></i>
+                            </a>
                             <img src="@(string.IsNullOrEmpty(item.ImageUrl) ? "/images/placeholder.jpg" : item.ImageUrl)" class="card-img-top" />
                             <div class="card-body">
                                 <h6>@item.Name</h6>

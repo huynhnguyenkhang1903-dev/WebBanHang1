@@ -1,0 +1,88 @@
+@model List<Websitebanhang.Models.CartItem>
+@{
+    ViewData["Title"] = "Danh Mục Yêu Thích";
+}
+
+<div class="row fade-in">
+    <!-- Breadcrumb -->
+    <div class="col-12 mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0 px-3 py-2 bg-white rounded-pill shadow-sm d-inline-flex">
+                <li class="breadcrumb-item"><a href="/" class="text-secondary"><i class="fa-solid fa-house"></i></a></li>
+                <li class="breadcrumb-item active" aria-current="page">Danh Mục Yêu Thích</li>
+            </ol>
+        </nav>
+
+        <div class="d-flex justify-content-between align-items-center flex-wrap mt-2">
+            <h2 class="text-danger fw-bold"><i class="fa-solid fa-heart me-2"></i>Sản Phẩm Yêu Thích</h2>
+
+            @if (Model != null && Model.Count > 0)
+            {
+                <a asp-controller="Wishlist" asp-action="Clear"
+                   class="btn btn-outline-danger rounded-pill px-4"
+                   onclick="return confirm('Bạn có chắc chắn muốn xóa tất cả sản phẩm khỏi danh mục yêu thích?');">
+                    <i class="fa-solid fa-trash me-2"></i>
+                    Xóa tất cả
+                </a>
+            }
+        </div>
+    </div>
+
+@if (Model != null && Model.Count > 0)
+{
+    <div class="col-12 mb-4">
+        <div class="bg-white rounded-4 shadow-sm overflow-hidden border-0 p-4">
+            <div class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-4">
+                @foreach (var item in Model)
+                {
+                    <div class="col">
+                        <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden product-card position-relative">
+                            
+                            <!-- Nút xóa -->
+                            <a asp-controller="Wishlist" asp-action="Remove" asp-route-id="@item.ProductId"
+                               class="position-absolute top-0 end-0 m-2 btn btn-light btn-sm rounded-circle text-danger shadow-sm z-1"
+                               title="Xóa khỏi yêu thích">
+                                <i class="fa-solid fa-xmark"></i>
+                            </a>
+
+                            <!-- Ảnh -->
+                            <a asp-controller="Product" asp-action="Display" asp-route-id="@item.ProductId" class="d-block overflow-hidden" style="height:200px;">
+                                <img src="@(string.IsNullOrEmpty(item.ImageUrl) ? "/images/placeholder.jpg" : item.ImageUrl)" 
+                                     class="w-100 h-100 object-fit-cover transition-transform" alt="@item.Name" />
+                            </a>
+
+                            <div class="card-body d-flex flex-column text-center">
+                                <a asp-controller="Product" asp-action="Display" asp-route-id="@item.ProductId" class="text-decoration-none text-dark">
+                                    <h6 class="card-title fw-bold text-coffee mb-2 text-truncate">@item.Name</h6>
+                                </a>
+                                <p class="text-danger fw-bold mb-3 fs-5">@item.Price.ToString("N0") ₫</p>
+                                
+                                <div class="mt-auto">
+                                    <a asp-controller="Cart" asp-action="AddToCart" asp-route-id="@item.ProductId" 
+                                       class="btn btn-primary w-100 rounded-pill">
+                                        <i class="fa-solid fa-cart-plus me-2"></i>Thêm vào giỏ
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="col-12 text-center">
+        <div class="bg-white p-5 rounded-4 shadow-sm">
+            <i class="fa-regular fa-heart fa-3x mb-3 text-muted"></i>
+            <h4>Danh mục yêu thích đang trống</h4>
+            <p class="text-muted">Hãy thêm những sản phẩm bạn yêu thích để dễ dàng xem lại nhé.</p>
+            <a asp-controller="Product" asp-action="Index"
+               class="btn btn-primary mt-3 rounded-pill">
+                Khám phá cà phê
+            </a>
+        </div>
+    </div>
+}
+</div>
