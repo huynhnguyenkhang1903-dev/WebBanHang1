@@ -98,7 +98,7 @@ namespace Websitebanhang.Controllers
                         user.UserName!,
                         model.Password,
                         model.RememberMe,
-                        false);
+                        lockoutOnFailure: true); // Bật tính năng khóa tài khoản
 
                     if (result.Succeeded)
                     {
@@ -108,6 +108,11 @@ namespace Websitebanhang.Controllers
                             return RedirectToAction("Index", "Admin");
 
                         return RedirectToAction("Index", "Home");
+                    }
+                    if (result.IsLockedOut)
+                    {
+                        ModelState.AddModelError("", "Tài khoản của bạn đã bị khóa tạm thời do nhập sai quá nhiều lần. Vui lòng thử lại sau 5 phút.");
+                        return View(model);
                     }
                 }
 

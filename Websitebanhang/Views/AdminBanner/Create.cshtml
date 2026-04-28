@@ -1,0 +1,62 @@
+@model Websitebanhang.Models.Banner
+
+@{
+    ViewData["Title"] = "Thêm Banner Quảng Cáo";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white">
+                <h4 class="mb-0">Thêm Banner Quảng Cáo Mới</h4>
+            </div>
+            <div class="card-body">
+                <form asp-action="Create" method="post" enctype="multipart/form-data">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                    
+                    <div class="mb-3">
+                        <label asp-for="Title" class="form-label fw-bold"></label>
+                        <input asp-for="Title" class="form-control" placeholder="Ví dụ: Khuyến mãi mùa Hè" />
+                        <span asp-validation-for="Title" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Subtitle" class="form-label fw-bold"></label>
+                        <input asp-for="Subtitle" class="form-control" placeholder="Ví dụ: Giảm 20% cho tất cả thức uống" />
+                        <span asp-validation-for="Subtitle" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Hình ảnh Banner</label>
+                        <input type="file" name="imageFile" class="form-control" accept="image/*" />
+                        <div class="form-text">Tải lên file ảnh (khuyến nghị tỷ lệ 16:9 hoặc 2:1, ví dụ 1200x600px).</div>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <label asp-for="OrderIndex" class="form-label fw-bold"></label>
+                            <input asp-for="OrderIndex" type="number" class="form-control" />
+                            <div class="form-text">Số nhỏ sẽ hiển thị trước.</div>
+                        </div>
+                        <div class="col-md-6 d-flex align-items-end pb-2">
+                            <div class="form-check form-switch fs-5">
+                                <input class="form-check-input" type="checkbox" asp-for="IsActive" role="switch" />
+                                <label class="form-check-label ms-2 fs-6" asp-for="IsActive">Kích hoạt (Hiển thị ra trang chủ)</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary px-4">Lưu lại</button>
+                        <a asp-action="Index" class="btn btn-outline-secondary px-4">Hủy bỏ</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

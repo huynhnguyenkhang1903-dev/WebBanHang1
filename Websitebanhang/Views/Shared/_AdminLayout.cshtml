@@ -186,6 +186,12 @@
                     Sao lưu dữ liệu
                 </a>
             </li>
+            <li class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "AdminBanner" ? "active" : "")">
+                <a asp-controller="AdminBanner" asp-action="Index">
+                    <i class="fa-solid fa-images"></i>
+                    Quản lý Banner
+                </a>
+            </li>
         </ul>
 
         <ul class="list-unstyled CTAs px-3 mt-4">

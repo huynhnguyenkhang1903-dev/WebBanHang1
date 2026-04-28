@@ -106,6 +106,12 @@ namespace Websitebanhang.Controllers
 
             ViewBag.Vouchers = activeVouchers;
 
+            var banners = _context.Banners
+                .Where(b => b.IsActive)
+                .OrderBy(b => b.OrderIndex)
+                .ToList();
+            ViewBag.Banners = banners;
+
             return View();
         }
 

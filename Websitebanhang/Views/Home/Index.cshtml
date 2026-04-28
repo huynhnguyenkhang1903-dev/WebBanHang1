@@ -52,26 +52,30 @@
 </div>
 
 <!-- PROMO BANNERS -->
-<div class="row g-4 mb-5 fade-in delay-2">
-    <div class="col-md-6">
-        <div class="position-relative overflow-hidden rounded-4 shadow-sm" style="height: 200px;">
-            <img src="https://images.unsplash.com/photo-1559525839-b184a4d698c7?auto=format&fit=crop&w=800&q=80" alt="Banner 1" class="w-100 h-100 object-fit-cover" style="transition: transform 0.3s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-            <div class="position-absolute top-0 start-0 w-100 h-100 d-flex flex-column justify-content-center p-4 bg-dark bg-opacity-50">
-                <h3 class="text-white fw-bold mb-2">Combo Sáng Sớm</h3>
-                <p class="text-white mb-0">Giảm 15% khi mua kèm bánh ngọt</p>
+@{
+    var banners = ViewBag.Banners as List<Websitebanhang.Models.Banner>;
+}
+@if (banners != null && banners.Any())
+{
+    <div class="row g-4 mb-5 fade-in delay-2">
+        @for (int i = 0; i < banners.Count; i++)
+        {
+            var banner = banners[i];
+            // Alternate text alignment (left for even, right for odd)
+            var alignClass = i % 2 == 0 ? "text-start" : "text-end";
+
+            <div class="col-md-6">
+                <div class="position-relative overflow-hidden rounded-4 shadow-sm" style="height: 200px;">
+                    <img src="@banner.ImageUrl" alt="@banner.Title" class="w-100 h-100 object-fit-cover" style="transition: transform 0.3s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                    <div class="position-absolute top-0 start-0 w-100 h-100 d-flex flex-column justify-content-center p-4 bg-dark bg-opacity-50 @alignClass">
+                        <h3 class="text-white fw-bold mb-2">@banner.Title</h3>
+                        <p class="text-white mb-0">@banner.Subtitle</p>
+                    </div>
+                </div>
             </div>
-        </div>
+        }
     </div>
-    <div class="col-md-6">
-        <div class="position-relative overflow-hidden rounded-4 shadow-sm" style="height: 200px;">
-            <img src="https://images.unsplash.com/photo-1447933601403-0c6688de566e?auto=format&fit=crop&w=800&q=80" alt="Banner 2" class="w-100 h-100 object-fit-cover" style="transition: transform 0.3s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-            <div class="position-absolute top-0 start-0 w-100 h-100 d-flex flex-column justify-content-center p-4 bg-dark bg-opacity-50 text-end">
-                <h3 class="text-white fw-bold mb-2">Freeship Nội Thành</h3>
-                <p class="text-white mb-0">Cho mọi đơn hàng từ 150K</p>
-            </div>
-        </div>
-    </div>
-</div>
+}
 
 <!-- NEWEST PRODUCTS -->
 <div class="mb-5 fade-in delay-2">

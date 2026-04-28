@@ -25,6 +25,8 @@ namespace Websitebanhang.Data
 
         public DbSet<UserAddress> UserAddresses { get; set; }
 
+        public DbSet<Banner> Banners { get; set; }
+
         // CONFIG DATABASE
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
