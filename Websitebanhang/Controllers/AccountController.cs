@@ -24,19 +24,22 @@ namespace Websitebanhang.Controllers
         private readonly IEmailService _emailService;
         private readonly IWebHostEnvironment _env;
         private readonly Websitebanhang.Data.AppDbContext _context;
+        private readonly IWebsiteSettingService _settingService;
 
         public AccountController(
             SignInManager<ApplicationUser> signInManager,
             UserManager<ApplicationUser> userManager,
             IEmailService emailService,
             IWebHostEnvironment env,
-            Websitebanhang.Data.AppDbContext context)
+            Websitebanhang.Data.AppDbContext context,
+            IWebsiteSettingService settingService)
         {
             _signInManager = signInManager;
             _userManager = userManager;
             _emailService = emailService;
             _env = env;
             _context = context;
+            _settingService = settingService;
         }
 
         public IActionResult Login()
@@ -74,7 +77,7 @@ namespace Websitebanhang.Controllers
         [Authorize]
         public async Task<IActionResult> MyOrders()
         {
-            var user = await _userManager.GetUserAsync(User);
+            var user = await _userManager.GetUserAsync(User!);
             if (user == null)
                 return RedirectToAction("Login", "Account");
 
@@ -91,7 +94,7 @@ namespace Websitebanhang.Controllers
         [Authorize]
         public async Task<IActionResult> OrderDetails(int id)
         {
-            var user = await _userManager.GetUserAsync(User);
+            var user = await _userManager.GetUserAsync(User!);
             if (user == null)
                 return RedirectToAction("Login", "Account");
 
@@ -320,7 +323,7 @@ namespace Websitebanhang.Controllers
         [Authorize]
         public async Task<IActionResult> Profile()
         {
-            var user = await _userManager.GetUserAsync(User);
+            var user = await _userManager.GetUserAsync(User!);
             if (user == null)
                 return RedirectToAction("Login");
 
@@ -374,11 +377,11 @@ namespace Websitebanhang.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
-            var user = await _userManager.GetUserAsync(User);
+            var user = await _userManager.GetUserAsync(User!);
             if (user == null)
                 return RedirectToAction("Login");
 
-            user.FullName = model.FullName ?? "";
+            user!.FullName = model.FullName ?? "";
             user.Address = model.Address ?? "";
             user.PhoneNumber = model.PhoneNumber;
             user.DateOfBirth = model.DateOfBirth;
@@ -411,7 +414,7 @@ namespace Websitebanhang.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
-            var user = await _userManager.GetUserAsync(User);
+            var user = await _userManager.GetUserAsync(User!);
             if (user == null)
                 return RedirectToAction("Login");
 
@@ -438,7 +441,7 @@ namespace Websitebanhang.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CancelOrder(int id, string cancelReason)
         {
-            var user = await _userManager.GetUserAsync(User);
+            var user = await _userManager.GetUserAsync(User!);
             if (user == null)
                 return RedirectToAction("Login");
 
@@ -505,7 +508,7 @@ namespace Websitebanhang.Controllers
         [HttpGet]
         public async Task<IActionResult> CancelOrder(int id)
         {
-            var user = await _userManager.GetUserAsync(User);
+            var user = await _userManager.GetUserAsync(User!);
             if (user == null)
                 return RedirectToAction("Login");
 
@@ -532,7 +535,7 @@ namespace Websitebanhang.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> RequestReturn(int id, string reasonType, string returnReason)
         {
-            var user = await _userManager.GetUserAsync(User);
+            var user = await _userManager.GetUserAsync(User!);
             if (user == null)
                 return RedirectToAction("Login");
 
@@ -549,11 +552,15 @@ namespace Websitebanhang.Controllers
                 return RedirectToAction("OrderDetails", new { id });
             }
 
-            // 🔥 Kiểm tra chính sách 7 ngày
-            if ((DateTime.Now - order.OrderDate).TotalDays > 7)
+            // 🔥 Kiểm tra chính sách trả hàng linh hoạt
+            var limitStr = await _settingService.GetSettingAsync("ReturnDaysLimit", "7");
+            if (int.TryParse(limitStr, out int returnDaysLimit))
             {
-                TempData["Error"] = "Đã quá thời hạn 7 ngày kể từ khi đặt hàng. Không thể yêu cầu trả hàng.";
-                return RedirectToAction("OrderDetails", new { id });
+                if ((DateTime.Now - order.OrderDate).TotalDays > returnDaysLimit)
+                {
+                    TempData["Error"] = $"Đã quá thời hạn {returnDaysLimit} ngày kể từ khi đặt hàng. Không thể yêu cầu trả hàng.";
+                    return RedirectToAction("OrderDetails", new { id });
+                }
             }
 
             var fullReason = reasonType;
@@ -581,7 +588,7 @@ namespace Websitebanhang.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ConfirmReceived(int id)
         {
-            var user = await _userManager.GetUserAsync(User);
+            var user = await _userManager.GetUserAsync(User!);
             if (user == null)
                 return RedirectToAction("Login");
 
@@ -606,7 +613,7 @@ namespace Websitebanhang.Controllers
             int pointsEarned = (int)(order.TotalAmount / 1000);
             if (pointsEarned > 0)
             {
-                user.RewardPoints += pointsEarned;
+                user!.RewardPoints += pointsEarned;
                 _context.RewardPointHistories.Add(new RewardPointHistory
                 {
                     UserId = user.Id,
@@ -640,7 +647,7 @@ namespace Websitebanhang.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UploadAvatar(IFormFile avatarFile)
         {
-            var user = await _userManager.GetUserAsync(User);
+            var user = await _userManager.GetUserAsync(User!);
             if (user == null)
                 return RedirectToAction("Login");
 
@@ -672,7 +679,7 @@ namespace Websitebanhang.Controllers
                 await avatarFile.CopyToAsync(stream);
             }
 
-            user.AvatarUrl = "/uploads/" + fileName;
+            user!.AvatarUrl = "/uploads/" + fileName;
             await _userManager.UpdateAsync(user);
 
             TempData["SuccessMessage"] = "Upload thành công!";
@@ -684,7 +691,7 @@ namespace Websitebanhang.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteAvatar()
         {
-            var user = await _userManager.GetUserAsync(User);
+            var user = await _userManager.GetUserAsync(User!);
             if (user == null)
                 return RedirectToAction("Login");
 
@@ -715,7 +722,7 @@ namespace Websitebanhang.Controllers
                 // ignore file delete errors
             }
 
-            user.AvatarUrl = string.Empty;
+            user!.AvatarUrl = string.Empty;
             var result = await _userManager.UpdateAsync(user);
             if (result.Succeeded)
             {
@@ -734,7 +741,7 @@ namespace Websitebanhang.Controllers
         [HttpGet]
         public async Task<IActionResult> PrintInvoice(int id)
         {
-            var user = await _userManager.GetUserAsync(User);
+            var user = await _userManager.GetUserAsync(User!);
             if (user == null)
                 return RedirectToAction("Login", "Account");
 
@@ -754,7 +761,7 @@ namespace Websitebanhang.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddAddress(UserAddress model)
         {
-            var user = await _userManager.GetUserAsync(User);
+            var user = await _userManager.GetUserAsync(User!);
             if (user == null) return RedirectToAction("Login");
 
             model.UserId = user.Id;
@@ -784,7 +791,7 @@ namespace Websitebanhang.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditAddress(int id, UserAddress model)
         {
-            var user = await _userManager.GetUserAsync(User);
+            var user = await _userManager.GetUserAsync(User!);
             if (user == null) return RedirectToAction("Login");
 
             var addr = await _context.UserAddresses.FirstOrDefaultAsync(a => a.Id == id && a.UserId == user.Id);
@@ -811,7 +818,7 @@ namespace Websitebanhang.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteAddress(int id)
         {
-            var user = await _userManager.GetUserAsync(User);
+            var user = await _userManager.GetUserAsync(User!);
             if (user == null) return RedirectToAction("Login");
 
             var addr = await _context.UserAddresses.FirstOrDefaultAsync(a => a.Id == id && a.UserId == user.Id);
@@ -839,7 +846,7 @@ namespace Websitebanhang.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SetDefaultAddress(int id)
         {
-            var user = await _userManager.GetUserAsync(User);
+            var user = await _userManager.GetUserAsync(User!);
             if (user == null) return RedirectToAction("Login");
 
             var oldDefaults = await _context.UserAddresses.Where(a => a.UserId == user.Id && a.IsDefault).ToListAsync();

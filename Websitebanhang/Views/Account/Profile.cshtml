@@ -1,8 +1,11 @@
 @model Websitebanhang.Models.ViewModels.ProfileViewModel
 @inject Microsoft.AspNetCore.Identity.UserManager<Websitebanhang.Models.ApplicationUser> UserManager
+@inject Websitebanhang.Services.IWebsiteSettingService SettingService
 @{
     ViewData["Title"] = "Hồ Sơ Của Tôi";
     var currentUser = await UserManager.GetUserAsync(User);
+    var returnLimitStr = await SettingService.GetSettingAsync("ReturnDaysLimit", "7");
+    int.TryParse(returnLimitStr, out int returnDaysLimit);
 }
 
 <div class="row fade-in">
@@ -307,7 +310,16 @@
                                                     }
                                                 </td>
                                                 <td>
-                                                    <a asp-controller="Account" asp-action="OrderDetails" asp-route-id="@order.Id" class="btn btn-sm btn-outline-dark">Chi tiết</a>
+                                                    <div class="d-flex gap-2">
+                                                        <a asp-controller="Account" asp-action="OrderDetails" asp-route-id="@order.Id" class="btn btn-sm btn-outline-dark rounded-pill px-3">Chi tiết</a>
+                                                        
+                                                        @if (order.Status == OrderStatus.Delivered && (DateTime.Now - order.OrderDate).TotalDays <= returnDaysLimit)
+                                                        {
+                                                            <a asp-controller="Account" asp-action="OrderDetails" asp-route-id="@order.Id" asp-route-requestReturn="true" class="btn btn-sm btn-warning rounded-pill px-3 fw-bold">
+                                                                <i class="fa-solid fa-rotate-left"></i> Trả hàng
+                                                            </a>
+                                                        }
+                                                    </div>
                                                 </td>
                                             </tr>
                                         }

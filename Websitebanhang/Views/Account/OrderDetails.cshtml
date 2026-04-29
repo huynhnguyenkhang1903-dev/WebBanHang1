@@ -1,7 +1,10 @@
 @model Websitebanhang.Models.Order
+@inject Websitebanhang.Services.IWebsiteSettingService SettingService
 @{
     ViewData["Title"] = "Chi Tiết Đơn Hàng";
     var status = Model.Status ?? "Pending";
+    var returnLimitStr = await SettingService.GetSettingAsync("ReturnDaysLimit", "7");
+    int.TryParse(returnLimitStr, out int returnDaysLimit);
 }
 
 <div class="row fade-in">
@@ -56,7 +59,7 @@
 
                 <div class="text-end">
                     <p class="small text-muted">
-                        @(Model.OrderDate == default ? "" : Model.OrderDate.ToString("dd/MM/yyyy HH:mm"))
+                        @(Model.OrderDate == default(DateTime) ? "" : Model.OrderDate.ToString("dd/MM/yyyy HH:mm"))
                     </p>
 
                     @* STATUS *@
@@ -295,17 +298,17 @@
                 @if (status == OrderStatus.Delivered)
                 {
                     var daysSinceOrder = (DateTime.Now - Model.OrderDate).TotalDays;
-                    if (daysSinceOrder <= 7)
+                    if (daysSinceOrder <= returnDaysLimit)
                     {
                         <button class="btn btn-warning rounded-pill px-4 shadow-sm fw-bold" data-bs-toggle="modal" data-bs-target="#returnModal">
                             <i class="fa-solid fa-rotate-left me-1"></i> Yêu cầu trả hàng / Hoàn tiền
                         </button>
-                        <p class="small text-muted mt-2">Chính sách: Bạn có thể yêu cầu trả hàng trong vòng 7 ngày kể từ khi đặt hàng.</p>
+                        <p class="small text-muted mt-2">Chính sách: Bạn có thể yêu cầu trả hàng trong vòng @returnDaysLimit ngày kể từ khi đặt hàng.</p>
                     }
                     else
                     {
                         <div class="alert alert-light border-0 small text-muted py-2">
-                            <i class="fa-solid fa-circle-info me-1"></i> Đã quá thời hạn 7 ngày để yêu cầu trả hàng.
+                            <i class="fa-solid fa-circle-info me-1"></i> Đã quá thời hạn @returnDaysLimit ngày để yêu cầu trả hàng.
                         </div>
                     }
                 }
@@ -362,15 +365,27 @@
 </div>
 
 <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Tự động mở modal nếu được yêu cầu từ trang danh sách
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('requestReturn') === 'true') {
+            var modalEl = document.getElementById('returnModal');
+            if (modalEl) {
+                var myModal = new bootstrap.Modal(modalEl);
+                myModal.show();
+            }
+        }
+    });
+
     function toggleOtherReason(select) {
         var otherDiv = document.getElementById('otherReasonDiv');
         var reasonArea = document.getElementById('returnReason');
         if (select.value === 'Lý do khác') {
             otherDiv.style.display = 'block';
             reasonArea.setAttribute('required', 'required');
+            reasonArea.focus();
         } else {
-            otherDiv.style.display = 'block'; // Always show it but not required if not "Other"? 
-            // Actually, better to always show it for extra notes, but only required if "Other"
+            otherDiv.style.display = 'none';
             reasonArea.removeAttribute('required');
         }
     }

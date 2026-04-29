@@ -35,7 +35,8 @@ namespace Websitebanhang.Controllers
                 { "Hotline", "0344.506.553", "Số điện thoại hỗ trợ" },
                 { "Email", "support@auracoffee.com", "Email liên hệ" },
                 { "Address", "123 Đường Cà Phê, TP. Hồ Chí Minh", "Địa chỉ trụ sở" },
-                { "Facebook", "https://facebook.com/auracoffee", "Link Fanpage Facebook" }
+                { "Facebook", "https://facebook.com/auracoffee", "Link Fanpage Facebook" },
+                { "ReturnDaysLimit", "7", "Số ngày tối đa cho phép yêu cầu trả hàng" }
             };
 
             bool changed = false;

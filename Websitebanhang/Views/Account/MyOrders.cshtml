@@ -1,6 +1,9 @@
-﻿@model IEnumerable<Websitebanhang.Models.Order>
+@model IEnumerable<Websitebanhang.Models.Order>
+@inject Websitebanhang.Services.IWebsiteSettingService SettingService
 @{
     ViewData["Title"] = "Đơn hàng của tôi";
+    var returnLimitStr = await SettingService.GetSettingAsync("ReturnDaysLimit", "7");
+    int.TryParse(returnLimitStr, out int returnDaysLimit);
 }
 
 <div class="row fade-in">
@@ -35,7 +38,7 @@
                         {
                             <tr>
                                 <td class="fw-bold">#ORD-@order.Id.ToString("D3")</td>
-                                <td>@(order.OrderDate == default ? "-" : order.OrderDate.ToString("dd/MM/yyyy HH:mm"))</td>
+                                <td>@(order.OrderDate == default(DateTime) ? "-" : order.OrderDate.ToString("dd/MM/yyyy HH:mm"))</td>
                                 <td class="text-gold fw-bold">@order.TotalAmount.ToString("N0") ₫</td>
                                 <td>
                                     @if (order.IsPaid)
@@ -73,10 +76,18 @@
                                 <td>
                                     <a asp-controller="Account" asp-action="OrderDetails" asp-route-id="@order.Id" class="btn btn-sm btn-outline-dark me-2">Chi tiết</a>
 
+                                    @* Return button quick access *@
+                                    @if (order.Status == OrderStatus.Delivered && (DateTime.Now - order.OrderDate).TotalDays <= returnDaysLimit)
+                                    {
+                                        <a asp-controller="Account" asp-action="OrderDetails" asp-route-id="@order.Id" asp-route-requestReturn="true" class="btn btn-sm btn-warning fw-bold">
+                                            <i class="fa-solid fa-rotate-left"></i> Trả hàng
+                                        </a>
+                                    }
+
                                     @* Cancel only when pending and not paid *@
                                     @if (!order.IsPaid && order.Status == "Pending")
                                     {
-                                        <a asp-action="CancelOrder" asp-route-id="@order.Id" class="btn btn-sm btn-danger">Hủy</a>
+                                        <a asp-action="CancelOrder" asp-route-id="@order.Id" class="btn btn-sm btn-danger ms-1">Hủy</a>
                                     }
                                 </td>
                             </tr>
