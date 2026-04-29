@@ -401,6 +401,48 @@ body {
 }
 
 /* Footer */
-.dark-mode .footer-custom {
-    background-color: #1a1a1a;
+/* ================== ZALO FLOAT ================== */
+.zalo-float {
+    position: fixed;
+    bottom: 85px;
+    right: 18px;
+    width: 50px;
+    height: 50px;
+    background-color: #0068ff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 15px rgba(0, 104, 255, 0.4);
+    z-index: 1000;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    text-decoration: none;
+}
+.zalo-float:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(0, 104, 255, 0.6);
+}
+.zalo-float img {
+    width: 32px;
+    height: 32px;
+}
+.zalo-float::after {
+    content: "Chat Zalo";
+    position: absolute;
+    right: 60px;
+    background: #0068ff;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+    opacity: 0;
+    transform: translateX(10px);
+    transition: all 0.3s ease;
+    pointer-events: none;
+}
+.zalo-float:hover::after {
+    opacity: 1;
+    transform: translateX(0);
 }

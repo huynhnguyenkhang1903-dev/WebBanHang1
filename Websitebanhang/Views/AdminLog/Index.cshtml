@@ -1,0 +1,114 @@
+@model IEnumerable<Websitebanhang.Models.AdminActivityLog>
+
+@{
+    ViewData["Title"] = "Lịch sử hoạt động";
+    Layout = "_AdminLayout";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold"><i class="fa-solid fa-clock-rotate-left text-primary me-2"></i> Lịch sử hoạt động Admin</h2>
+    </div>
+
+    <!-- Filters -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-5">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0"><i class="fa fa-search text-muted"></i></span>
+                        <input type="text" name="search" class="form-control border-start-0" placeholder="Tìm kiếm mô tả, hành động..." value="@ViewBag.Search">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <select name="type" class="form-select">
+                        <option value="">-- Tất cả loại thực thể --</option>
+                        @foreach (var type in ViewBag.EntityTypes as List<string>)
+                        {
+                            <!option value="@type" @(ViewBag.Type == type ? "selected" : "")>@type</!option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-primary px-4"><i class="fa fa-filter me-1"></i> Lọc</button>
+                    <a asp-action="Index" class="btn btn-outline-secondary px-4">Xóa lọc</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Logs Table -->
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4">Thời gian</th>
+                            <th>Người thực hiện</th>
+                            <th>Hành động</th>
+                            <th>Loại</th>
+                            <th>Mô tả</th>
+                            <th>IP Address</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!Model.Any())
+                        {
+                            <tr>
+                                <td colspan="6" class="text-center py-5 text-muted">
+                                    <i class="fa-solid fa-inbox fs-1 mb-3"></i>
+                                    <p>Không tìm thấy lịch sử hoạt động nào.</p>
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var log in Model)
+                            {
+                                <tr>
+                                    <td class="ps-4">
+                                        <div class="small fw-bold">@log.CreatedAt.ToString("dd/MM/yyyy")</div>
+                                        <div class="small text-muted">@log.CreatedAt.ToString("HH:mm:ss")</div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="rounded-circle bg-light d-flex align-items-center justify-content-center me-2" style="width:32px;height:32px;">
+                                                <i class="fa-solid fa-user-shield text-primary small"></i>
+                                            </div>
+                                            <div>
+                                                <div class="small fw-bold">@(log.User?.FullName ?? "System")</div>
+                                                <div class="small text-muted" style="font-size: 10px;">@(log.User?.Email ?? "-")</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        @{
+                                            var badgeClass = log.Action switch
+                                            {
+                                                "Thêm SP" => "bg-success",
+                                                "Cập nhật SP" => "bg-info",
+                                                "Xóa SP" => "bg-danger",
+                                                "Duyệt đơn" => "bg-primary",
+                                                "Giao hàng" => "bg-warning text-dark",
+                                                "Hoàn thành đơn" => "bg-success",
+                                                "Hủy đơn" => "bg-danger",
+                                                _ => "bg-secondary"
+                                            };
+                                        }
+                                        <span class="badge @badgeClass">@log.Action</span>
+                                    </td>
+                                    <td><span class="badge bg-light text-dark border">@log.EntityType</span></td>
+                                    <td style="max-width: 300px;">
+                                        <div class="text-truncate" title="@log.Description">@log.Description</div>
+                                    </td>
+                                    <td><code class="small">@log.IpAddress</code></td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

@@ -34,11 +34,21 @@ namespace Websitebanhang.Data
         public DbSet<StockHistory> StockHistories { get; set; }
         public DbSet<ProductViewHistory> ProductViewHistories { get; set; }
         public DbSet<SupportRequest> SupportRequests { get; set; }
+        public DbSet<RewardPointHistory> RewardPointHistories { get; set; }
+        public DbSet<Supplier> Suppliers { get; set; }
+        public DbSet<AdminActivityLog> AdminActivityLogs { get; set; }
 
         // CONFIG DATABASE
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            // Supplier - Product Relationship
+            modelBuilder.Entity<Product>()
+                .HasOne(p => p.Supplier)
+                .WithMany(s => s.Products)
+                .HasForeignKey(p => p.SupplierId)
+                .OnDelete(DeleteBehavior.SetNull);
 
             // Fix decimal warning for Price
             modelBuilder.Entity<Product>()

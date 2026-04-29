@@ -19,17 +19,20 @@ namespace Websitebanhang.Controllers
         private readonly ICategoryRepository _categoryRepository;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly AppDbContext _context;
+        private readonly Services.IActivityLogService _activityLogService;
 
         public ProductController(
             IProductRepository productRepository,
             ICategoryRepository categoryRepository,
             UserManager<ApplicationUser> userManager,
-            AppDbContext context)
+            AppDbContext context,
+            Services.IActivityLogService activityLogService)
         {
             _productRepository = productRepository;
             _categoryRepository = categoryRepository;
             _userManager = userManager;
             _context = context;
+            _activityLogService = activityLogService;
         }
 
         [AllowAnonymous]
@@ -247,6 +250,7 @@ namespace Websitebanhang.Controllers
         public IActionResult Add()
         {
             ViewBag.Categories = _categoryRepository.GetAll();
+            ViewBag.Suppliers = _context.Suppliers.ToList();
             return View();
         }
 
@@ -271,21 +275,23 @@ namespace Websitebanhang.Controllers
                 };
                 _context.StockHistories.Add(history);
                 await _context.SaveChangesAsync();
+                await _activityLogService.LogAsync("Thêm SP", "Product", product.Id.ToString(), $"Admin đã thêm sản phẩm: {product.Name}");
 
                 return RedirectToAction("Manage");
             }
 
             ViewBag.Categories = _categoryRepository.GetAll();
+            ViewBag.Suppliers = _context.Suppliers.ToList();
             return View(product);
         }
 
-        [Authorize(Roles = "Admin")]
         public IActionResult Update(int id)
         {
             var product = _productRepository.GetById(id);
             if (product == null) return NotFound();
 
             ViewBag.Categories = _categoryRepository.GetAll();
+            ViewBag.Suppliers = _context.Suppliers.ToList();
             return View(product);
         }
 
@@ -318,11 +324,13 @@ namespace Websitebanhang.Controllers
                     _context.StockHistories.Add(history);
                     await _context.SaveChangesAsync();
                 }
+                await _activityLogService.LogAsync("Cập nhật SP", "Product", product.Id.ToString(), $"Admin đã cập nhật sản phẩm: {product.Name}");
 
                 return RedirectToAction("Manage");
             }
 
             ViewBag.Categories = _categoryRepository.GetAll();
+            ViewBag.Suppliers = _context.Suppliers.ToList();
             return View(product);
         }
 
@@ -335,11 +343,12 @@ namespace Websitebanhang.Controllers
             return View(product);
         }
 
-        [HttpPost, ActionName("Delete")]
-        [Authorize(Roles = "Admin")]
-        public IActionResult DeleteConfirmed(int id)
+        public async Task<IActionResult> DeleteConfirmed(int id)
         {
+            var product = _productRepository.GetById(id);
+            string productName = product?.Name ?? "Unknown";
             _productRepository.Delete(id);
+            await _activityLogService.LogAsync("Xóa SP", "Product", id.ToString(), $"Admin đã xóa sản phẩm: {productName}");
             return RedirectToAction("Manage");
         }
     }

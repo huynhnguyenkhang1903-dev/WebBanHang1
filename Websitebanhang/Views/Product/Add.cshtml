@@ -47,6 +47,14 @@
                                 </select>
                                 <span asp-validation-for="CategoryId" class="text-danger"></span>
                             </div>
+
+                            <div class="col-md-3 mb-3">
+                                <label asp-for="SupplierId" class="form-label fw-bold">Nhà cung cấp</label>
+                                <select asp-for="SupplierId" class="form-select" asp-items="@(new SelectList(ViewBag.Suppliers, "Id", "Name"))">
+                                    <option value="">-- Không có --</option>
+                                </select>
+                                <span asp-validation-for="SupplierId" class="text-danger"></span>
+                            </div>
                         </div>
 
                         <div class="mb-3">

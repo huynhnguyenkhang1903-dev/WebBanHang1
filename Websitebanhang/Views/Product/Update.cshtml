@@ -80,6 +80,17 @@
                         </div>
                         <span asp-validation-for="CategoryId" class="text-danger small mt-1 d-block"></span>
                     </div>
+
+                    <!-- Supplier -->
+                    <div class="col-md-3">
+                        <div class="form-floating">
+                            <select asp-for="SupplierId" class="form-select bg-light border-0" id="floatingSupplier" asp-items="@(new SelectList(ViewBag.Suppliers, "Id", "Name", Model.SupplierId))">
+                                <option value="">-- Không có --</option>
+                            </select>
+                            <label for="floatingSupplier" class="ps-4">Nhà Cung Cấp</label>
+                        </div>
+                        <span asp-validation-for="SupplierId" class="text-danger small mt-1 d-block"></span>
+                    </div>
                 </div>
 
                 <div class="row g-4 mb-4">

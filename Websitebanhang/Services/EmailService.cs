@@ -17,36 +17,44 @@ namespace Websitebanhang.Services
 
         public async Task SendEmailAsync(string toEmail, string subject, string documentBody)
         {
-            var smtpsettings = _configuration.GetSection("SmtpSettings");
-            var host = smtpsettings["Host"];
-            var port = int.Parse(smtpsettings["Port"] ?? "587");
-            var username = smtpsettings["Username"];
-            var password = smtpsettings["Password"];
-
-            // MOCK MODE: Chỉ dành cho việc test nhanh giao diện email mà không cần cài đặt Smtp thật
-            if (username == "your_email@gmail.com")
+            try
             {
-                var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "TestEmail.html");
-                await File.WriteAllTextAsync(filePath, documentBody);
-                return;
-            }
+                var smtpsettings = _configuration.GetSection("SmtpSettings");
+                var host = smtpsettings["Host"];
+                var port = int.Parse(smtpsettings["Port"] ?? "587");
+                var username = smtpsettings["Username"];
+                var password = smtpsettings["Password"];
 
-            using (var client = new SmtpClient(host, port))
-            {
-                client.Credentials = new NetworkCredential(username, password);
-                client.EnableSsl = true;
-
-                var mailMessage = new MailMessage
+                // Nếu chưa cấu hình email hoặc dùng giá trị mặc định, ghi ra file để test
+                if (string.IsNullOrWhiteSpace(username) || username == "your_email@gmail.com")
                 {
-                    From = new MailAddress(username ?? "noreply@coffeeshop.com", "Coffee Shop Admin"),
-                    Subject = subject,
-                    Body = documentBody,
-                    IsBodyHtml = true,
-                };
-                
-                mailMessage.To.Add(toEmail);
+                    var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "TestEmail.html");
+                    await File.WriteAllTextAsync(filePath, documentBody);
+                    System.Console.WriteLine("--- EMAIL MOCK MODE: Check wwwroot/TestEmail.html ---");
+                    return;
+                }
 
-                await client.SendMailAsync(mailMessage);
+                using (var client = new SmtpClient(host, port))
+                {
+                    client.Credentials = new NetworkCredential(username, password);
+                    client.EnableSsl = true;
+
+                    var mailMessage = new MailMessage
+                    {
+                        From = new MailAddress(username, "Aura Coffee"),
+                        Subject = subject,
+                        Body = documentBody,
+                        IsBodyHtml = true,
+                    };
+
+                    mailMessage.To.Add(toEmail);
+
+                    await client.SendMailAsync(mailMessage);
+                }
+            }
+            catch (System.Exception ex)
+            {
+                System.Console.WriteLine($"ERROR SENDING EMAIL: {ex.Message}");
             }
         }
     }

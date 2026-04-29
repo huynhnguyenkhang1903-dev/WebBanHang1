@@ -68,8 +68,11 @@
                     <button class="nav-link text-start fw-medium rounded-3 mb-2" id="v-pills-orders-tab" data-bs-toggle="pill" data-bs-target="#v-pills-orders" type="button" role="tab">
                         <i class="fa-solid fa-receipt me-2 w-20px text-center"></i> Lịch Sử Đơn Hàng
                     </button>
-                    <button class="nav-link text-start fw-medium rounded-3" id="v-pills-history-tab" data-bs-toggle="pill" data-bs-target="#v-pills-history" type="button" role="tab">
+                    <button class="nav-link text-start fw-medium rounded-3 mb-2" id="v-pills-history-tab" data-bs-toggle="pill" data-bs-target="#v-pills-history" type="button" role="tab">
                         <i class="fa-solid fa-clock-rotate-left me-2 w-20px text-center"></i> Sản Phẩm Đã Xem
+                    </button>
+                    <button class="nav-link text-start fw-medium rounded-3" id="v-pills-points-tab" data-bs-toggle="pill" data-bs-target="#v-pills-points" type="button" role="tab">
+                        <i class="fa-solid fa-coins me-2 w-20px text-center text-warning"></i> Điểm Thưởng
                     </button>
                 </div>
 
@@ -346,6 +349,90 @@
                                 <a asp-controller="Product" asp-action="Index" class="btn btn-coffee btn-sm rounded-pill mt-2">Khám phá ngay</a>
                             </div>
                         }
+                    </div>
+
+                    <!-- TAB: Reward Points -->
+                    <div class="tab-pane fade" id="v-pills-points" role="tabpanel">
+                        <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-2">
+                            <h4 class="text-coffee fw-bold mb-0">Điểm Thưởng & Ưu Đãi</h4>
+                            <div class="bg-coffee text-white px-3 py-2 rounded-pill shadow-sm d-flex align-items-center">
+                                <i class="fa-solid fa-coins text-warning me-2 fs-5"></i>
+                                <span class="fw-bold fs-5">@Model.RewardPoints.ToString("N0")</span>
+                                <span class="ms-1 small">điểm</span>
+                            </div>
+                        </div>
+
+                        <div class="row g-4 mb-4">
+                            <div class="col-md-6">
+                                <div class="card border-0 shadow-sm bg-light h-100">
+                                    <div class="card-body">
+                                        <h6 class="fw-bold text-coffee mb-3"><i class="fa-solid fa-circle-info me-2"></i> Quy tắc tích lũy</h6>
+                                        <ul class="small text-muted ps-3">
+                                            <li>Tích lũy <strong>1 điểm</strong> cho mỗi <strong>1.000 ₫</strong> giá trị đơn hàng.</li>
+                                            <li>Điểm được cộng khi đơn hàng chuyển trạng thái "Đã giao hàng".</li>
+                                            <li>Điểm thưởng không có thời hạn hết hạn.</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card border-0 shadow-sm bg-light h-100">
+                                    <div class="card-body">
+                                        <h6 class="fw-bold text-coffee mb-3"><i class="fa-solid fa-gift me-2"></i> Quy tắc sử dụng</h6>
+                                        <ul class="small text-muted ps-3">
+                                            <li><strong>1 điểm = 100 ₫</strong> giảm giá trực tiếp.</li>
+                                            <li>Bạn có thể chọn dùng điểm tại bước Xác nhận đơn hàng.</li>
+                                            <li>Số tiền giảm tối đa không quá 100% giá trị sản phẩm.</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h5 class="fw-bold text-coffee mb-3">Lịch sử biến động điểm</h5>
+                        <div class="card border-0 shadow-sm overflow-hidden">
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0 small">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th class="ps-3">Thời gian</th>
+                                            <th>Nội dung</th>
+                                            <th class="text-center">Thay đổi</th>
+                                            <th class="text-end pe-3">Số dư</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @if (Model.PointHistory == null || !Model.PointHistory.Any())
+                                        {
+                                            <tr>
+                                                <td colspan="4" class="text-center py-4 text-muted">Chưa có lịch sử điểm thưởng.</td>
+                                            </tr>
+                                        }
+                                        else
+                                        {
+                                            @foreach (var log in Model.PointHistory)
+                                            {
+                                                <tr>
+                                                    <td class="ps-3 text-muted">@log.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                                                    <td>@log.Note</td>
+                                                    <td class="text-center">
+                                                        @if (log.PointsChanged > 0)
+                                                        {
+                                                            <span class="text-success fw-bold">+@log.PointsChanged.ToString("N0")</span>
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="text-danger fw-bold">@log.PointsChanged.ToString("N0")</span>
+                                                        }
+                                                    </td>
+                                                    <td class="text-end pe-3 fw-bold">@log.BalanceAfter.ToString("N0")</td>
+                                                </tr>
+                                            }
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
 
                 </div>

@@ -23,13 +23,17 @@
                             <th>Giá (VNĐ)</th>
                             <th>Danh mục</th>
                             <th>Tồn kho</th>
+                            <th>Hạn sử dụng</th>
                             <th>Hành động</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach (var item in Model)
                         {
-                            <tr>
+                            var isExpired = item.ExpiryDate.HasValue && item.ExpiryDate.Value <= DateTime.Now;
+                            var isNearExpiry = item.ExpiryDate.HasValue && !isExpired && item.ExpiryDate.Value <= DateTime.Now.AddDays(30);
+                            
+                            <tr class="@(isExpired ? "table-danger" : (isNearExpiry ? "table-warning" : ""))">
                                 <td>
                                     @if (!string.IsNullOrWhiteSpace(item.ImageUrl))
                                     {
@@ -51,6 +55,20 @@
                                     else
                                     {
                                         <span class="badge bg-danger">Hết hàng</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (item.ExpiryDate.HasValue)
+                                    {
+                                        <span class="small @(isExpired ? "text-danger fw-bold" : (isNearExpiry ? "text-dark fw-bold" : "text-muted"))">
+                                            @item.ExpiryDate.Value.ToString("dd/MM/yyyy")
+                                            @if (isExpired) { <br/><small>(Hết hạn)</small> }
+                                            else if (isNearExpiry) { <br/><small>(Sắp hết hạn)</small> }
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted small">N/A</span>
                                     }
                                 </td>
                                 <td>

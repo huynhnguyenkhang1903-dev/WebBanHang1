@@ -37,7 +37,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 // ================= IDENTITY =================
 builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
 {
-    options.SignIn.RequireConfirmedAccount = true;
+    options.SignIn.RequireConfirmedAccount = false;
 
     options.Password.RequireDigit = true;
     options.Password.RequireUppercase = true;
@@ -87,10 +87,12 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
-// ================= REPOSITORY =================
+// ================= REPOSITORY & SERVICES =================
 builder.Services.AddScoped<IProductRepository, EFProductRepository>();
 builder.Services.AddScoped<ICategoryRepository, EFCategoryRepository>();
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IActivityLogService, ActivityLogService>();
+builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
 

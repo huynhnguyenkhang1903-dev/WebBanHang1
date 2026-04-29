@@ -13,5 +13,6 @@ namespace Websitebanhang.Models
         public string AvatarUrl { get; set; } = string.Empty;
         public string? OtpCode { get; set; }
         public DateTime? OtpExpiry { get; set; }
+        public int RewardPoints { get; set; } = 0;
     }
 }

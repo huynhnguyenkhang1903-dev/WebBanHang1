@@ -17,12 +17,16 @@ namespace Websitebanhang.Controllers
         private readonly AppDbContext _context;
         private readonly IEmailService _emailService;
         private readonly IHubContext<NotificationHub> _hubContext;
+        private readonly Microsoft.AspNetCore.Identity.UserManager<ApplicationUser> _userManager;
+        private readonly IActivityLogService _activityLogService;
 
-        public AdminOrderController(AppDbContext context, IEmailService emailService, IHubContext<NotificationHub> hubContext)
+        public AdminOrderController(AppDbContext context, IEmailService emailService, IHubContext<NotificationHub> hubContext, Microsoft.AspNetCore.Identity.UserManager<ApplicationUser> userManager, IActivityLogService activityLogService)
         {
             _context = context;
             _emailService = emailService;
             _hubContext = hubContext;
+            _userManager = userManager;
+            _activityLogService = activityLogService;
         }
 
         // ================= DANH SÁCH =================
@@ -201,32 +205,7 @@ namespace Websitebanhang.Controllers
             await _context.SaveChangesAsync();
 
             // --- GỬI EMAIL XÁC NHẬN KHI ADMIN DUYỆT ĐƠN ---
-            try
-            {
-                if (!string.IsNullOrEmpty(order.Email))
-                {
-                    string emailBody = $@"
-                        <h2>Xác nhận duyệt đơn hàng #{order.Id}</h2>
-                        <p>Chào {order.CustomerName},</p>
-                        <p>Đơn hàng của bạn đã được cửa hàng xác nhận và đang trong quá trình chuẩn bị.</p>
-                        <h3>Chi tiết đơn hàng:</h3>
-                        <ul>
-                            <li><strong>Tổng tiền:</strong> {order.TotalAmount:N0} ₫</li>
-                            <li><strong>Phương thức thanh toán:</strong> {(order.PaymentMethod == "bank" ? "Chuyển khoản ngân hàng" : "Thanh toán khi nhận hàng (COD)")}</li>
-                            <li><strong>Địa chỉ giao hàng:</strong> {order.Address}</li>
-                        </ul>
-                        <p>Chúng tôi sẽ thông báo cho bạn khi đơn hàng bắt đầu được giao.</p>
-                        <br/>
-                        <p>Trân trọng,</p>
-                        <p><strong>Đội ngũ Coffee Shop</strong></p>
-                    ";
-                    await _emailService.SendEmailAsync(order.Email, $"Coffee Shop - Đơn hàng #{order.Id} đã được duyệt", emailBody);
-                }
-            }
-            catch
-            {
-                // Bỏ qua lỗi gửi email để không chặn luồng duyệt đơn
-            }
+            await SendStatusEmailAsync(order, "Đã xác nhận");
             // ------------------------------------------------
 
             if (!string.IsNullOrEmpty(order.UserId))
@@ -254,11 +233,13 @@ namespace Websitebanhang.Controllers
 
             order.Status = "Shipping";
             await _context.SaveChangesAsync();
-
+            await _activityLogService.LogAsync("Giao hàng", "Order", order.Id.ToString(), $"Admin đã chuyển đơn hàng #{order.Id} sang Đang giao");
             if (!string.IsNullOrEmpty(order.UserId))
             {
                 await _hubContext.Clients.User(order.UserId).SendAsync("ReceiveUserNotification", $"Đơn hàng #{order.Id} đang trên đường giao đến bạn!", $"/Account/OrderDetails/{order.Id}");
             }
+
+            await SendStatusEmailAsync(order, "Đang giao hàng");
 
             TempData["Success"] = "Đang giao hàng!";
             return RedirectToAction("Details", new { id });
@@ -279,12 +260,37 @@ namespace Websitebanhang.Controllers
             }
 
             order.Status = "Delivered";
+            
+            // 🔥 TÍCH ĐIỂM THƯỞNG (1000đ = 1 điểm)
+            if (!string.IsNullOrEmpty(order.UserId))
+            {
+                var user = await _userManager.FindByIdAsync(order.UserId);
+                if (user != null)
+                {
+                    int pointsEarned = (int)(order.TotalAmount / 1000);
+                    if (pointsEarned > 0)
+                    {
+                        user.RewardPoints += pointsEarned;
+                        _context.RewardPointHistories.Add(new RewardPointHistory
+                        {
+                            UserId = user.Id,
+                            PointsChanged = pointsEarned,
+                            BalanceAfter = user.RewardPoints,
+                            Note = $"Tích điểm từ đơn hàng #{order.Id}",
+                            CreatedAt = DateTime.Now
+                        });
+                    }
+                }
+            }
+
             await _context.SaveChangesAsync();
 
             if (!string.IsNullOrEmpty(order.UserId))
             {
                 await _hubContext.Clients.User(order.UserId).SendAsync("ReceiveUserNotification", $"Đơn hàng #{order.Id} đã giao thành công!", $"/Account/OrderDetails/{order.Id}");
             }
+
+            await SendStatusEmailAsync(order, "Đã giao thành công");
 
             TempData["Success"] = "Đã giao thành công!";
             return RedirectToAction("Details", new { id });
@@ -339,13 +345,14 @@ namespace Websitebanhang.Controllers
 
             order.Status = "Cancelled";
             order.CancelReason = cancelReason;
-
             await _context.SaveChangesAsync();
 
             if (!string.IsNullOrEmpty(order.UserId))
             {
                 await _hubContext.Clients.User(order.UserId).SendAsync("ReceiveUserNotification", $"Đơn hàng #{order.Id} đã bị hủy. Lý do: {cancelReason}", $"/Account/OrderDetails/{order.Id}");
             }
+
+            await SendStatusEmailAsync(order, "Đã bị hủy");
 
             TempData["Success"] = "Đã hủy đơn!";
             return RedirectToAction("Details", new { id });
@@ -446,8 +453,53 @@ namespace Websitebanhang.Controllers
                 await _hubContext.Clients.User(order.UserId).SendAsync("ReceiveUserNotification", $"Đơn hàng #{order.Id} đã chuyển sang: {newStatus}", $"/Account/OrderDetails/{order.Id}");
             }
 
+            await SendStatusEmailAsync(order, newStatus);
             TempData["Success"] = $"Đã cập nhật trạng thái từ {oldStatus} sang {newStatus}!";
             return RedirectToAction("Details", new { id });
+        // ================= HELPER =================
+        private async Task SendStatusEmailAsync(Order order, string statusDescription)
+        {
+            if (string.IsNullOrEmpty(order.Email)) return;
+
+            string statusColor = statusDescription switch
+            {
+                "Đã xác nhận" => "#28a745",
+                "Đang giao hàng" => "#17a2b8",
+                "Đã giao thành công" => "#28a745",
+                "Đã bị hủy" => "#dc3545",
+                _ => "#6c757d"
+            };
+
+            string emailBody = $@"
+                <div style='font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #eee; padding: 20px; border-radius: 10px;'>
+                    <div style='text-align: center; margin-bottom: 20px;'>
+                        <h1 style='color: #6f4e37; margin: 0;'>Aura Coffee</h1>
+                        <p style='color: #888; margin: 0;'>Hương vị nồng nàn từ cao nguyên</p>
+                    </div>
+                    <h2 style='color: #333; text-align: center;'>Cập nhật trạng thái đơn hàng</h2>
+                    <p>Chào <strong>{order.CustomerName}</strong>,</p>
+                    <p>Chúng tôi xin thông báo đơn hàng <strong>#{order.Id}</strong> của bạn đã chuyển sang trạng thái:</p>
+                    <div style='background-color: {statusColor}; color: white; padding: 15px 20px; text-align: center; border-radius: 8px; font-weight: bold; margin: 25px 0; font-size: 18px;'>
+                        {statusDescription}
+                    </div>
+                    {(!string.IsNullOrEmpty(order.CancelReason) ? $"<p style='background: #fff5f5; border-left: 4px solid #fc8181; padding: 10px; color: #c53030;'><strong>Lý do:</strong> {order.CancelReason}</p>" : "")}
+                    <p>Bạn có thể theo dõi chi tiết đơn hàng tại trang cá nhân hoặc nhấn vào liên kết dưới đây:</p>
+                    <div style='text-align: center; margin: 30px 0;'>
+                        <a href='https://localhost:7196/Account/OrderDetails/{order.Id}' style='background: #6f4e37; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;'>Xem chi tiết đơn hàng</a>
+                    </div>
+                    <hr style='border: none; border-top: 1px solid #eee; margin: 30px 0;' />
+                    <div style='text-align: center; font-size: 12px; color: #888;'>
+                        <p>Đây là email tự động, vui lòng không phản hồi email này.</p>
+                        <p>© 2024 Aura Coffee. All rights reserved.</p>
+                    </div>
+                </div>
+            ";
+
+            try
+            {
+                await _emailService.SendEmailAsync(order.Email, $"[Aura Coffee] Cập nhật đơn hàng #{order.Id}", emailBody);
+            }
+            catch { /* Ignore failures */ }
         }
     }
 }

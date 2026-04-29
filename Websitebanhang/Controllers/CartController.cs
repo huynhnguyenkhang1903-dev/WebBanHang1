@@ -56,6 +56,12 @@ namespace Websitebanhang.Controllers
                 return RedirectToAction("Index");
             }
 
+            if (product.ExpiryDate.HasValue && product.ExpiryDate.Value <= DateTime.Now)
+            {
+                TempData["Error"] = "Sản phẩm này đã hết hạn sử dụng, không thể mua!";
+                return RedirectToAction("Index");
+            }
+
             var cart = HttpContext.Session.GetObject<List<CartItem>>("Cart") ?? new List<CartItem>();
             var item = cart.FirstOrDefault(p => p.ProductId == id);
 
@@ -170,29 +176,14 @@ namespace Websitebanhang.Controllers
         // ================= ĐẶT HÀNG =================
         [HttpPost]
         [Authorize]
-        public async Task<IActionResult> PlaceOrder(string name, string email, string address, string phone, string paymentMethod, string shippingProvider, string? voucherCode, string? shippingVoucherCode)
+        public async Task<IActionResult> PlaceOrder(string name, string email, string address, string phone, string paymentMethod, string shippingProvider, string? voucherCode, string? shippingVoucherCode, bool usePoints = false)
         {
             var cart = HttpContext.Session.GetObject<List<CartItem>>("Cart") ?? new List<CartItem>();
             if (cart.Count == 0) return RedirectToAction("Index");
 
             decimal subtotal = cart.Sum(p => p.Price * p.Quantity);
-
-            // Build cart debug html
-            var sb = new StringBuilder();
-            sb.AppendLine("<table class=\"table\"><thead><tr><th>Tên</th><th>Giá</th><th>SL</th><th>Tổng</th></tr></thead><tbody>");
-            foreach (var it in cart)
-            {
-                sb.AppendLine($"<tr><td>{System.Net.WebUtility.HtmlEncode(it.Name)}</td><td>{it.Price.ToString("N0")} ₫</td><td>{it.Quantity}</td><td>{(it.Price * it.Quantity).ToString("N0")} ₫</td></tr>");
-            }
-            sb.AppendLine($"</tbody><tfoot><tr><th colspan=3>Tạm tính</th><th>{subtotal.ToString("N0")} ₫</th></tr></tfoot></table>");
-            TempData["Debug_CartHtml"] = sb.ToString();
-
-            // Determine shipping cost server-side
-            decimal shippingCost = 0m;
-            if (shippingProvider == "Viettel Post") shippingCost = 20000m;
-            else if (shippingProvider == "GHN") shippingCost = 25000m;
-            else if (shippingProvider == "Hỏa tốc") shippingCost = 50000m;
-            else shippingCost = 15000m; // GHTK default
+            var appUser = await _userManager.GetUserAsync(User);
+            if (appUser == null) return RedirectToAction("Login", "Account");
 
             // Apply order voucher discount if provided
             Voucher? appliedVoucher = null;
@@ -205,6 +196,13 @@ namespace Websitebanhang.Controllers
             }
 
             decimal orderDiscountAmount = Math.Round(subtotal * (orderVoucherPercent / 100m));
+
+            // Determine shipping cost server-side
+            decimal shippingCost = 0m;
+            if (shippingProvider == "Viettel Post") shippingCost = 20000m;
+            else if (shippingProvider == "GHN") shippingCost = 25000m;
+            else if (shippingProvider == "Hỏa tốc") shippingCost = 50000m;
+            else shippingCost = 15000m; // GHTK default
 
             // Apply shipping voucher if provided
             Voucher? appliedShippingVoucher = null;
@@ -219,11 +217,47 @@ namespace Websitebanhang.Controllers
             decimal shippingDiscountAmount = Math.Round(shippingCost * (shippingVoucherPercent / 100m));
             decimal shippingFinal = Math.Max(0m, shippingCost - shippingDiscountAmount);
 
-            decimal finalTotal = Math.Max(0m, subtotal - orderDiscountAmount + shippingFinal);
+            // 🔥 XỬ LÝ ĐIỂM THƯỞNG
+            decimal pointsDiscount = 0;
+            int pointsToUse = 0;
+            if (usePoints && appUser.RewardPoints > 0)
+            {
+                // 1 điểm = 100đ
+                pointsDiscount = appUser.RewardPoints * 100;
+                
+                // Không giảm quá tổng tiền (trừ đi các voucher)
+                decimal maxAllowedDiscount = subtotal - orderDiscountAmount;
+                if (pointsDiscount > maxAllowedDiscount)
+                {
+                    pointsDiscount = maxAllowedDiscount;
+                    pointsToUse = (int)Math.Ceiling(pointsDiscount / 100);
+                }
+                else
+                {
+                    pointsToUse = appUser.RewardPoints;
+                }
+            }
+
+            decimal finalTotal = Math.Max(0m, subtotal - orderDiscountAmount - pointsDiscount + shippingFinal);
+
+            // Deduct points
+            if (pointsToUse > 0)
+            {
+                appUser.RewardPoints -= pointsToUse;
+                _context.RewardPointHistories.Add(new RewardPointHistory
+                {
+                    UserId = appUser.Id,
+                    PointsChanged = -pointsToUse,
+                    BalanceAfter = appUser.RewardPoints,
+                    Note = $"Sử dụng điểm cho đơn hàng mới",
+                    CreatedAt = DateTime.Now
+                });
+            }
 
             // TEMP DEBUG: store values to TempData for inspection in view
             TempData["Debug_Subtotal"] = subtotal.ToString("N0");
             TempData["Debug_OrderDiscount"] = orderDiscountAmount.ToString("N0");
+            TempData["Debug_PointsDiscount"] = pointsDiscount.ToString("N0");
             TempData["Debug_ShippingCost"] = shippingCost.ToString("N0");
             TempData["Debug_ShippingDiscount"] = shippingDiscountAmount.ToString("N0");
             TempData["Debug_FinalTotal"] = finalTotal.ToString("N0");
@@ -252,22 +286,14 @@ namespace Websitebanhang.Controllers
             };
 
             // If user is authenticated, set UserId and prefer account email
-            try
+            if (appUser != null)
             {
-                var appUser = await _userManager.GetUserAsync(User);
-                if (appUser != null)
+                order.UserId = appUser.Id;
+                // prefer user's email from account if form email is empty or different
+                if (string.IsNullOrEmpty(order.Email) || !string.Equals(order.Email, appUser.Email, StringComparison.OrdinalIgnoreCase))
                 {
-                    order.UserId = appUser.Id;
-                    // prefer user's email from account if form email is empty or different
-                    if (string.IsNullOrEmpty(order.Email) || !string.Equals(order.Email, appUser.Email, StringComparison.OrdinalIgnoreCase))
-                    {
-                        order.Email = appUser.Email ?? "";
-                    }
+                    order.Email = appUser.Email ?? "";
                 }
-            }
-            catch
-            {
-                // ignore if userManager not available for any reason
             }
 
             _context.Orders.Add(order);

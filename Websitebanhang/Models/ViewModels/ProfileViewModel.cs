@@ -30,5 +30,7 @@ namespace Websitebanhang.Models.ViewModels
 
         public System.Collections.Generic.List<Websitebanhang.Models.UserAddress>? Addresses { get; set; }
         public System.Collections.Generic.List<Websitebanhang.Models.ProductViewHistory>? ViewHistory { get; set; }
+        public int RewardPoints { get; set; }
+        public System.Collections.Generic.List<Websitebanhang.Models.RewardPointHistory>? PointHistory { get; set; }
     }
 }

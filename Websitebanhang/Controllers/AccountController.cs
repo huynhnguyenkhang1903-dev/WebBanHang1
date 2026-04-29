@@ -140,12 +140,6 @@ namespace Websitebanhang.Controllers
 
                         return RedirectToAction("Index", "Home");
                     }
-                    
-                    if (result.IsNotAllowed)
-                    {
-                        ModelState.AddModelError("", "Tài khoản của bạn chưa được xác thực. Vui lòng kiểm tra email để lấy mã OTP.");
-                        return RedirectToAction("VerifyEmail", new { email = model.Email });
-                    }
 
                     if (result.IsLockedOut)
                     {
@@ -169,7 +163,6 @@ namespace Websitebanhang.Controllers
         {
             if (ModelState.IsValid)
             {
-                var otp = new Random().Next(100000, 999999).ToString();
                 var user = new ApplicationUser
                 {
                     UserName = model.Email,
@@ -178,8 +171,7 @@ namespace Websitebanhang.Controllers
                     PhoneNumber = model.PhoneNumber,
                     Address = model.Address,
                     DateOfBirth = model.DateOfBirth,
-                    OtpCode = otp,
-                    OtpExpiry = DateTime.Now.AddMinutes(10)
+                    EmailConfirmed = true // Tự động xác thực
                 };
 
                 var result = await _userManager.CreateAsync(user, model.Password);
@@ -187,12 +179,8 @@ namespace Websitebanhang.Controllers
                 if (result.Succeeded)
                 {
                     await _userManager.AddToRoleAsync(user, "User");
-                    
-                    // Gửi Email OTP
-                    var body = $"Mã xác thực của bạn là: <b>{otp}</b>. Mã có hiệu lực trong 10 phút.";
-                    await _emailService.SendEmailAsync(model.Email!, "Xác thực tài khoản Aura Coffee", body);
-
-                    return RedirectToAction("VerifyEmail", new { email = model.Email });
+                    TempData["SuccessMessage"] = "Đăng ký thành công! Bạn có thể đăng nhập ngay.";
+                    return RedirectToAction("Login");
                 }
 
                 foreach (var error in result.Errors)
@@ -200,53 +188,6 @@ namespace Websitebanhang.Controllers
             }
 
             return View(model);
-        }
-
-        [HttpGet]
-        public IActionResult VerifyEmail(string email)
-        {
-            ViewBag.Email = email;
-            return View();
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> VerifyEmail(string email, string otp)
-        {
-            var user = await _userManager.FindByEmailAsync(email);
-            if (user == null) return NotFound();
-
-            if (user.OtpCode == otp && user.OtpExpiry > DateTime.Now)
-            {
-                user.EmailConfirmed = true;
-                user.OtpCode = null;
-                user.OtpExpiry = null;
-                await _userManager.UpdateAsync(user);
-
-                TempData["SuccessMessage"] = "Xác thực thành công! Bạn có thể đăng nhập ngay bây giờ.";
-                return RedirectToAction("Login");
-            }
-
-            ModelState.AddModelError("", "Mã OTP không chính xác hoặc đã hết hạn.");
-            ViewBag.Email = email;
-            return View();
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> ResendOtp(string email)
-        {
-            var user = await _userManager.FindByEmailAsync(email);
-            if (user == null) return Json(new { success = false });
-
-            var otp = new Random().Next(100000, 999999).ToString();
-            user.OtpCode = otp;
-            user.OtpExpiry = DateTime.Now.AddMinutes(10);
-            await _userManager.UpdateAsync(user);
-
-            var body = $"Mã xác thực mới của bạn là: <b>{otp}</b>. Mã có hiệu lực trong 10 phút.";
-            await _emailService.SendEmailAsync(email, "Gửi lại mã xác thực Aura Coffee", body);
-
-            return Json(new { success = true });
         }
 
         [HttpPost]
@@ -362,6 +303,12 @@ namespace Websitebanhang.Controllers
                 .Take(10)
                 .ToListAsync();
 
+            var pointHistory = await _context.RewardPointHistories
+                .Where(h => h.UserId == user.Id)
+                .OrderByDescending(h => h.CreatedAt)
+                .Take(20)
+                .ToListAsync();
+
             var model = new ProfileViewModel
             {
                 Email = user.Email,
@@ -372,7 +319,9 @@ namespace Websitebanhang.Controllers
                 DateOfBirth = user.DateOfBirth,
                 Orders = orders,
                 Addresses = addresses,
-                ViewHistory = viewHistory
+                ViewHistory = viewHistory,
+                RewardPoints = user.RewardPoints,
+                PointHistory = pointHistory
             };
 
             return View(model);

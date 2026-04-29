@@ -67,9 +67,9 @@
                                 <div class="list-group-item d-flex justify-content-between align-items-center">
                                     <div>
                                         <div class="fw-bold">@item.Name</div>
-                                        <small class="text-secondary">S? l??ng: @item.Quantity</small>
+                                        <small class="text-secondary">Số lượng: @item.Quantity</small>
                                     </div>
-                                    <div class="fw-bold">@((item.Price * item.Quantity).ToString("N0", CultureInfo.CurrentCulture)) ?</div>
+                                    <div class="fw-bold">@((item.Price * item.Quantity).ToString("N0", CultureInfo.CurrentCulture)) ₫</div>
                                 </div>
                             }
                         </div>
@@ -84,6 +84,19 @@
                             </select>
                         </div>
 
+                        @if (user != null && user.RewardPoints > 0)
+                        {
+                            <div class="form-check form-switch mb-3 p-3 bg-light rounded-3 border">
+                                <input class="form-check-input ms-0 me-2" type="checkbox" name="usePoints" id="usePoints" onchange="calculateTotal()" value="true">
+                                <label class="form-check-label fw-bold text-coffee" for="usePoints">
+                                    <i class="fa-solid fa-coins text-warning me-1"></i> Sử dụng điểm thưởng (@user.RewardPoints.ToString("N0") điểm)
+                                </label>
+                                <div class="small text-muted mt-1">
+                                    Dùng @user.RewardPoints.ToString("N0") điểm để được giảm <strong>@((user.RewardPoints * 100).ToString("N0")) ₫</strong>
+                                </div>
+                            </div>
+                        }
+
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <div class="text-secondary">Tạm tính:</div>
                             <div class="fw-bold" id="subTotalDisplay" data-value="@total">@total.ToString("N0", CultureInfo.CurrentCulture) ₫</div>
@@ -92,23 +105,27 @@
                             <div class="text-secondary">Phí vận chuyển:</div>
                             <div class="fw-bold text-info" id="shippingCostDisplay">15.000 ₫</div>
                         </div>
+                        <div id="pointsDiscountRow" class="d-flex justify-content-between align-items-center mb-2 d-none">
+                            <div class="text-secondary">Giảm giá điểm thưởng:</div>
+                            <div class="fw-bold text-danger" id="pointsDiscountDisplay">-0 ₫</div>
+                        </div>
                         <div class="d-flex justify-content-between align-items-center mb-4 border-top pt-2">
                             <div class="fw-bold fs-5">Tổng cộng:</div>
                             <div class="fw-bold text-gold fs-4" id="finalTotalDisplay">@((total + 15000).ToString("N0", CultureInfo.CurrentCulture)) ₫</div>
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Ph??ng th?c thanh to�n</label>
+                            <label class="form-label fw-bold">Phương thức thanh toán</label>
                             <select name="paymentMethod" class="form-select" required>
-                                <option value="COD">Thanh to�n khi nh?n h�ng (COD)</option>
+                                <option value="COD">Thanh toán khi nhận hàng (COD)</option>
                                 <option value="bank">Chuyển khoản ngân hàng</option>
                                 <option value="VNPay">VNPay</option>
                             </select>
                         </div>
 
                         <div class="d-flex gap-2">
-                            <button type="submit" class="btn btn-primary-custom">X�c nh?n ??t h�ng</button>
-                            <a asp-controller="Cart" asp-action="Index" class="btn btn-outline-dark">Quay l?i gi? h�ng</a>
+                            <button type="submit" class="btn btn-primary-custom">Xác nhận đặt hàng</button>
+                            <a asp-controller="Cart" asp-action="Index" class="btn btn-outline-dark">Quay lại giỏ hàng</a>
                         </div>
                     </div>
                 </div>
@@ -143,7 +160,24 @@
 
         document.getElementById('shippingCostDisplay').innerText = new Intl.NumberFormat('vi-VN').format(shippingCost) + ' ₫';
         
-        var finalTotal = subTotal + shippingCost;
+        var pointsDiscount = 0;
+        var usePointsCheckbox = document.getElementById('usePoints');
+        if (usePointsCheckbox && usePointsCheckbox.checked) {
+            var userPoints = @(user?.RewardPoints ?? 0);
+            pointsDiscount = userPoints * 100;
+            
+            // Limit discount to subTotal
+            if (pointsDiscount > subTotal) pointsDiscount = subTotal;
+            
+            document.getElementById('pointsDiscountRow').classList.remove('d-none');
+            document.getElementById('pointsDiscountDisplay').innerText = '-' + new Intl.NumberFormat('vi-VN').format(pointsDiscount) + ' ₫';
+        } else {
+            if(document.getElementById('pointsDiscountRow')) {
+                document.getElementById('pointsDiscountRow').classList.add('d-none');
+            }
+        }
+
+        var finalTotal = subTotal + shippingCost - pointsDiscount;
         document.getElementById('finalTotalDisplay').innerText = new Intl.NumberFormat('vi-VN').format(finalTotal) + ' ₫';
     }
 
