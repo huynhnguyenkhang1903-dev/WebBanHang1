@@ -60,6 +60,10 @@ namespace Websitebanhang.Data
                 .Property(o => o.TotalAmount)
                 .HasPrecision(18, 2);
 
+            modelBuilder.Entity<Order>()
+                .Property(o => o.ShippingCost)
+                .HasPrecision(18, 2);
+
             modelBuilder.Entity<CartItem>()
                 .Property(ci => ci.Price)
                 .HasPrecision(18, 2);
