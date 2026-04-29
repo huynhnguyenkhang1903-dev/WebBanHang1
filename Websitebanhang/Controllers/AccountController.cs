@@ -12,6 +12,8 @@ using System;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using Websitebanhang.Helpers;
+using System.Collections.Generic;
 
 namespace Websitebanhang.Controllers
 {
@@ -40,6 +42,33 @@ namespace Websitebanhang.Controllers
         public IActionResult Login()
         {
             return View();
+        }
+
+        private async Task MergeSessionWishlistToDatabaseAsync(ApplicationUser user)
+        {
+            var sessionWishlist = HttpContext.Session.GetObject<List<CartItem>>("Wishlist");
+            if (sessionWishlist != null && sessionWishlist.Any())
+            {
+                var dbWishlist = await _context.WishlistItems
+                    .Where(w => w.UserId == user.Id)
+                    .Select(w => w.ProductId)
+                    .ToListAsync();
+
+                foreach (var item in sessionWishlist)
+                {
+                    if (!dbWishlist.Contains(item.ProductId))
+                    {
+                        _context.WishlistItems.Add(new WishlistItem
+                        {
+                            UserId = user.Id,
+                            ProductId = item.ProductId,
+                            AddedAt = System.DateTime.Now
+                        });
+                    }
+                }
+                await _context.SaveChangesAsync();
+                HttpContext.Session.Remove("Wishlist");
+            }
         }
 
         [Authorize]
@@ -102,6 +131,8 @@ namespace Websitebanhang.Controllers
 
                     if (result.Succeeded)
                     {
+                        await MergeSessionWishlistToDatabaseAsync(user);
+
                         var roles = await _userManager.GetRolesAsync(user);
 
                         if (roles.Contains("Admin"))
@@ -189,6 +220,8 @@ namespace Websitebanhang.Controllers
                 var user = await _userManager.FindByLoginAsync(info.LoginProvider, info.ProviderKey);
                 if (user != null)
                 {
+                    await MergeSessionWishlistToDatabaseAsync(user);
+
                     var roles = await _userManager.GetRolesAsync(user);
                     if (roles.Contains("Admin"))
                         return RedirectToAction("Index", "Admin");
@@ -233,6 +266,7 @@ namespace Websitebanhang.Controllers
                     if (linkResult.Succeeded)
                     {
                         await _signInManager.SignInAsync(user, isPersistent: false);
+                        await MergeSessionWishlistToDatabaseAsync(user);
                         return LocalRedirect(returnUrl);
                     }
                 }

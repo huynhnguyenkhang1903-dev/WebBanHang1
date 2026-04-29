@@ -4,6 +4,7 @@ using Websitebanhang.Data;
 using Websitebanhang.Models;
 using Websitebanhang.Repositores;
 using Websitebanhang.Services;
+using Websitebanhang.Hubs;
 
 using Microsoft.AspNetCore.Localization;
 using System.Globalization;
@@ -24,6 +25,7 @@ builder.Services.AddControllersWithViews()
     });
 
 builder.Services.AddRazorPages();
+builder.Services.AddSignalR(); // 🔥 THÊM SIGNALR
 
 // ================= DATABASE =================
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -142,6 +144,7 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.MapRazorPages();
+app.MapHub<NotificationHub>("/notificationHub"); // 🔥 THÊM SIGNALR HUB ROUTE
 
 // ================= SEED DATA =================
 using (var scope = app.Services.CreateScope())

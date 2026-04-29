@@ -13,6 +13,7 @@ namespace Websitebanhang.Data
 
         // TABLES
         public DbSet<Product> Products { get; set; }
+        public DbSet<ProductImage> ProductImages { get; set; }
 
         public DbSet<Category> Categories { get; set; }
 
@@ -28,6 +29,8 @@ namespace Websitebanhang.Data
         public DbSet<Banner> Banners { get; set; }
         
         public DbSet<Review> Reviews { get; set; }
+
+        public DbSet<WishlistItem> WishlistItems { get; set; }
 
         // CONFIG DATABASE
         protected override void OnModelCreating(ModelBuilder modelBuilder)

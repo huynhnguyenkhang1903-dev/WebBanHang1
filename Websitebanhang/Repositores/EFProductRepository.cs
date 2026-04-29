@@ -22,6 +22,7 @@ namespace Websitebanhang.Repositores
         {
             return _context.Products
                 .Include(p => p.Category)
+                .Include(p => p.Images)
                 .Include(p => p.Reviews)
                     .ThenInclude(r => r.User)
                 .FirstOrDefault(p => p.Id == id);

@@ -36,6 +36,9 @@
                     case "Confirmed":
                         <span class="badge bg-info">Đã duyệt</span>
                         break;
+                    case "Preparing":
+                        <span class="badge bg-secondary">Chuẩn bị hàng</span>
+                        break;
                     case "Shipping":
                         <span class="badge bg-primary">Đang giao</span>
                         break;
@@ -144,6 +147,24 @@
 
         @if (User.IsInRole("Admin"))
         {
+            <!-- CẬP NHẬT TRẠNG THÁI NHANH -->
+            <form asp-action="UpdateStatus" method="post" class="mb-4 p-3 border rounded bg-light text-start mx-auto" style="max-width: 500px;">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="id" value="@Model.Id" />
+                <label class="form-label fw-bold">Cập nhật trạng thái nhanh:</label>
+                <div class="input-group">
+                    <select name="newStatus" class="form-select">
+                        @if(status == "Pending"){ <option value="Pending" selected>Chờ xác nhận</option> } else { <option value="Pending">Chờ xác nhận</option> }
+                        @if(status == "Confirmed"){ <option value="Confirmed" selected>Đã duyệt</option> } else { <option value="Confirmed">Đã duyệt</option> }
+                        @if(status == "Preparing"){ <option value="Preparing" selected>Chuẩn bị hàng</option> } else { <option value="Preparing">Chuẩn bị hàng</option> }
+                        @if(status == "Shipping"){ <option value="Shipping" selected>Đang giao</option> } else { <option value="Shipping">Đang giao</option> }
+                        @if(status == "Delivered"){ <option value="Delivered" selected>Đã giao</option> } else { <option value="Delivered">Đã giao</option> }
+                        @if(status == "Cancelled"){ <option value="Cancelled" selected>Đã hủy</option> } else { <option value="Cancelled">Đã hủy</option> }
+                    </select>
+                    <button type="submit" class="btn btn-secondary">Cập nhật</button>
+                </div>
+            </form>
+
             <!-- ADMIN ACTION -->
             @if (status == "Pending")
             {

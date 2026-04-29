@@ -95,10 +95,26 @@
                                class="position-absolute top-0 end-0 m-2 btn btn-light btn-sm rounded-circle shadow-sm z-index-3 text-danger" style="z-index: 3;" title="Thêm vào yêu thích">
                                 <i class="fa-regular fa-heart"></i>
                             </a>
+                            @if(item.Stock <= 0)
+                            {
+                                <span class="badge bg-secondary position-absolute top-0 start-0 m-2 z-index-2 shadow-sm rounded-pill">Hết hàng</span>
+                            }
                             <img src="@(string.IsNullOrEmpty(item.ImageUrl) ? "/images/placeholder.jpg" : item.ImageUrl)" class="card-img-top" />
-                            <div class="card-body">
-                                <h6>@item.Name</h6>
-                                <b class="text-danger">@item.Price.ToString("N0") ₫</b>
+                            <div class="card-body d-flex flex-column">
+                                <a asp-controller="Product" asp-action="Display" asp-route-id="@item.Id" class="text-decoration-none text-dark">
+                                    <h6>@item.Name</h6>
+                                </a>
+                                <div class="mt-auto d-flex justify-content-between align-items-center">
+                                    <b class="text-danger">@item.Price.ToString("N0") ₫</b>
+                                    @if(item.Stock > 0) {
+                                        <form action="/Cart/AddToCart" method="post" class="m-0">
+                                            <input type="hidden" name="id" value="@item.Id" />
+                                            <button type="submit" class="btn btn-gold btn-sm"><i class="fa-solid fa-cart-plus"></i></button>
+                                        </form>
+                                    } else {
+                                        <button class="btn btn-secondary btn-sm" disabled title="Hết hàng"><i class="fa-solid fa-ban"></i></button>
+                                    }
+                                </div>
                             </div>
                         </div>
                     </div>

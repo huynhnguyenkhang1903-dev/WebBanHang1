@@ -57,11 +57,45 @@
                     <div class="product-img-wrapper rounded-4 overflow-hidden shadow-sm position-relative">
                         @if (!string.IsNullOrEmpty(Model.Country))
                         {
-                            <span class="badge bg-dark position-absolute top-0 start-0 m-3 z-index-2 px-3 py-2 fs-6 rounded-pill">
+                            <span class="badge bg-dark position-absolute top-0 start-0 m-3 z-index-2 px-3 py-2 fs-6 rounded-pill" style="z-index: 10;">
                                 <i class="fa-solid fa-earth-americas me-2 text-gold"></i>@Model.Country
                             </span>
                         }
-                        <img src="@(string.IsNullOrEmpty(Model.ImageUrl) ? "/images/placeholder.jpg" : Model.ImageUrl)" alt="@Model.Name" class="w-100 h-100 object-fit-cover transition-transform" />
+
+                        @{
+                            var allImages = new List<string>();
+                            allImages.Add(string.IsNullOrEmpty(Model.ImageUrl) ? "/images/placeholder.jpg" : Model.ImageUrl);
+                            if (Model.Images != null && Model.Images.Any())
+                            {
+                                allImages.AddRange(Model.Images.OrderBy(i => i.OrderIndex).Select(i => i.ImageUrl));
+                            }
+                        }
+
+                        @if (allImages.Count > 1)
+                        {
+                            <div id="productCarousel" class="carousel slide h-100" data-bs-ride="carousel">
+                                <div class="carousel-inner h-100">
+                                    @for (int i = 0; i < allImages.Count; i++)
+                                    {
+                                        <div class="carousel-item h-100 @(i == 0 ? "active" : "")">
+                                            <img src="@allImages[i]" class="d-block w-100 h-100 object-fit-cover transition-transform" alt="@Model.Name">
+                                        </div>
+                                    }
+                                </div>
+                                <button class="carousel-control-prev" type="button" data-bs-target="#productCarousel" data-bs-slide="prev">
+                                    <span class="carousel-control-prev-icon bg-dark rounded-circle p-3 bg-opacity-50" aria-hidden="true"></span>
+                                    <span class="visually-hidden">Previous</span>
+                                </button>
+                                <button class="carousel-control-next" type="button" data-bs-target="#productCarousel" data-bs-slide="next">
+                                    <span class="carousel-control-next-icon bg-dark rounded-circle p-3 bg-opacity-50" aria-hidden="true"></span>
+                                    <span class="visually-hidden">Next</span>
+                                </button>
+                            </div>
+                        }
+                        else
+                        {
+                            <img src="@allImages[0]" alt="@Model.Name" class="w-100 h-100 object-fit-cover transition-transform" />
+                        }
                     </div>
                 </div>
 
@@ -258,10 +292,14 @@
                                 <div class="text-gold fw-bold mb-3 mt-auto">@item.Price.ToString("N0") ₫</div>
                                 <div class="d-flex gap-2">
                                     <a asp-controller="Product" asp-action="Display" asp-route-id="@item.Id" class="btn btn-outline-dark btn-sm flex-grow-1">Xem</a>
-                                    <form action="/Cart/AddToCart" method="post" class="m-0">
-                                        <input type="hidden" name="id" value="@item.Id" />
-                                        <button type="submit" class="btn btn-gold btn-sm"><i class="fa-solid fa-cart-plus"></i></button>
-                                    </form>
+                                    @if(item.Stock > 0) {
+                                        <form action="/Cart/AddToCart" method="post" class="m-0">
+                                            <input type="hidden" name="id" value="@item.Id" />
+                                            <button type="submit" class="btn btn-gold btn-sm"><i class="fa-solid fa-cart-plus"></i></button>
+                                        </form>
+                                    } else {
+                                        <button class="btn btn-secondary btn-sm" disabled title="Hết hàng"><i class="fa-solid fa-ban"></i></button>
+                                    }
                                 </div>
                             </div>
                         </div>

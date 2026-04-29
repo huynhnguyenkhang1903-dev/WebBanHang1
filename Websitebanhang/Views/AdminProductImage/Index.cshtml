@@ -1,0 +1,109 @@
+@model IEnumerable<Websitebanhang.Models.ProductImage>
+
+@{
+    var product = ViewBag.Product as Websitebanhang.Models.Product;
+    ViewData["Title"] = "Quản lý hình ảnh: " + product?.Name;
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold mb-0">Hình ảnh: @product?.Name</h2>
+    <a asp-controller="Product" asp-action="Manage" class="btn btn-outline-secondary"><i class="fa-solid fa-arrow-left me-1"></i> Trở về</a>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="row">
+    <!-- Upload Form -->
+    <div class="col-md-4 mb-4">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white fw-bold">
+                Tải ảnh mới lên
+            </div>
+            <div class="card-body">
+                <form asp-action="Upload" method="post" enctype="multipart/form-data">
+                    <input type="hidden" name="productId" value="@product?.Id" />
+                    <div class="mb-3">
+                        <label class="form-label">Chọn hình ảnh (có thể chọn nhiều)</label>
+                        <input type="file" name="imageFiles" class="form-control" accept="image/*" multiple required />
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100"><i class="fa-solid fa-upload me-1"></i> Tải Lên</button>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card shadow-sm border-0 mt-4">
+            <div class="card-body text-center">
+                <h6 class="text-muted mb-3">Hình ảnh đại diện (Ảnh bìa)</h6>
+                <img src="@product?.ImageUrl" alt="Ảnh bìa" class="img-thumbnail" style="max-height: 150px; object-fit: cover;" onerror="this.onerror=null; this.src='/images/placeholder.jpg';" />
+                <p class="small text-muted mt-2">Ảnh đại diện được chỉnh sửa ở trang Cập nhật sản phẩm.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gallery List -->
+    <div class="col-md-8">
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Hình ảnh</th>
+                                <th class="text-center">Sắp xếp</th>
+                                <th class="text-end pe-4">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model != null && Model.Any())
+                            {
+                                foreach (var item in Model)
+                                {
+                                    <tr>
+                                        <td>
+                                            <img src="@item.ImageUrl" alt="Ảnh sản phẩm" class="img-thumbnail" style="height: 100px; width: 100px; object-fit: cover;" />
+                                        </td>
+                                        <td class="text-center">
+                                            <form asp-action="UpdateOrder" method="post" class="d-flex align-items-center justify-content-center gap-1 m-0">
+                                                <input type="hidden" name="id" value="@item.Id" />
+                                                <input type="hidden" name="productId" value="@product?.Id" />
+                                                <input type="number" name="orderIndex" value="@item.OrderIndex" class="form-control form-control-sm text-center" style="width: 70px;" />
+                                                <button type="submit" class="btn btn-sm btn-outline-secondary" title="Lưu thứ tự"><i class="fa-solid fa-check"></i></button>
+                                            </form>
+                                        </td>
+                                        <td class="text-end pe-4">
+                                            <form asp-action="Delete" method="post" class="d-inline-block" onsubmit="return confirm('Bạn có chắc chắn muốn xóa ảnh này?');">
+                                                <input type="hidden" name="id" value="@item.Id" />
+                                                <input type="hidden" name="productId" value="@product?.Id" />
+                                                <button type="submit" class="btn btn-sm btn-outline-danger"><i class="fa-solid fa-trash"></i> Xóa</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="3" class="text-center py-4 text-muted">Sản phẩm này chưa có hình ảnh phụ. Hãy tải lên!</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

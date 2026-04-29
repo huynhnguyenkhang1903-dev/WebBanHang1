@@ -111,10 +111,14 @@
                             <div class="text-gold fw-bold mb-3 mt-auto">@item.Price.ToString("N0") ₫</div>
                             <div class="d-flex gap-2">
                                 <a asp-controller="Product" asp-action="Display" asp-route-id="@item.Id" class="btn btn-outline-dark btn-sm flex-grow-1">Xem</a>
-                                <form action="/Cart/AddToCart" method="post" class="m-0">
-                                    <input type="hidden" name="id" value="@item.Id" />
-                                    <button type="submit" class="btn btn-gold btn-sm"><i class="fa-solid fa-cart-plus"></i></button>
-                                </form>
+                                @if(item.Stock > 0) {
+                                    <form action="/Cart/AddToCart" method="post" class="m-0">
+                                        <input type="hidden" name="id" value="@item.Id" />
+                                        <button type="submit" class="btn btn-gold btn-sm"><i class="fa-solid fa-cart-plus"></i></button>
+                                    </form>
+                                } else {
+                                    <button class="btn btn-secondary btn-sm" disabled title="Hết hàng"><i class="fa-solid fa-ban"></i></button>
+                                }
                             </div>
                         </div>
                     </div>
@@ -170,10 +174,14 @@
                             <div class="text-muted text-decoration-line-through small mb-3">@item.Price.ToString("N0") ₫</div>
                             <div class="d-flex gap-2">
                                 <a asp-controller="Product" asp-action="Display" asp-route-id="@item.Id" class="btn btn-outline-danger btn-sm flex-grow-1">Xem</a>
-                                <form action="/Cart/AddToCart" method="post" class="m-0">
-                                    <input type="hidden" name="id" value="@item.Id" />
-                                    <button type="submit" class="btn btn-danger btn-sm"><i class="fa-solid fa-cart-plus"></i></button>
-                                </form>
+                                @if(item.Stock > 0) {
+                                    <form action="/Cart/AddToCart" method="post" class="m-0">
+                                        <input type="hidden" name="id" value="@item.Id" />
+                                        <button type="submit" class="btn btn-danger btn-sm"><i class="fa-solid fa-cart-plus"></i></button>
+                                    </form>
+                                } else {
+                                    <button class="btn btn-secondary btn-sm" disabled title="Hết hàng"><i class="fa-solid fa-ban"></i></button>
+                                }
                             </div>
                         </div>
                     </div>
@@ -215,10 +223,14 @@
                             <div class="text-gold fw-bold mb-3 mt-auto">@item.Price.ToString("N0") ₫</div>
                             <div class="d-flex gap-2">
                                 <a asp-controller="Product" asp-action="Display" asp-route-id="@item.Id" class="btn btn-outline-dark btn-sm flex-grow-1">Xem</a>
-                                <form action="/Cart/AddToCart" method="post" class="m-0">
-                                    <input type="hidden" name="id" value="@item.Id" />
-                                    <button type="submit" class="btn btn-gold btn-sm"><i class="fa-solid fa-cart-plus"></i></button>
-                                </form>
+                                @if(item.Stock > 0) {
+                                    <form action="/Cart/AddToCart" method="post" class="m-0">
+                                        <input type="hidden" name="id" value="@item.Id" />
+                                        <button type="submit" class="btn btn-gold btn-sm"><i class="fa-solid fa-cart-plus"></i></button>
+                                    </form>
+                                } else {
+                                    <button class="btn btn-secondary btn-sm" disabled title="Hết hàng"><i class="fa-solid fa-ban"></i></button>
+                                }
                             </div>
                         </div>
                     </div>

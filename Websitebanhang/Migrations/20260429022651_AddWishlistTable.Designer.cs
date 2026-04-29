@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Websitebanhang.Data;
 
@@ -11,9 +12,11 @@ using Websitebanhang.Data;
 namespace Websitebanhang.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260429022651_AddWishlistTable")]
+    partial class AddWishlistTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -465,32 +468,6 @@ namespace Websitebanhang.Migrations
                     b.ToTable("Products");
                 });
 
-            modelBuilder.Entity("Websitebanhang.Models.ProductImage", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("ImageUrl")
-                        .IsRequired()
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
-
-                    b.Property<int>("OrderIndex")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ProductId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ProductId");
-
-                    b.ToTable("ProductImages");
-                });
-
             modelBuilder.Entity("Websitebanhang.Models.Promotion", b =>
                 {
                     b.Property<int>("Id")
@@ -738,17 +715,6 @@ namespace Websitebanhang.Migrations
                     b.Navigation("Voucher");
                 });
 
-            modelBuilder.Entity("Websitebanhang.Models.ProductImage", b =>
-                {
-                    b.HasOne("Websitebanhang.Models.Product", "Product")
-                        .WithMany("Images")
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Product");
-                });
-
             modelBuilder.Entity("Websitebanhang.Models.Review", b =>
                 {
                     b.HasOne("Websitebanhang.Models.Product", "Product")
@@ -810,8 +776,6 @@ namespace Websitebanhang.Migrations
 
             modelBuilder.Entity("Websitebanhang.Models.Product", b =>
                 {
-                    b.Navigation("Images");
-
                     b.Navigation("Reviews");
                 });
 #pragma warning restore 612, 618

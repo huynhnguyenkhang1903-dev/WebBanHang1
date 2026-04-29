@@ -6,6 +6,8 @@ using Websitebanhang.Models.ViewModels;
 using System.Globalization;
 using Websitebanhang.Models;
 using Websitebanhang.Services;
+using Microsoft.AspNetCore.SignalR;
+using Websitebanhang.Hubs;
 
 namespace Websitebanhang.Controllers
 {
@@ -14,11 +16,13 @@ namespace Websitebanhang.Controllers
     {
         private readonly AppDbContext _context;
         private readonly IEmailService _emailService;
+        private readonly IHubContext<NotificationHub> _hubContext;
 
-        public AdminOrderController(AppDbContext context, IEmailService emailService)
+        public AdminOrderController(AppDbContext context, IEmailService emailService, IHubContext<NotificationHub> hubContext)
         {
             _context = context;
             _emailService = emailService;
+            _hubContext = hubContext;
         }
 
         // ================= DANH SÁCH =================
@@ -186,6 +190,11 @@ namespace Websitebanhang.Controllers
             }
             // ------------------------------------------------
 
+            if (!string.IsNullOrEmpty(order.UserId))
+            {
+                await _hubContext.Clients.User(order.UserId).SendAsync("ReceiveUserNotification", $"Đơn hàng #{order.Id} của bạn đã được duyệt!", $"/Account/OrderDetails/{order.Id}");
+            }
+
             TempData["Success"] = "Đã duyệt đơn và gửi email xác nhận!";
             return RedirectToAction("Details", new { id });
         }
@@ -207,6 +216,11 @@ namespace Websitebanhang.Controllers
             order.Status = "Shipping";
             await _context.SaveChangesAsync();
 
+            if (!string.IsNullOrEmpty(order.UserId))
+            {
+                await _hubContext.Clients.User(order.UserId).SendAsync("ReceiveUserNotification", $"Đơn hàng #{order.Id} đang trên đường giao đến bạn!", $"/Account/OrderDetails/{order.Id}");
+            }
+
             TempData["Success"] = "Đang giao hàng!";
             return RedirectToAction("Details", new { id });
         }
@@ -227,6 +241,11 @@ namespace Websitebanhang.Controllers
 
             order.Status = "Delivered";
             await _context.SaveChangesAsync();
+
+            if (!string.IsNullOrEmpty(order.UserId))
+            {
+                await _hubContext.Clients.User(order.UserId).SendAsync("ReceiveUserNotification", $"Đơn hàng #{order.Id} đã giao thành công!", $"/Account/OrderDetails/{order.Id}");
+            }
 
             TempData["Success"] = "Đã giao thành công!";
             return RedirectToAction("Details", new { id });
@@ -262,6 +281,11 @@ namespace Websitebanhang.Controllers
 
             await _context.SaveChangesAsync();
 
+            if (!string.IsNullOrEmpty(order.UserId))
+            {
+                await _hubContext.Clients.User(order.UserId).SendAsync("ReceiveUserNotification", $"Đơn hàng #{order.Id} đã bị hủy. Lý do: {cancelReason}", $"/Account/OrderDetails/{order.Id}");
+            }
+
             TempData["Success"] = "Đã hủy đơn!";
             return RedirectToAction("Details", new { id });
         }
@@ -295,6 +319,11 @@ namespace Websitebanhang.Controllers
 
             await _context.SaveChangesAsync();
 
+            if (!string.IsNullOrEmpty(order.UserId))
+            {
+                await _hubContext.Clients.User(order.UserId).SendAsync("ReceiveUserNotification", $"Yêu cầu trả hàng cho đơn #{order.Id} đã được xử lý.", $"/Account/OrderDetails/{order.Id}");
+            }
+
             TempData["Success"] = "Đã xử lý trả hàng!";
             return RedirectToAction("Details", new { id });
         }
@@ -311,6 +340,33 @@ namespace Websitebanhang.Controllers
                 return NotFound();
 
             return View("PrintInvoice", order);
+        }
+
+        // ================= CẬP NHẬT TRẠNG THÁI =================
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateStatus(int id, string newStatus)
+        {
+            var order = await _context.Orders.FindAsync(id);
+            if (order == null) return NotFound();
+
+            var oldStatus = order.Status;
+            order.Status = newStatus;
+
+            if (newStatus == OrderStatus.Cancelled && string.IsNullOrEmpty(order.CancelReason))
+            {
+                order.CancelReason = "Admin cập nhật trạng thái sang Hủy";
+            }
+
+            await _context.SaveChangesAsync();
+
+            if (!string.IsNullOrEmpty(order.UserId))
+            {
+                await _hubContext.Clients.User(order.UserId).SendAsync("ReceiveUserNotification", $"Đơn hàng #{order.Id} đã chuyển sang: {newStatus}", $"/Account/OrderDetails/{order.Id}");
+            }
+
+            TempData["Success"] = $"Đã cập nhật trạng thái từ {oldStatus} sang {newStatus}!";
+            return RedirectToAction("Details", new { id });
         }
     }
 }

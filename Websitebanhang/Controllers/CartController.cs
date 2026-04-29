@@ -11,6 +11,8 @@ using System.Linq;
 using System;
 using Microsoft.EntityFrameworkCore;
 using System.Text;
+using Microsoft.AspNetCore.SignalR;
+using Websitebanhang.Hubs;
 
 namespace Websitebanhang.Controllers
 {
@@ -20,17 +22,20 @@ namespace Websitebanhang.Controllers
         private readonly IEmailService _emailService;
         private readonly Websitebanhang.Data.AppDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IHubContext<NotificationHub> _hubContext;
 
         public CartController(
             IProductRepository productRepository,
             IEmailService emailService,
             Websitebanhang.Data.AppDbContext context,
-            UserManager<ApplicationUser> userManager)
+            UserManager<ApplicationUser> userManager,
+            IHubContext<NotificationHub> hubContext)
         {
             _productRepository = productRepository;
             _emailService = emailService;
             _context = context;
             _userManager = userManager;
+            _hubContext = hubContext;
         }
 
         // ================= GIỎ HÀNG =================
@@ -44,6 +49,12 @@ namespace Websitebanhang.Controllers
         {
             var product = _productRepository.GetById(id);
             if (product == null) return NotFound();
+
+            if (product.Stock <= 0)
+            {
+                TempData["Error"] = "Sản phẩm này đã hết hàng!";
+                return RedirectToAction("Index");
+            }
 
             var cart = HttpContext.Session.GetObject<List<CartItem>>("Cart") ?? new List<CartItem>();
             var item = cart.FirstOrDefault(p => p.ProductId == id);
@@ -88,6 +99,15 @@ namespace Websitebanhang.Controllers
         [HttpPost]
         public IActionResult UpdateQuantity(int productId, int quantity)
         {
+            var product = _productRepository.GetById(productId);
+            if (product == null) return NotFound();
+
+            if (quantity > product.Stock)
+            {
+                TempData["Error"] = $"Xin lỗi, sản phẩm này chỉ còn {product.Stock} trong kho!";
+                return RedirectToAction("Index");
+            }
+
             var cart = HttpContext.Session.GetObject<List<CartItem>>("Cart") ?? new List<CartItem>();
             var item = cart.FirstOrDefault(p => p.ProductId == productId);
 
@@ -252,6 +272,9 @@ namespace Websitebanhang.Controllers
 
             _context.Orders.Add(order);
             await _context.SaveChangesAsync();
+
+            // 🔥 Bắn thông báo realtime cho admin
+            await _hubContext.Clients.All.SendAsync("ReceiveAdminNotification", $"Có đơn hàng mới #{order.Id} từ {order.CustomerName}!", $"/AdminOrder/Details/{order.Id}");
 
             order.PaymentContent = $"ORDER{order.Id}";
 
