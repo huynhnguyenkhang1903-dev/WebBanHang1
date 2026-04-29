@@ -292,9 +292,22 @@
                     </form>
                 }
 
-                if (status == "Delivered")
+                @if (status == OrderStatus.Delivered)
                 {
-                    <button class="btn btn-outline-warning" data-bs-toggle="modal" data-bs-target="#returnModal">Yêu cầu trả hàng</button>
+                    var daysSinceOrder = (DateTime.Now - Model.OrderDate).TotalDays;
+                    if (daysSinceOrder <= 7)
+                    {
+                        <button class="btn btn-warning rounded-pill px-4 shadow-sm fw-bold" data-bs-toggle="modal" data-bs-target="#returnModal">
+                            <i class="fa-solid fa-rotate-left me-1"></i> Yêu cầu trả hàng / Hoàn tiền
+                        </button>
+                        <p class="small text-muted mt-2">Chính sách: Bạn có thể yêu cầu trả hàng trong vòng 7 ngày kể từ khi đặt hàng.</p>
+                    }
+                    else
+                    {
+                        <div class="alert alert-light border-0 small text-muted py-2">
+                            <i class="fa-solid fa-circle-info me-1"></i> Đã quá thời hạn 7 ngày để yêu cầu trả hàng.
+                        </div>
+                    }
                 }
             }
 

@@ -4,9 +4,8 @@ namespace Websitebanhang.Models.ViewModels
 {
     public class ForgotPasswordViewModel
     {
-        [Required(ErrorMessage = "Email không được để trống")]
-        [EmailAddress(ErrorMessage = "Định dạng email không hợp lệ")]
-        [Display(Name = "Email của bạn")]
+        [Required(ErrorMessage = "Vui lòng nhập Email")]
+        [EmailAddress(ErrorMessage = "Email không hợp lệ")]
         public string Email { get; set; } = string.Empty;
     }
 }

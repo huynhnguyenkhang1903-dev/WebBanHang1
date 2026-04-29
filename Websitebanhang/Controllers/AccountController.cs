@@ -549,6 +549,13 @@ namespace Websitebanhang.Controllers
                 return RedirectToAction("OrderDetails", new { id });
             }
 
+            // 🔥 Kiểm tra chính sách 7 ngày
+            if ((DateTime.Now - order.OrderDate).TotalDays > 7)
+            {
+                TempData["Error"] = "Đã quá thời hạn 7 ngày kể từ khi đặt hàng. Không thể yêu cầu trả hàng.";
+                return RedirectToAction("OrderDetails", new { id });
+            }
+
             var fullReason = reasonType;
             if (reasonType == "Lý do khác" && !string.IsNullOrWhiteSpace(returnReason))
             {
@@ -847,6 +854,94 @@ namespace Websitebanhang.Controllers
             await _context.SaveChangesAsync();
             TempData["SuccessMessage"] = "Đã đặt làm địa chỉ mặc định!";
             return RedirectToAction("Profile");
+        }
+
+        [HttpGet]
+        [AllowAnonymous]
+        public IActionResult ForgotPassword()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var user = await _userManager.FindByEmailAsync(model.Email);
+                if (user == null || !(await _userManager.IsEmailConfirmedAsync(user)))
+                {
+                    // Don't reveal that the user does not exist or is not confirmed
+                    return RedirectToAction(nameof(ForgotPasswordConfirmation));
+                }
+
+                var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+                var callbackUrl = Url.Action(nameof(ResetPassword), "Account", new { token, email = model.Email }, protocol: Request.Scheme);
+
+                await _emailService.SendEmailAsync(model.Email, "Đặt lại mật khẩu - Aura Coffee",
+                    $"Vui lòng đặt lại mật khẩu của bạn bằng cách <a href='{callbackUrl}'>nhấn vào đây</a>.");
+
+                return RedirectToAction(nameof(ForgotPasswordConfirmation));
+            }
+
+            return View(model);
+        }
+
+        [HttpGet]
+        [AllowAnonymous]
+        public IActionResult ForgotPasswordConfirmation()
+        {
+            return View();
+        }
+
+        [HttpGet]
+        [AllowAnonymous]
+        public IActionResult ResetPassword(string? token = null, string? email = null)
+        {
+            if (token == null || email == null)
+            {
+                return RedirectToAction("Login");
+            }
+            return View(new ResetPasswordViewModel { Token = token, Email = email });
+        }
+
+        [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user == null)
+            {
+                // Don't reveal that the user does not exist
+                return RedirectToAction(nameof(ResetPasswordConfirmation));
+            }
+
+            var result = await _userManager.ResetPasswordAsync(user, model.Token, model.Password);
+            if (result.Succeeded)
+            {
+                return RedirectToAction(nameof(ResetPasswordConfirmation));
+            }
+
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError(string.Empty, error.Description);
+            }
+            return View();
+        }
+
+        [HttpGet]
+        [AllowAnonymous]
+        public IActionResult ResetPasswordConfirmation()
+        {
+            return View();
         }
     }
 }
