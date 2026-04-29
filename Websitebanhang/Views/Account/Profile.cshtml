@@ -69,6 +69,17 @@
                         <i class="fa-solid fa-receipt me-2 w-20px text-center"></i> Lịch Sử Đơn Hàng
                     </button>
                 </div>
+
+                @if (User.IsInRole("Admin"))
+                {
+                    <hr class="my-3" />
+                    <a asp-controller="Admin" asp-action="Index"
+                       class="btn w-100 fw-semibold d-flex align-items-center gap-2 justify-content-center"
+                       style="background: linear-gradient(135deg, #6f4e37, #c8a96e); color: white; border-radius: 12px; padding: 10px;">
+                        <i class="fa-solid fa-gauge-high"></i>
+                        Trang Quản Trị
+                    </a>
+                }
             </div>
 
             <!-- Right Content -->

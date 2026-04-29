@@ -19,22 +19,28 @@
     </form>
 
     <div class="row mb-4">
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="card p-3">
                 <h5>Tổng doanh thu</h5>
                 <h3 class="text-danger">@Model.TotalRevenue.ToString("N0") đ</h3>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="card p-3">
                 <h5>Tổng đơn</h5>
                 <h3>@Model.OrdersCount</h3>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="card p-3">
-                <h5>Đơn đã thanh toán/hoàn thành</h5>
+                <h5>Đơn hoàn thành</h5>
                 <h3>@Model.PaidOrdersCount</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card p-3">
+                <h5>Sản phẩm bán ra</h5>
+                <h3>@Model.TotalProductsSold</h3>
             </div>
         </div>
     </div>
@@ -44,7 +50,7 @@
             <h5>Doanh thu theo ngày</h5>
             <table class="table">
                 <thead>
-                    <tr><th>Ngày</th><th class="text-center">Số đơn</th><th>Doanh thu</th></tr>
+                    <tr><th>Ngày</th><th class="text-center">Số đơn</th><th class="text-center">Sản phẩm bán ra</th><th>Doanh thu</th></tr>
                 </thead>
                 <tbody>
                     @foreach (var d in Model.RevenueByDay)
@@ -52,6 +58,7 @@
                         <tr>
                             <td>@d.Date.ToString("dd/MM/yyyy")</td>
                             <td class="text-center">@d.OrderCount</td>
+                            <td class="text-center">@d.ProductsSold</td>
                             <td>@d.Amount.ToString("N0") đ</td>
                         </tr>
                     }
@@ -65,7 +72,7 @@
             <h5>Doanh thu theo tháng</h5>
             <table class="table">
                 <thead>
-                    <tr><th>Tháng</th><th class="text-center">Số đơn</th><th>Doanh thu</th></tr>
+                    <tr><th>Tháng</th><th class="text-center">Số đơn</th><th class="text-center">Sản phẩm bán ra</th><th>Doanh thu</th></tr>
                 </thead>
                 <tbody>
                     @foreach (var m in Model.RevenueByMonth)
@@ -73,6 +80,7 @@
                         <tr>
                             <td>@m.Month.ToString("D2")/@m.Year</td>
                             <td class="text-center">@m.OrderCount</td>
+                            <td class="text-center">@m.ProductsSold</td>
                             <td>@m.Amount.ToString("N0") đ</td>
                         </tr>
                     }
@@ -86,7 +94,7 @@
             <h5>Doanh thu theo năm</h5>
             <table class="table">
                 <thead>
-                    <tr><th>Năm</th><th class="text-center">Số đơn</th><th>Doanh thu</th></tr>
+                    <tr><th>Năm</th><th class="text-center">Số đơn</th><th class="text-center">Sản phẩm bán ra</th><th>Doanh thu</th></tr>
                 </thead>
                 <tbody>
                     @foreach (var y in Model.RevenueByYear)
@@ -94,6 +102,7 @@
                         <tr>
                             <td>@y.Year</td>
                             <td class="text-center">@y.OrderCount</td>
+                            <td class="text-center">@y.ProductsSold</td>
                             <td>@y.Amount.ToString("N0") đ</td>
                         </tr>
                     }

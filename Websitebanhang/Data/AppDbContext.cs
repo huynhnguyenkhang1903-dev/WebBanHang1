@@ -31,6 +31,7 @@ namespace Websitebanhang.Data
         public DbSet<Review> Reviews { get; set; }
 
         public DbSet<WishlistItem> WishlistItems { get; set; }
+        public DbSet<StockHistory> StockHistories { get; set; }
 
         // CONFIG DATABASE
         protected override void OnModelCreating(ModelBuilder modelBuilder)

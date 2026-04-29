@@ -15,10 +15,18 @@ namespace Websitebanhang.Controllers
             _context = context;
         }
 
-        public IActionResult Index()
+        public IActionResult Index(string search)
         {
-            var units = _context.UnitsOfMeasure.ToList();
-            return View(units);
+            var units = _context.UnitsOfMeasure.AsQueryable();
+
+            if (!string.IsNullOrEmpty(search))
+            {
+                units = units.Where(u => (u.Name != null && u.Name.Contains(search)) || 
+                                         (u.Description != null && u.Description.Contains(search)));
+                ViewBag.Search = search;
+            }
+
+            return View(units.ToList());
         }
 
         public IActionResult Add()

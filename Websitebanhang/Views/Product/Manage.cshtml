@@ -1,4 +1,5 @@
-@model IEnumerable<Websitebanhang.Models.Product>
+@model X.PagedList.IPagedList<Websitebanhang.Models.Product>
+@using X.PagedList.Mvc.Core;
 
 @{
     ViewData["Title"] = "Quản Lý Sản Phẩm";
@@ -66,4 +67,15 @@
             </div>
         </div>
     </div>
+
+    @if (Model.PageCount > 1)
+    {
+        <div class="mt-4 d-flex justify-content-center">
+            @Html.PagedListPager(Model, page => Url.Action("Manage", new { page }), new PagedListRenderOptions
+            {
+                LiElementClasses = new string[] { "page-item" },
+                PageClasses = new string[] { "page-link" }
+            })
+        </div>
+    }
 </div>

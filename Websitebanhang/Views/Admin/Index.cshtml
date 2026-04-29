@@ -12,6 +12,50 @@
         </div>
     </div>
 
+    <!-- ALERTS -->
+    @{
+        var lowStockProducts = ViewBag.LowStockProducts as List<Websitebanhang.Models.Product>;
+        var expiringProducts = ViewBag.ExpiringProducts as List<Websitebanhang.Models.Product>;
+    }
+
+    @if (lowStockProducts != null && lowStockProducts.Count > 0)
+    {
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <strong><i class="fa fa-exclamation-triangle"></i> Cảnh báo Sắp Hết Hàng:</strong> Có @lowStockProducts.Count sản phẩm tồn kho thấp (&lt;= 10).
+            <a href="/Product/Manage" class="alert-link">Kiểm tra ngay</a>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <ul class="mb-0 mt-2">
+                @foreach(var p in lowStockProducts.Take(5))
+                {
+                    <li>@p.Name (Còn @p.Stock sản phẩm)</li>
+                }
+                @if(lowStockProducts.Count > 5)
+                {
+                    <li><em>... và @(lowStockProducts.Count - 5) sản phẩm khác.</em></li>
+                }
+            </ul>
+        </div>
+    }
+
+    @if (expiringProducts != null && expiringProducts.Count > 0)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <strong><i class="fa-solid fa-clock"></i> Cảnh báo Hết Hạn:</strong> Có @expiringProducts.Count sản phẩm sắp hoặc đã hết hạn sử dụng.
+            <a href="/Product/Manage" class="alert-link">Kiểm tra ngay</a>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <ul class="mb-0 mt-2">
+                @foreach(var p in expiringProducts.Take(5))
+                {
+                    <li>@p.Name (Hạn: @p.ExpiryDate?.ToString("dd/MM/yyyy"))</li>
+                }
+                @if(expiringProducts.Count > 5)
+                {
+                    <li><em>... và @(expiringProducts.Count - 5) sản phẩm khác.</em></li>
+                }
+            </ul>
+        </div>
+    }
+
     <!-- TỔNG QUAN -->
     <div class="row text-center mb-5">
         <div class="col-md-4 mb-4">
@@ -73,5 +117,35 @@
                 </div>
             </div>
         </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm border-0 border-start border-4 border-info h-100">
+                <div class="card-body py-4">
+                    <i class="fa-solid fa-comments fa-3x text-info mb-3"></i>
+                    <h5 class="fw-bold text-muted text-uppercase mb-1">Bình luận</h5>
+                    <h3 class="fw-bold text-dark mb-0">Quản lý Bình luận</h3>
+                </div>
+                <div class="card-footer bg-white border-0 py-3">
+                    <a asp-controller="AdminReview" asp-action="Index" class="btn btn-outline-info w-100">
+                        <i class="fa fa-arrow-circle-right me-2"></i> Xem chi tiết
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm border-0 border-start border-4 border-dark h-100">
+                <div class="card-body py-4">
+                    <i class="fa-solid fa-clock-rotate-left fa-3x text-dark mb-3"></i>
+                    <h5 class="fw-bold text-muted text-uppercase mb-1">Kho hàng</h5>
+                    <h3 class="fw-bold text-dark mb-0">Lịch sử kho</h3>
+                </div>
+                <div class="card-footer bg-white border-0 py-3">
+                    <a asp-controller="AdminInventory" asp-action="History" class="btn btn-outline-dark w-100">
+                        <i class="fa fa-arrow-circle-right me-2"></i> Xem chi tiết
+                    </a>
+                </div>
+            </div>
+        </div>
     </div>
+
 </div>

@@ -26,5 +26,20 @@ namespace Websitebanhang.Models
         public string Comment { get; set; } = string.Empty;
 
         public DateTime CreatedAt { get; set; } = DateTime.Now;
+
+        // ================= MODERATION =================
+        /// <summary>Admin phải duyệt trước khi bình luận hiển thị công khai</summary>
+        public bool IsApproved { get; set; } = false;
+
+        // ================= REPORTING =================
+        /// <summary>True khi người dùng báo cáo bình luận này vi phạm</summary>
+        public bool IsReported { get; set; } = false;
+
+        [StringLength(500)]
+        public string? ReportReason { get; set; }
+
+        // ================= HIDDEN =================
+        /// <summary>Admin ẩn bình luận – không hiển thị công khai nhưng không xóa dữ liệu</summary>
+        public bool IsHidden { get; set; } = false;
     }
 }

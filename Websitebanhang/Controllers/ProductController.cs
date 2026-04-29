@@ -36,6 +36,7 @@ namespace Websitebanhang.Controllers
             string search,
             string price,
             string country,
+            bool? hasPromotion,
             int? categoryId,
             string sortOrder,
             int page = 1)
@@ -79,6 +80,11 @@ namespace Websitebanhang.Controllers
                     p.Country != null && p.Country == country);
             }
 
+            if (hasPromotion == true)
+            {
+                products = products.Where(p => p.VoucherId != null);
+            }
+
             // ================= SORT =================
 
             products = sortOrder switch
@@ -105,7 +111,39 @@ namespace Websitebanhang.Controllers
             var product = _productRepository.GetById(id);
             if (product == null) return NotFound();
 
+            // Lấy sản phẩm liên quan (cùng danh mục, tối đa 4 sản phẩm, loại trừ chính nó)
+            var relatedProducts = _productRepository.GetAll()
+                .Where(p => p.CategoryId == product.CategoryId && p.Id != product.Id)
+                .Take(4)
+                .ToList();
+
+            ViewBag.RelatedProducts = relatedProducts;
+
             return View(product);
+        }
+
+        [HttpGet]
+        [AllowAnonymous]
+        public IActionResult SearchSuggestions(string term)
+        {
+            if (string.IsNullOrWhiteSpace(term))
+            {
+                return Json(new object[] { });
+            }
+
+            var suggestions = _context.Products
+                .Where(p => p.Name.Contains(term))
+                .Select(p => new
+                {
+                    id = p.Id,
+                    name = p.Name,
+                    price = p.Price,
+                    imageUrl = p.ImageUrl
+                })
+                .Take(5)
+                .ToList();
+
+            return Json(suggestions);
         }
 
         [HttpPost]
@@ -134,22 +172,47 @@ namespace Websitebanhang.Controllers
                 UserId = user.Id,
                 Rating = rating,
                 Comment = comment,
-                CreatedAt = System.DateTime.Now
+                CreatedAt = System.DateTime.Now,
+                IsApproved = false  // Cần Admin duyệt trước khi hiển thị
             };
 
             _context.Reviews.Add(review);
             await _context.SaveChangesAsync();
 
-            TempData["Success"] = "Cảm ơn bạn đã đánh giá sản phẩm!";
+            TempData["Success"] = "Cảm ơn bạn đã đánh giá! Bình luận của bạn đang chờ Admin duyệt.";
+            return RedirectToAction("Display", new { id = productId });
+        }
+
+        // ================= BÁO CÁO BÌNH LUẬN =================
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ReportReview(int reviewId, int productId, string reason)
+        {
+            var review = await _context.Reviews.FindAsync(reviewId);
+            if (review == null) return NotFound();
+
+            if (string.IsNullOrWhiteSpace(reason))
+            {
+                TempData["Error"] = "Vui lòng nhập lý do báo cáo.";
+                return RedirectToAction("Display", new { id = productId });
+            }
+
+            review.IsReported = true;
+            review.ReportReason = reason.Trim();
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Đã gửi báo cáo bình luận. Cảm ơn bạn!";
             return RedirectToAction("Display", new { id = productId });
         }
 
         // ================= ADMIN =================
 
         [Authorize(Roles = "Admin")]
-        public IActionResult Manage()
+        public IActionResult Manage(int page = 1)
         {
-            var products = _productRepository.GetAll();
+            int pageSize = 10;
+            var products = _productRepository.GetAll().ToPagedList(page, pageSize);
             return View(products);
         }
 
@@ -162,11 +225,26 @@ namespace Websitebanhang.Controllers
 
         [HttpPost]
         [Authorize(Roles = "Admin")]
-        public IActionResult Add(ProductModel product)
+        public async Task<IActionResult> Add(ProductModel product)
         {
             if (ModelState.IsValid)
             {
                 _productRepository.Add(product);
+
+                // Log history
+                var history = new StockHistory
+                {
+                    ProductId = product.Id,
+                    QuantityChange = product.Stock,
+                    BalanceAfter = product.Stock,
+                    Type = "Nhập kho",
+                    Note = "Khởi tạo sản phẩm",
+                    CreatedAt = DateTime.Now,
+                    UserId = (await _userManager.GetUserAsync(User))?.Id
+                };
+                _context.StockHistories.Add(history);
+                await _context.SaveChangesAsync();
+
                 return RedirectToAction("Manage");
             }
 
@@ -186,11 +264,34 @@ namespace Websitebanhang.Controllers
 
         [HttpPost]
         [Authorize(Roles = "Admin")]
-        public IActionResult Update(ProductModel product)
+        public async Task<IActionResult> Update(ProductModel product)
         {
             if (ModelState.IsValid)
             {
+                // Lấy stock cũ trước khi update
+                var oldProduct = await _context.Products.AsNoTracking().FirstOrDefaultAsync(p => p.Id == product.Id);
+                int oldStock = oldProduct?.Stock ?? 0;
+
                 _productRepository.Update(product);
+
+                // Nếu có thay đổi stock thì log
+                if (product.Stock != oldStock)
+                {
+                    int diff = product.Stock - oldStock;
+                    var history = new StockHistory
+                    {
+                        ProductId = product.Id,
+                        QuantityChange = diff,
+                        BalanceAfter = product.Stock,
+                        Type = diff > 0 ? "Nhập thêm" : "Điều chỉnh giảm",
+                        Note = "Admin điều chỉnh thủ công",
+                        CreatedAt = DateTime.Now,
+                        UserId = (await _userManager.GetUserAsync(User))?.Id
+                    };
+                    _context.StockHistories.Add(history);
+                    await _context.SaveChangesAsync();
+                }
+
                 return RedirectToAction("Manage");
             }
 

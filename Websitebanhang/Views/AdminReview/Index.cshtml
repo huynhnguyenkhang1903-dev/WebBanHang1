@@ -1,0 +1,288 @@
+@using Websitebanhang.Models
+@{
+    ViewData["Title"] = "Quản lý bình luận";
+    Layout = "_AdminLayout";
+
+    var activeTab = (string)(ViewBag.ActiveTab ?? "pending");
+    var pendingReviews = ViewBag.PendingReviews as List<Review> ?? new List<Review>();
+    var reportedReviews = ViewBag.ReportedReviews as List<Review> ?? new List<Review>();
+    var approvedReviews = ViewBag.ApprovedReviews as List<Review> ?? new List<Review>();
+    int pendingCount = (int)(ViewBag.PendingCount ?? 0);
+    int reportedCount = (int)(ViewBag.ReportedCount ?? 0);
+    int approvedCount = (int)(ViewBag.ApprovedCount ?? 0);
+}
+
+<div class="container-fluid py-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold mb-0">
+            <i class="fa-solid fa-comments me-2 text-primary"></i> Quản lý Bình Luận
+        </h3>
+        <a asp-controller="Admin" asp-action="Index" class="btn btn-outline-secondary btn-sm">
+            <i class="fa-solid fa-arrow-left me-1"></i> Về Dashboard
+        </a>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show">
+            <i class="fa-solid fa-circle-check me-2"></i>@TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- TABS -->
+    <ul class="nav nav-tabs mb-4">
+        <li class="nav-item">
+            <a class="nav-link @(activeTab == "pending" ? "active fw-bold" : "")"
+               href="@Url.Action("Index", "AdminReview", new { tab = "pending" })">
+                <i class="fa-solid fa-clock me-1 text-warning"></i> Chờ duyệt
+                @if (pendingCount > 0) { <span class="badge bg-warning text-dark ms-1">@pendingCount</span> }
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link @(activeTab == "approved" ? "active fw-bold" : "")"
+               href="@Url.Action("Index", "AdminReview", new { tab = "approved" })">
+                <i class="fa-solid fa-circle-check me-1 text-success"></i> Đã duyệt
+                <span class="badge bg-success ms-1">@approvedCount</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link @(activeTab == "reported" ? "active fw-bold" : "")"
+               href="@Url.Action("Index", "AdminReview", new { tab = "reported" })">
+                <i class="fa-solid fa-flag me-1 text-danger"></i> Bị báo cáo
+                @if (reportedCount > 0) { <span class="badge bg-danger ms-1">@reportedCount</span> }
+            </a>
+        </li>
+    </ul>
+
+    @* ===== TAB: CHỜ DUYỆT ===== *@
+    @if (activeTab == "pending")
+    {
+        if (!pendingReviews.Any())
+        {
+            <div class="text-center py-5 bg-white rounded-3 shadow-sm">
+                <i class="fa-solid fa-circle-check fa-3x text-success mb-3 d-block"></i>
+                <h5 class="text-muted">Không có bình luận nào đang chờ duyệt.</h5>
+            </div>
+        }
+        else
+        {
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-0">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Người dùng</th>
+                                <th>Sản phẩm</th>
+                                <th class="text-center">Sao</th>
+                                <th>Nội dung</th>
+                                <th>Ngày gửi</th>
+                                <th class="text-center">Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var r in pendingReviews)
+                            {
+                                <tr>
+                                    <td><span class="fw-medium">@(r.User?.FullName ?? r.User?.UserName ?? "Ẩn danh")</span></td>
+                                    <td>
+                                        <a asp-controller="Product" asp-action="Display" asp-route-id="@r.ProductId" class="text-decoration-none small">
+                                            @(r.Product?.Name ?? "—")
+                                        </a>
+                                    </td>
+                                    <td class="text-center text-warning">
+                                        @for (int i = 1; i <= 5; i++) { <i class="fa-@(i <= r.Rating ? "solid" : "regular") fa-star small"></i> }
+                                    </td>
+                                    <td style="max-width:300px;"><span class="small text-secondary text-truncate d-block" title="@r.Comment">@r.Comment</span></td>
+                                    <td class="small text-muted text-nowrap">@r.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td class="text-center text-nowrap">
+                                        <form asp-action="Approve" asp-route-id="@r.Id" method="post" class="d-inline">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-success btn-sm">
+                                                <i class="fa-solid fa-check"></i> Duyệt
+                                            </button>
+                                        </form>
+                                        <form asp-action="Reject" asp-route-id="@r.Id" method="post" class="d-inline ms-1"
+                                              onsubmit="return confirm('Xóa vĩnh viễn bình luận này?')">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-danger btn-sm">
+                                                <i class="fa-solid fa-trash"></i> Xóa
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+    }
+
+    @* ===== TAB: ĐÃ DUYỆT ===== *@
+    @if (activeTab == "approved")
+    {
+        if (!approvedReviews.Any())
+        {
+            <div class="text-center py-5 bg-white rounded-3 shadow-sm">
+                <i class="fa-solid fa-comments fa-3x text-muted mb-3 d-block"></i>
+                <h5 class="text-muted">Chưa có bình luận nào được duyệt.</h5>
+            </div>
+        }
+        else
+        {
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-0">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Người dùng</th>
+                                <th>Sản phẩm</th>
+                                <th class="text-center">Sao</th>
+                                <th>Nội dung</th>
+                                <th class="text-center">Trạng thái</th>
+                                <th>Ngày</th>
+                                <th class="text-center">Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var r in approvedReviews)
+                            {
+                                <tr class="@(r.IsHidden ? "table-secondary" : "")">
+                                    <td><span class="fw-medium">@(r.User?.FullName ?? r.User?.UserName ?? "Ẩn danh")</span></td>
+                                    <td>
+                                        <a asp-controller="Product" asp-action="Display" asp-route-id="@r.ProductId" class="text-decoration-none small">
+                                            @(r.Product?.Name ?? "—")
+                                        </a>
+                                    </td>
+                                    <td class="text-center text-warning">
+                                        @for (int i = 1; i <= 5; i++) { <i class="fa-@(i <= r.Rating ? "solid" : "regular") fa-star small"></i> }
+                                    </td>
+                                    <td style="max-width:260px;"><span class="small text-secondary text-truncate d-block" title="@r.Comment">@r.Comment</span></td>
+                                    <td class="text-center">
+                                        @if (r.IsHidden)
+                                        {
+                                            <span class="badge bg-secondary"><i class="fa-solid fa-eye-slash me-1"></i>Đang ẩn</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-success"><i class="fa-solid fa-eye me-1"></i>Hiển thị</span>
+                                        }
+                                    </td>
+                                    <td class="small text-muted text-nowrap">@r.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td class="text-center text-nowrap">
+                                        @if (r.IsHidden)
+                                        {
+                                            <form asp-action="Unhide" asp-route-id="@r.Id" method="post" class="d-inline">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-outline-success btn-sm">
+                                                    <i class="fa-solid fa-eye"></i> Hiện
+                                                </button>
+                                            </form>
+                                        }
+                                        else
+                                        {
+                                            <form asp-action="Hide" asp-route-id="@r.Id" method="post" class="d-inline">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="returnTab" value="approved" />
+                                                <button type="submit" class="btn btn-warning btn-sm">
+                                                    <i class="fa-solid fa-eye-slash"></i> Ẩn
+                                                </button>
+                                            </form>
+                                        }
+                                        <form asp-action="Delete" asp-route-id="@r.Id" method="post" class="d-inline ms-1"
+                                              onsubmit="return confirm('Xóa vĩnh viễn? Không thể khôi phục!')">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="returnTab" value="approved" />
+                                            <button type="submit" class="btn btn-danger btn-sm">
+                                                <i class="fa-solid fa-trash"></i> Xóa
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+    }
+
+    @* ===== TAB: BỊ BÁO CÁO ===== *@
+    @if (activeTab == "reported")
+    {
+        if (!reportedReviews.Any())
+        {
+            <div class="text-center py-5 bg-white rounded-3 shadow-sm">
+                <i class="fa-solid fa-shield-halved fa-3x text-success mb-3 d-block"></i>
+                <h5 class="text-muted">Không có bình luận nào bị báo cáo.</h5>
+            </div>
+        }
+        else
+        {
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-0">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Người dùng</th>
+                                <th>Sản phẩm</th>
+                                <th class="text-center">Sao</th>
+                                <th>Nội dung</th>
+                                <th>Lý do báo cáo</th>
+                                <th>Ngày</th>
+                                <th class="text-center">Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var r in reportedReviews)
+                            {
+                                <tr class="table-danger-subtle">
+                                    <td><span class="fw-medium">@(r.User?.FullName ?? r.User?.UserName ?? "Ẩn danh")</span></td>
+                                    <td>
+                                        <a asp-controller="Product" asp-action="Display" asp-route-id="@r.ProductId" class="text-decoration-none small">
+                                            @(r.Product?.Name ?? "—")
+                                        </a>
+                                    </td>
+                                    <td class="text-center text-warning">
+                                        @for (int i = 1; i <= 5; i++) { <i class="fa-@(i <= r.Rating ? "solid" : "regular") fa-star small"></i> }
+                                    </td>
+                                    <td style="max-width:220px;"><span class="small text-secondary text-truncate d-block" title="@r.Comment">@r.Comment</span></td>
+                                    <td>
+                                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle small">
+                                            <i class="fa-solid fa-flag me-1"></i>@(r.ReportReason ?? "Không rõ lý do")
+                                        </span>
+                                    </td>
+                                    <td class="small text-muted text-nowrap">@r.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td class="text-center text-nowrap">
+                                        <form asp-action="Hide" asp-route-id="@r.Id" method="post" class="d-inline">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="returnTab" value="reported" />
+                                            <button type="submit" class="btn btn-warning btn-sm" title="Ẩn bình luận">
+                                                <i class="fa-solid fa-eye-slash"></i> Ẩn
+                                            </button>
+                                        </form>
+                                        <form asp-action="DeleteReported" asp-route-id="@r.Id" method="post" class="d-inline ms-1"
+                                              onsubmit="return confirm('Xóa bình luận vi phạm này?')">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-danger btn-sm">
+                                                <i class="fa-solid fa-trash"></i> Xóa
+                                            </button>
+                                        </form>
+                                        <form asp-action="DismissReport" asp-route-id="@r.Id" method="post" class="d-inline ms-1">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-outline-secondary btn-sm">
+                                                <i class="fa-solid fa-shield-check"></i> Bỏ qua
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+    }
+</div>

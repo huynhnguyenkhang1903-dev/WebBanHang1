@@ -69,38 +69,45 @@ namespace Websitebanhang.Controllers
                             (o.IsPaid || o.Status == "Delivered"))
                 .CountAsync();
 
-            var revenueByDay = await _context.Orders
+            var revenueByDay = (await _context.Orders
+                .Include(o => o.Items)
                 .Where(o => o.OrderDate >= start && o.OrderDate <= end &&
                             (o.IsPaid || o.Status == "Delivered"))
+                .ToListAsync())
                 .GroupBy(o => o.OrderDate.Date)
                 .Select(g => new DailyRevenue
                 {
                     Date = g.Key,
                     Amount = g.Sum(x => x.TotalAmount),
-                    OrderCount = g.Count()
+                    OrderCount = g.Count(),
+                    ProductsSold = g.SelectMany(x => x.Items ?? new List<CartItem>()).Sum(i => i.Quantity)
                 })
                 .OrderBy(x => x.Date)
-                .ToListAsync();
+                .ToList();
 
-            var revenueByMonth = await _context.Orders
+            var revenueByMonth = (await _context.Orders
+                .Include(o => o.Items)
                 .Where(o => o.OrderDate >= start && o.OrderDate <= end &&
                             (o.IsPaid || o.Status == "Delivered"))
+                .ToListAsync())
                 .GroupBy(o => new { o.OrderDate.Year, o.OrderDate.Month })
                 .Select(g => new MonthlyRevenue
                 {
                     Year = g.Key.Year,
                     Month = g.Key.Month,
                     Amount = g.Sum(x => x.TotalAmount),
-                    OrderCount = g.Count()
+                    OrderCount = g.Count(),
+                    ProductsSold = g.SelectMany(x => x.Items ?? new List<CartItem>()).Sum(i => i.Quantity)
                 })
                 .OrderBy(x => x.Year)
                 .ThenBy(x => x.Month)
-                .ToListAsync();
+                .ToList();
 
-            var topProducts = await _context.Orders
+            var topProducts = (await _context.Orders
+                .Include(o => o.Items)
                 .Where(o => o.OrderDate >= start && o.OrderDate <= end &&
                             (o.IsPaid || o.Status == "Delivered"))
-                .Include(o => o.Items)
+                .ToListAsync())
                 .SelectMany(o => o.Items ?? new List<CartItem>())
                 .GroupBy(i => new { i.ProductId, i.Name })
                 .Select(g => new TopSellingProduct
@@ -112,26 +119,36 @@ namespace Websitebanhang.Controllers
                 })
                 .OrderByDescending(p => p.TotalQuantity)
                 .Take(10)
-                .ToListAsync();
+                .ToList();
 
-            var revenueByYear = await _context.Orders
+            var revenueByYear = (await _context.Orders
+                .Include(o => o.Items)
                 .Where(o => o.OrderDate >= start && o.OrderDate <= end &&
                             (o.IsPaid || o.Status == "Delivered"))
+                .ToListAsync())
                 .GroupBy(o => o.OrderDate.Year)
                 .Select(g => new YearlyRevenue
                 {
                     Year = g.Key,
                     Amount = g.Sum(x => x.TotalAmount),
-                    OrderCount = g.Count()
+                    OrderCount = g.Count(),
+                    ProductsSold = g.SelectMany(x => x.Items ?? new List<CartItem>()).Sum(i => i.Quantity)
                 })
                 .OrderBy(x => x.Year)
-                .ToListAsync();
+                .ToList();
+
+            var totalProductsSold = await _context.Orders
+                .Where(o => o.OrderDate >= start && o.OrderDate <= end &&
+                            (o.IsPaid || o.Status == "Delivered"))
+                .SelectMany(o => o.Items)
+                .SumAsync(i => (int?)i.Quantity) ?? 0;
 
             var model = new RevenueViewModel
             {
                 TotalRevenue = totalRevenue,
                 OrdersCount = ordersCount,
                 PaidOrdersCount = paidOrdersCount,
+                TotalProductsSold = totalProductsSold,
                 RevenueByDay = revenueByDay,
                 RevenueByMonth = revenueByMonth,
                 RevenueByYear = revenueByYear,
@@ -159,6 +176,28 @@ namespace Websitebanhang.Controllers
             }
 
             order.Status = "Confirmed";
+
+            // 🔥 TRỪ TỒN KHO KHI DUYỆT ĐƠN
+            foreach (var item in order.Items)
+            {
+                var product = await _context.Products.FindAsync(item.ProductId);
+                if (product != null)
+                {
+                    product.Stock -= item.Quantity;
+                    
+                    // Log history
+                    _context.StockHistories.Add(new StockHistory
+                    {
+                        ProductId = product.Id,
+                        QuantityChange = -item.Quantity,
+                        BalanceAfter = product.Stock,
+                        Type = "Xuất kho (Bán hàng)",
+                        Note = $"Đơn hàng #{order.Id}",
+                        CreatedAt = DateTime.Now
+                    });
+                }
+            }
+
             await _context.SaveChangesAsync();
 
             // --- GỬI EMAIL XÁC NHẬN KHI ADMIN DUYỆT ĐƠN ---
@@ -276,6 +315,28 @@ namespace Websitebanhang.Controllers
                 return RedirectToAction("Details", new { id });
             }
 
+            // 🔥 HOÀN TỒN KHO NẾU ĐƠN ĐÃ ĐƯỢC DUYỆT/GIAO TRƯỚC ĐÓ
+            if (order.Status == "Confirmed" || order.Status == "Shipping" || order.Status == "Paid")
+            {
+                foreach (var item in order.Items)
+                {
+                    var product = await _context.Products.FindAsync(item.ProductId);
+                    if (product != null)
+                    {
+                        product.Stock += item.Quantity;
+                        _context.StockHistories.Add(new StockHistory
+                        {
+                            ProductId = product.Id,
+                            QuantityChange = item.Quantity,
+                            BalanceAfter = product.Stock,
+                            Type = "Nhập kho (Hủy đơn)",
+                            Note = $"Hủy đơn hàng #{order.Id}",
+                            CreatedAt = DateTime.Now
+                        });
+                    }
+                }
+            }
+
             order.Status = "Cancelled";
             order.CancelReason = cancelReason;
 
@@ -317,6 +378,26 @@ namespace Websitebanhang.Controllers
                 order.Status = OrderStatus.Returned;
             }
 
+            await _context.SaveChangesAsync();
+
+            // 🔥 HOÀN TỒN KHO KHI TRẢ HÀNG
+            foreach (var item in order.Items)
+            {
+                var product = await _context.Products.FindAsync(item.ProductId);
+                if (product != null)
+                {
+                    product.Stock += item.Quantity;
+                    _context.StockHistories.Add(new StockHistory
+                    {
+                        ProductId = product.Id,
+                        QuantityChange = item.Quantity,
+                        BalanceAfter = product.Stock,
+                        Type = "Nhập kho (Trả hàng)",
+                        Note = $"Trả đơn hàng #{order.Id}",
+                        CreatedAt = DateTime.Now
+                    });
+                }
+            }
             await _context.SaveChangesAsync();
 
             if (!string.IsNullOrEmpty(order.UserId))

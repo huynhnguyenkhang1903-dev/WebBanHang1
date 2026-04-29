@@ -21,6 +21,63 @@
 
     <!-- Toastify CSS -->
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+
+    @RenderSection("Styles", required: false)
+    <style>
+        .search-suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            z-index: 1050;
+            margin-top: 5px;
+            display: none;
+            overflow: hidden;
+        }
+        .search-suggestion-item {
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: #333;
+            transition: background 0.2s;
+        }
+        .search-suggestion-item:hover {
+            background: #f8f9fa;
+        }
+        .search-suggestion-img {
+            width: 40px;
+            height: 40px;
+            object-fit: cover;
+            border-radius: 5px;
+        }
+        .search-suggestion-info {
+            flex-grow: 1;
+        }
+        .search-suggestion-name {
+            font-weight: 500;
+            margin-bottom: 0;
+            font-size: 0.9rem;
+        }
+        .search-suggestion-price {
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
+        .dark-mode .search-suggestions {
+            background: #2d2d2d;
+            border: 1px solid #444;
+        }
+        .dark-mode .search-suggestion-item {
+            color: #eee;
+        }
+        .dark-mode .search-suggestion-item:hover {
+            background: #3d3d3d;
+        }
+    </style>
 </head>
 
 <body>
@@ -62,10 +119,16 @@
         <div class="d-none d-lg-flex align-items-center gap-4">
             
             <!-- Search -->
-            <form class="d-flex position-relative" action="/Product/Index" method="get">
-                <input type="text" name="search" class="form-control rounded-pill pe-5 bg-light border-0" placeholder="Tìm kiếm..." style="width: 200px;">
+            <form class="d-flex position-relative" id="mainSearchForm" action="/Product/Index" method="get" autocomplete="off">
+                <input type="text" id="searchInput" name="search" class="form-control rounded-pill pe-5 bg-light border-0 search-input" placeholder="Tìm kiếm..." style="width: 200px;">
                 <button type="submit" class="btn position-absolute end-0 top-50 translate-middle-y text-muted border-0"><i class="fa-solid fa-magnifying-glass"></i></button>
+                <div id="searchSuggestions" class="search-suggestions"></div>
             </form>
+
+            <!-- Compare -->
+            <a asp-controller="Compare" asp-action="Index" class="text-primary fs-5 ms-3" title="So sánh sản phẩm">
+                <i class="fa-solid fa-code-compare"></i>
+            </a>
 
             <!-- Wishlist -->
             <a asp-controller="Wishlist" asp-action="Index" class="text-danger fs-5 ms-3 me-3" title="Danh mục yêu thích">
@@ -238,6 +301,55 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 <script src="~/js/notification.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('searchInput');
+        const suggestionsBox = document.getElementById('searchSuggestions');
+        let debounceTimer;
+
+        if (searchInput && suggestionsBox) {
+            searchInput.addEventListener('input', function() {
+                clearTimeout(debounceTimer);
+                const term = this.value.trim();
+
+                if (term.length < 2) {
+                    suggestionsBox.style.display = 'none';
+                    return;
+                }
+
+                debounceTimer = setTimeout(() => {
+                    fetch(`/Product/SearchSuggestions?term=${encodeURIComponent(term)}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.length > 0) {
+                                suggestionsBox.innerHTML = data.map(item => `
+                                    <a href="/Product/Display/${item.id}" class="search-suggestion-item">
+                                        <img src="${item.imageUrl || '/images/default-coffee.jpg'}" class="search-suggestion-img" alt="${item.name}">
+                                        <div class="search-suggestion-info">
+                                            <p class="search-suggestion-name">${item.name}</p>
+                                            <span class="search-suggestion-price">${item.price.toLocaleString()} ₫</span>
+                                        </div>
+                                    </a>
+                                `).join('');
+                                suggestionsBox.style.display = 'block';
+                            } else {
+                                suggestionsBox.style.display = 'none';
+                            }
+                        })
+                        .catch(err => console.error('Search error:', err));
+                }, 300);
+            });
+
+            // Hide suggestions when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!searchInput.contains(e.target) && !suggestionsBox.contains(e.target)) {
+                    suggestionsBox.style.display = 'none';
+                }
+            });
+        }
+    });
+</script>
 
 </body>
 </html>

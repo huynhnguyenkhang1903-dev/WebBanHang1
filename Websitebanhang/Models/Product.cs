@@ -25,6 +25,9 @@ namespace Websitebanhang.Models
         [Range(0, int.MaxValue, ErrorMessage = "Tồn kho không hợp lệ")]
         public int Stock { get; set; } = 0;
 
+        // Hạn sử dụng
+        public DateTime? ExpiryDate { get; set; }
+
         // Category
         [Required]
         public int CategoryId { get; set; }

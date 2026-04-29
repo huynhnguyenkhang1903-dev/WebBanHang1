@@ -50,6 +50,15 @@
                     <option value="Colombia" selected="@(currentCountry == "Colombia")">Colombia</option>
                 </select>
 
+                @{
+                    var currentPromotion = Context.Request.Query["hasPromotion"].ToString();
+                }
+
+                <select name="hasPromotion" class="form-select mb-3">
+                    <option value="">Tất cả sản phẩm</option>
+                    <option value="true" selected="@(currentPromotion == "true")">Đang khuyến mãi</option>
+                </select>
+
                 <button class="btn btn-primary w-100">Lọc</button>
             </form>
         </div>
@@ -70,6 +79,7 @@
                 <input type="hidden" name="search" value="@Context.Request.Query["search"]" />
                 <input type="hidden" name="price" value="@Context.Request.Query["price"]" />
                 <input type="hidden" name="country" value="@Context.Request.Query["country"]" />
+                <input type="hidden" name="hasPromotion" value="@Context.Request.Query["hasPromotion"]" />
 
                 <select name="sortOrder" class="form-select form-select-sm">
                     <option value="">-- Sắp xếp --</option>
@@ -129,16 +139,20 @@
         <!-- PAGINATION -->
         @if (Model.PageCount > 1)
         {
-            <div class="mt-4 text-center">
+            <div class="mt-4 d-flex justify-content-center">
                 @Html.PagedListPager(Model, page => Url.Action("Index", new
                 {
                     page,
-                        search = Context.Request.Query["search"],
-                        price = Context.Request.Query["price"],
-                        country = Context.Request.Query["country"],
-                        sortOrder = Context.Request.Query["sortOrder"]
-                        }))
-        </div>
-                }
+                    search = Context.Request.Query["search"],
+                    price = Context.Request.Query["price"],
+                    country = Context.Request.Query["country"],
+                    hasPromotion = Context.Request.Query["hasPromotion"],
+                    sortOrder = Context.Request.Query["sortOrder"]
+                }), new PagedListRenderOptions {
+                    LiElementClasses = new string[] { "page-item" },
+                    PageClasses = new string[] { "page-link" }
+                })
+            </div>
+        }
     </div>
 </div>
