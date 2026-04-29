@@ -100,14 +100,12 @@
                                                 </form>
                                             }
 
-                                            @* Process Return (allow admin to process return/refund for delivered orders) *@
-                                            @if (item.Status == "Delivered")
+                                            @* Process Return (link to details) *@
+                                            @if (item.Status == OrderStatus.ReturnRequested || item.Status == OrderStatus.Delivered)
                                             {
-                                                <form asp-controller="AdminOrder" asp-action="ProcessReturn" method="post" class="m-0 p-0">
-                                                    @Html.AntiForgeryToken()
-                                                    <input type="hidden" name="id" value="@item.Id" />
-                                                    <button type="submit" class="btn btn-sm btn-warning">Xử lý trả/hoàn tiền</button>
-                                                </form>
+                                                <a asp-controller="AdminOrder" asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-warning">
+                                                    <i class="fa-solid fa-rotate-left"></i> Xử lý Trả/Hoàn tiền
+                                                </a>
                                             }
 
                                             @* Cancel (allow admin to cancel unless already delivered/refunded) *@

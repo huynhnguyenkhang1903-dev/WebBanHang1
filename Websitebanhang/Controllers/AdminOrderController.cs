@@ -144,7 +144,7 @@ namespace Websitebanhang.Controllers
             var totalProductsSold = await _context.Orders
                 .Where(o => o.OrderDate >= start && o.OrderDate <= end &&
                             (o.IsPaid || o.Status == "Delivered"))
-                .SelectMany(o => o.Items ?? new List<CartItem>())
+                .SelectMany(o => o.Items!)
                 .SumAsync(i => (int?)i.Quantity) ?? 0;
 
             var model = new RevenueViewModel

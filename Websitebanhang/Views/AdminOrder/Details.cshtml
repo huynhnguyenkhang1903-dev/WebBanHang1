@@ -220,28 +220,37 @@
 
             @if (status == OrderStatus.ReturnRequested)
             {
-                <div class="card border-warning mb-4 shadow-sm">
-                    <div class="card-header bg-warning text-dark fw-bold">
-                        <i class="fa-solid fa-triangle-exclamation me-2"></i> YÊU CẦU TRẢ HÀNG
+                <div class="card border-0 mb-4 shadow-sm rounded-4 overflow-hidden">
+                    <div class="card-header bg-danger text-white fw-bold py-3">
+                        <i class="fa-solid fa-rotate-left me-2"></i> XỬ LÝ YÊU CẦU TRẢ HÀNG / HOÀN TIỀN
                     </div>
-                    <div class="card-body">
-                        <p><strong>Lý do từ khách hàng:</strong> @Model.ReturnReason</p>
-                        <p class="small text-muted">Ngày yêu cầu: @Model.ReturnRequestedAt?.ToString("dd/MM/yyyy HH:mm")</p>
+                    <div class="card-body p-4 bg-light">
+                        <div class="mb-3">
+                            <label class="text-muted small text-uppercase fw-bold">Lý do từ khách hàng:</label>
+                            <div class="p-3 bg-white rounded-3 border-start border-danger border-4 mt-1">
+                                @Model.ReturnReason
+                            </div>
+                            <p class="small text-muted mt-2"><i class="fa-solid fa-clock me-1"></i> Ngày yêu cầu: @Model.ReturnRequestedAt?.ToString("dd/MM/yyyy HH:mm")</p>
+                        </div>
                         
-                        <form method="post" class="mt-3">
+                        <form method="post" class="mt-4">
                             @Html.AntiForgeryToken()
                             <input type="hidden" name="id" value="@Model.Id" />
-                            <div class="mb-3">
-                                <label class="form-label fw-bold">Ghi chú của Admin (Gửi cho khách):</label>
-                                <textarea name="adminNote" class="form-control" rows="2" placeholder="Ví dụ: Đồng ý hoàn tiền / Sản phẩm không đủ điều kiện trả hàng..."></textarea>
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">Phản hồi của Admin (Sẽ hiển thị cho khách):</label>
+                                <textarea name="adminNote" class="form-control rounded-3" rows="3" placeholder="Ví dụ: Đồng ý hoàn tiền do sản phẩm lỗi / Từ chối do quá thời hạn trả hàng..."></textarea>
                             </div>
-                            <div class="d-flex gap-2">
-                                <button type="submit" asp-action="ApproveReturn" class="btn btn-success flex-fill">
-                                    <i class="fa-solid fa-check me-1"></i> Duyệt Trả hàng & Hoàn tiền
-                                </button>
-                                <button type="submit" asp-action="RejectReturn" class="btn btn-danger flex-fill">
-                                    <i class="fa-solid fa-xmark me-1"></i> Từ chối yêu cầu
-                                </button>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <button type="submit" asp-action="ApproveReturn" class="btn btn-success w-100 py-3 rounded-3 shadow-sm fw-bold" onclick="return confirm('Xác nhận Duyệt trả hàng? Hệ thống sẽ tự động hoàn kho và trừ điểm thưởng đã tích.')">
+                                        <i class="fa-solid fa-check-circle me-2"></i> DUYỆT TRẢ HÀNG
+                                    </button>
+                                </div>
+                                <div class="col-md-6">
+                                    <button type="submit" asp-action="RejectReturn" class="btn btn-outline-danger w-100 py-3 rounded-3 shadow-sm fw-bold" onclick="return confirm('Xác nhận Từ chối yêu cầu này?')">
+                                        <i class="fa-solid fa-times-circle me-2"></i> TỪ CHỐI YÊU CẦU
+                                    </button>
+                                </div>
                             </div>
                         </form>
                     </div>
@@ -250,12 +259,21 @@
 
             @if (status == OrderStatus.Returned || status == OrderStatus.Refunded)
             {
-                <div class="alert alert-info">
-                    <strong>Trạng thái:</strong> @(status == OrderStatus.Refunded ? "Đã hoàn tiền" : "Đã trả hàng") <br/>
-                    <strong>Lý do:</strong> @Model.ReturnReason <br/>
+                <div class="alert alert-success border-0 shadow-sm rounded-4 p-4 mb-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="fa-solid fa-circle-check fs-2 me-3"></i>
+                        <div>
+                            <h5 class="mb-0 fw-bold text-success">Đã hoàn tất quy trình Trả hàng/Hoàn tiền</h5>
+                            <span class="small opacity-75">Trạng thái hiện tại: @(status == OrderStatus.Refunded ? "Đã hoàn tiền" : "Đã trả hàng")</span>
+                        </div>
+                    </div>
+                    <hr class="my-3">
+                    <p class="mb-2"><strong>Lý do trả hàng:</strong> @Model.ReturnReason</p>
                     @if (!string.IsNullOrEmpty(Model.ReturnAdminNote))
                     {
-                        <strong>Ghi chú Admin:</strong> @Model.ReturnAdminNote
+                        <div class="bg-white p-3 rounded-3 border-start border-success border-4 mt-2 shadow-sm text-dark">
+                            <strong>Ghi chú Admin:</strong> @Model.ReturnAdminNote
+                        </div>
                     }
                 </div>
             }
