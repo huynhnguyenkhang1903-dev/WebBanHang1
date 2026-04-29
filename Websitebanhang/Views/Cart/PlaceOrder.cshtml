@@ -97,6 +97,26 @@
                             </div>
                         }
 
+                        <!-- VOUCHER -->
+                        <div class="row g-2 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Mã giảm giá đơn hàng</label>
+                                <div class="input-group">
+                                    <input type="text" name="voucherCode" id="voucherCode" class="form-control border-warning" placeholder="Nhập mã...">
+                                    <button type="button" class="btn btn-warning" onclick="applyVoucher('order')">Áp dụng</button>
+                                </div>
+                                <div id="voucherMsg" class="small mt-1"></div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Mã giảm phí vận chuyển</label>
+                                <div class="input-group">
+                                    <input type="text" name="shippingVoucherCode" id="shippingVoucherCode" class="form-control border-info" placeholder="Nhập mã...">
+                                    <button type="button" class="btn btn-info text-white" onclick="applyVoucher('shipping')">Áp dụng</button>
+                                </div>
+                                <div id="shippingVoucherMsg" class="small mt-1"></div>
+                            </div>
+                        </div>
+
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <div class="text-secondary">Tạm tính:</div>
                             <div class="fw-bold" id="subTotalDisplay" data-value="@total">@total.ToString("N0", CultureInfo.CurrentCulture) ₫</div>
@@ -105,10 +125,22 @@
                             <div class="text-secondary">Phí vận chuyển:</div>
                             <div class="fw-bold text-info" id="shippingCostDisplay">15.000 ₫</div>
                         </div>
+                        
+                        <div id="orderDiscountRow" class="d-flex justify-content-between align-items-center mb-2 d-none">
+                            <div class="text-secondary">Giảm giá đơn hàng (<span id="orderDiscountPercent">0</span>%):</div>
+                            <div class="fw-bold text-danger" id="orderDiscountDisplay">-0 ₫</div>
+                        </div>
+
+                        <div id="shippingDiscountRow" class="d-flex justify-content-between align-items-center mb-2 d-none">
+                            <div class="text-secondary">Giảm phí vận chuyển (<span id="shippingDiscountPercent">0</span>%):</div>
+                            <div class="fw-bold text-danger" id="shippingDiscountDisplay">-0 ₫</div>
+                        </div>
+
                         <div id="pointsDiscountRow" class="d-flex justify-content-between align-items-center mb-2 d-none">
                             <div class="text-secondary">Giảm giá điểm thưởng:</div>
                             <div class="fw-bold text-danger" id="pointsDiscountDisplay">-0 ₫</div>
                         </div>
+
                         <div class="d-flex justify-content-between align-items-center mb-4 border-top pt-2">
                             <div class="fw-bold fs-5">Tổng cộng:</div>
                             <div class="fw-bold text-gold fs-4" id="finalTotalDisplay">@((total + 15000).ToString("N0", CultureInfo.CurrentCulture)) ₫</div>
@@ -152,6 +184,50 @@
         }
     }
 
+    var orderDiscountPercent = 0;
+    var shippingDiscountPercent = 0;
+
+    function applyVoucher(type) {
+        var code = "";
+        var msgId = "";
+        
+        if (type === 'order') {
+            code = document.getElementById('voucherCode').value;
+            msgId = 'voucherMsg';
+        } else {
+            code = document.getElementById('shippingVoucherCode').value;
+            msgId = 'shippingVoucherMsg';
+        }
+
+        if (!code) {
+            document.getElementById(msgId).innerHTML = '<span class="text-danger">Vui lòng nhập mã!</span>';
+            return;
+        }
+
+        fetch('/Cart/ValidateVoucher?code=' + encodeURIComponent(code))
+            .then(response => response.json())
+            .then(data => {
+                var msgEl = document.getElementById(msgId);
+                if (data.success) {
+                    msgEl.innerHTML = '<span class="text-success"><i class="fa-solid fa-check"></i> ' + data.message + '</span>';
+                    if (type === 'order') {
+                        orderDiscountPercent = data.discountPercent;
+                    } else {
+                        shippingDiscountPercent = data.discountPercent;
+                    }
+                    calculateTotal();
+                } else {
+                    msgEl.innerHTML = '<span class="text-danger"><i class="fa-solid fa-xmark"></i> ' + data.message + '</span>';
+                    if (type === 'order') {
+                        orderDiscountPercent = 0;
+                    } else {
+                        shippingDiscountPercent = 0;
+                    }
+                    calculateTotal();
+                }
+            });
+    }
+
     function calculateTotal() {
         var subTotal = parseFloat(document.getElementById('subTotalDisplay').getAttribute('data-value')) || 0;
         var select = document.getElementById('shippingProvider');
@@ -160,14 +236,36 @@
 
         document.getElementById('shippingCostDisplay').innerText = new Intl.NumberFormat('vi-VN').format(shippingCost) + ' ₫';
         
+        // 1. Order Voucher Discount
+        var orderDiscount = Math.round(subTotal * (orderDiscountPercent / 100));
+        if (orderDiscount > 0) {
+            document.getElementById('orderDiscountRow').classList.remove('d-none');
+            document.getElementById('orderDiscountPercent').innerText = orderDiscountPercent;
+            document.getElementById('orderDiscountDisplay').innerText = '-' + new Intl.NumberFormat('vi-VN').format(orderDiscount) + ' ₫';
+        } else {
+            document.getElementById('orderDiscountRow').classList.add('d-none');
+        }
+
+        // 2. Shipping Voucher Discount
+        var shippingDiscount = Math.round(shippingCost * (shippingDiscountPercent / 100));
+        if (shippingDiscount > 0) {
+            document.getElementById('shippingDiscountRow').classList.remove('d-none');
+            document.getElementById('shippingDiscountPercent').innerText = shippingDiscountPercent;
+            document.getElementById('shippingDiscountDisplay').innerText = '-' + new Intl.NumberFormat('vi-VN').format(shippingDiscount) + ' ₫';
+        } else {
+            document.getElementById('shippingDiscountRow').classList.add('d-none');
+        }
+
+        // 3. Points Discount
         var pointsDiscount = 0;
         var usePointsCheckbox = document.getElementById('usePoints');
         if (usePointsCheckbox && usePointsCheckbox.checked) {
             var userPoints = @(user?.RewardPoints ?? 0);
             pointsDiscount = userPoints * 100;
             
-            // Limit discount to subTotal
-            if (pointsDiscount > subTotal) pointsDiscount = subTotal;
+            // Limit discount to subTotal - orderDiscount
+            var maxPointsDiscount = subTotal - orderDiscount;
+            if (pointsDiscount > maxPointsDiscount) pointsDiscount = maxPointsDiscount;
             
             document.getElementById('pointsDiscountRow').classList.remove('d-none');
             document.getElementById('pointsDiscountDisplay').innerText = '-' + new Intl.NumberFormat('vi-VN').format(pointsDiscount) + ' ₫';
@@ -177,7 +275,7 @@
             }
         }
 
-        var finalTotal = subTotal + shippingCost - pointsDiscount;
+        var finalTotal = subTotal - orderDiscount - pointsDiscount + Math.max(0, shippingCost - shippingDiscount);
         document.getElementById('finalTotalDisplay').innerText = new Intl.NumberFormat('vi-VN').format(finalTotal) + ' ₫';
     }
 

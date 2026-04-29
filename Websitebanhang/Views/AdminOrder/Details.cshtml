@@ -37,7 +37,7 @@
                         <span class="badge bg-info">Đã duyệt</span>
                         break;
                     case "Preparing":
-                        <span class="badge bg-secondary">Chuẩn bị hàng</span>
+                        <span class="badge bg-warning text-dark">Đang đóng gói</span>
                         break;
                     case "Shipping":
                         <span class="badge bg-primary">Đang giao</span>
@@ -156,7 +156,7 @@
                     <select name="newStatus" class="form-select">
                         @if(status == "Pending"){ <option value="Pending" selected>Chờ xác nhận</option> } else { <option value="Pending">Chờ xác nhận</option> }
                         @if(status == "Confirmed"){ <option value="Confirmed" selected>Đã duyệt</option> } else { <option value="Confirmed">Đã duyệt</option> }
-                        @if(status == "Preparing"){ <option value="Preparing" selected>Chuẩn bị hàng</option> } else { <option value="Preparing">Chuẩn bị hàng</option> }
+                        @if(status == "Preparing"){ <option value="Preparing" selected>Đang đóng gói</option> } else { <option value="Preparing">Đang đóng gói</option> }
                         @if(status == "Shipping"){ <option value="Shipping" selected>Đang giao</option> } else { <option value="Shipping">Đang giao</option> }
                         @if(status == "Delivered"){ <option value="Delivered" selected>Đã giao</option> } else { <option value="Delivered">Đã giao</option> }
                         @if(status == "Cancelled"){ <option value="Cancelled" selected>Đã hủy</option> } else { <option value="Cancelled">Đã hủy</option> }
@@ -177,10 +177,19 @@
 
             @if (status == "Confirmed")
             {
-                <form asp-action="Shipping" method="post">
+                <form asp-action="Preparing" method="post" class="d-inline-block">
                     @Html.AntiForgeryToken()
                     <input type="hidden" name="id" value="@Model.Id" />
-                    <button class="btn btn-primary">Giao hàng</button>
+                    <button class="btn btn-warning"><i class="fa-solid fa-box me-1"></i> Đóng gói</button>
+                </form>
+            }
+
+            @if (status == "Preparing")
+            {
+                <form asp-action="Shipping" method="post" class="d-inline-block">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <button class="btn btn-primary"><i class="fa-solid fa-truck me-1"></i> Giao hàng</button>
                 </form>
             }
 
@@ -209,13 +218,46 @@
                 </form>
             }
 
-            @if (status == "Delivered")
+            @if (status == OrderStatus.ReturnRequested)
             {
-                <form asp-action="ProcessReturn" method="post" class="mt-2">
-                    @Html.AntiForgeryToken()
-                    <input type="hidden" name="id" value="@Model.Id" />
-                    <button class="btn btn-warning">Hoàn tiền</button>
-                </form>
+                <div class="card border-warning mb-4 shadow-sm">
+                    <div class="card-header bg-warning text-dark fw-bold">
+                        <i class="fa-solid fa-triangle-exclamation me-2"></i> YÊU CẦU TRẢ HÀNG
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Lý do từ khách hàng:</strong> @Model.ReturnReason</p>
+                        <p class="small text-muted">Ngày yêu cầu: @Model.ReturnRequestedAt?.ToString("dd/MM/yyyy HH:mm")</p>
+                        
+                        <form method="post" class="mt-3">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@Model.Id" />
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Ghi chú của Admin (Gửi cho khách):</label>
+                                <textarea name="adminNote" class="form-control" rows="2" placeholder="Ví dụ: Đồng ý hoàn tiền / Sản phẩm không đủ điều kiện trả hàng..."></textarea>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button type="submit" asp-action="ApproveReturn" class="btn btn-success flex-fill">
+                                    <i class="fa-solid fa-check me-1"></i> Duyệt Trả hàng & Hoàn tiền
+                                </button>
+                                <button type="submit" asp-action="RejectReturn" class="btn btn-danger flex-fill">
+                                    <i class="fa-solid fa-xmark me-1"></i> Từ chối yêu cầu
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            }
+
+            @if (status == OrderStatus.Returned || status == OrderStatus.Refunded)
+            {
+                <div class="alert alert-info">
+                    <strong>Trạng thái:</strong> @(status == OrderStatus.Refunded ? "Đã hoàn tiền" : "Đã trả hàng") <br/>
+                    <strong>Lý do:</strong> @Model.ReturnReason <br/>
+                    @if (!string.IsNullOrEmpty(Model.ReturnAdminNote))
+                    {
+                        <strong>Ghi chú Admin:</strong> @Model.ReturnAdminNote
+                    }
+                </div>
             }
         }
         else

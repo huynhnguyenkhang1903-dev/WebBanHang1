@@ -92,6 +92,7 @@ builder.Services.AddScoped<IProductRepository, EFProductRepository>();
 builder.Services.AddScoped<ICategoryRepository, EFCategoryRepository>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IActivityLogService, ActivityLogService>();
+builder.Services.AddScoped<IWebsiteSettingService, WebsiteSettingService>();
 builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();

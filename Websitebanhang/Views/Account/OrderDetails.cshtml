@@ -27,6 +27,21 @@
     </div>
 
     <div class="col-12 col-lg-8 mx-auto">
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+                <i class="fa-solid fa-circle-check me-2"></i> @TempData["SuccessMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+                <i class="fa-solid fa-circle-exclamation me-2"></i> @TempData["Error"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
         <div class="bg-white rounded-4 shadow-sm p-4 p-md-5">
 
             <!-- HEADER -->
@@ -51,11 +66,12 @@
                             <span class="badge bg-warning text-dark">Chờ xác nhận</span>
                             break;
                         case "Confirmed":
-                            <span class="badge bg-info">Chờ lấy hàng</span>
+                            <span class="badge bg-info">Đã duyệt đơn</span>
+                            break;
+                        case "Preparing":
+                            <span class="badge bg-warning text-dark">Đang đóng gói</span>
                             break;
                         case "Shipping":
-                            <span class="badge bg-primary">Đang giao</span>
-                            break;
                         case "Delivered":
                             <span class="badge bg-success">Đã giao</span>
                             break;
@@ -73,7 +89,7 @@
             @{
                 bool IsActive(string step)
                 {
-                    var steps = new[] { "Pending", "Confirmed", "Shipping", "Delivered" };
+                    var steps = new[] { "Pending", "Confirmed", "Preparing", "Shipping", "Delivered" };
                     var current = Array.IndexOf(steps, status);
                     var target = Array.IndexOf(steps, step);
 
@@ -89,16 +105,20 @@
                     <div>Chờ xác nhận</div>
                 </div>
                 <div class="flex-fill @(IsActive("Confirmed") ? "text-success fw-bold" : "text-muted")">
+                    <i class="fa-solid fa-check-double"></i>
+                    <div>Đã duyệt</div>
+                </div>
+                <div class="flex-fill @(IsActive("Preparing") ? "text-success fw-bold" : "text-muted")">
                     <i class="fa-solid fa-box"></i>
-                    <div>Chờ lấy hàng</div>
+                    <div>Đóng gói</div>
                 </div>
                 <div class="flex-fill @(IsActive("Shipping") ? "text-success fw-bold" : "text-muted")">
                     <i class="fa-solid fa-truck"></i>
                     <div>Đang giao</div>
                 </div>
                 <div class="flex-fill @(IsActive("Delivered") ? "text-success fw-bold" : "text-muted")">
-                    <i class="fa-solid fa-check"></i>
-                    <div>Đã giao</div>
+                    <i class="fa-solid fa-house-circle-check"></i>
+                    <div>Hoàn thành</div>
                 </div>
             </div>
 
@@ -252,6 +272,15 @@
                     </form>
                 }
 
+                if (status == "Shipping")
+                {
+                    <form asp-controller="Account" asp-action="ConfirmReceived" method="post" class="d-inline-block">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@Model.Id" />
+                        <button type="submit" class="btn btn-success" onclick="return confirm('Xác nhận bạn đã nhận được hàng?')">Đã nhận hàng</button>
+                    </form>
+                }
+
                 if (status == "Delivered")
                 {
                     <button class="btn btn-outline-warning" data-bs-toggle="modal" data-bs-target="#returnModal">Yêu cầu trả hàng</button>
@@ -284,15 +313,41 @@
         </div>
         <div class="modal-body">
           <div class="mb-3">
-            <label for="returnReason" class="form-label">Lý do trả hàng</label>
-            <textarea class="form-control" id="returnReason" name="returnReason" rows="3" required></textarea>
+            <label for="reasonType" class="form-label fw-bold">Lý do trả hàng</label>
+            <select class="form-select" id="reasonType" name="reasonType" required onchange="toggleOtherReason(this)">
+                <option value="" disabled selected>Chọn lý do...</option>
+                <option value="Sản phẩm bị lỗi/hư hỏng">Sản phẩm bị lỗi/hư hỏng</option>
+                <option value="Giao sai sản phẩm">Giao sai sản phẩm</option>
+                <option value="Sản phẩm khác mô tả">Sản phẩm khác mô tả</option>
+                <option value="Không còn nhu cầu (Sản phẩm chưa bóc tem)">Không còn nhu cầu (Sản phẩm chưa bóc tem)</option>
+                <option value="Lý do khác">Lý do khác</option>
+            </select>
+          </div>
+          <div class="mb-3" id="otherReasonDiv" style="display: none;">
+            <label for="returnReason" class="form-label fw-bold">Chi tiết lý do</label>
+            <textarea class="form-control" id="returnReason" name="returnReason" rows="3" placeholder="Vui lòng mô tả chi tiết tình trạng sản phẩm..."></textarea>
           </div>
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-          <button type="submit" class="btn btn-warning">Gửi yêu cầu</button>
+        <div class="modal-footer border-0">
+          <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Đóng</button>
+          <button type="submit" class="btn btn-warning rounded-pill px-4 shadow-sm">Gửi yêu cầu</button>
         </div>
       </form>
     </div>
   </div>
 </div>
+
+<script>
+    function toggleOtherReason(select) {
+        var otherDiv = document.getElementById('otherReasonDiv');
+        var reasonArea = document.getElementById('returnReason');
+        if (select.value === 'Lý do khác') {
+            otherDiv.style.display = 'block';
+            reasonArea.setAttribute('required', 'required');
+        } else {
+            otherDiv.style.display = 'block'; // Always show it but not required if not "Other"? 
+            // Actually, better to always show it for extra notes, but only required if "Other"
+            reasonArea.removeAttribute('required');
+        }
+    }
+</script>

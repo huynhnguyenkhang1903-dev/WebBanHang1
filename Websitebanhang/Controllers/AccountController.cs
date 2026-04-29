@@ -171,13 +171,51 @@ namespace Websitebanhang.Controllers
                     PhoneNumber = model.PhoneNumber,
                     Address = model.Address,
                     DateOfBirth = model.DateOfBirth,
-                    EmailConfirmed = true // Tự động xác thực
+                    EmailConfirmed = true, // Tự động xác thực
+                    ReferralCode = Guid.NewGuid().ToString("N").Substring(0, 8).ToUpper()
                 };
+
+                // Xử lý mã giới thiệu nếu có
+                if (!string.IsNullOrEmpty(model.ReferralCode))
+                {
+                    var referrer = await _userManager.Users.FirstOrDefaultAsync(u => u.ReferralCode == model.ReferralCode.ToUpper());
+                    if (referrer != null)
+                    {
+                        user.ReferredByUserId = referrer.Id;
+                        
+                        // Tặng điểm cho người giới thiệu (50 điểm)
+                        referrer.RewardPoints += 50;
+                        _context.RewardPointHistories.Add(new RewardPointHistory
+                        {
+                            UserId = referrer.Id,
+                            PointsChanged = 50,
+                            BalanceAfter = referrer.RewardPoints,
+                            Note = $"Thưởng giới thiệu thành viên mới ({model.Email})",
+                            CreatedAt = DateTime.Now
+                        });
+
+                        // Tặng điểm cho người được giới thiệu (50 điểm)
+                        user.RewardPoints += 50;
+                        // Lưu ý: Lịch sử điểm của người mới sẽ được thêm sau khi CreateAsync thành công
+                    }
+                }
 
                 var result = await _userManager.CreateAsync(user, model.Password);
 
                 if (result.Succeeded)
                 {
+                    if (user.RewardPoints > 0)
+                    {
+                        _context.RewardPointHistories.Add(new RewardPointHistory
+                        {
+                            UserId = user.Id,
+                            PointsChanged = 50,
+                            BalanceAfter = user.RewardPoints,
+                            Note = "Thưởng nhập mã giới thiệu khi đăng ký",
+                            CreatedAt = DateTime.Now
+                        });
+                        await _context.SaveChangesAsync();
+                    }
                     await _userManager.AddToRoleAsync(user, "User");
                     TempData["SuccessMessage"] = "Đăng ký thành công! Bạn có thể đăng nhập ngay.";
                     return RedirectToAction("Login");
@@ -321,6 +359,7 @@ namespace Websitebanhang.Controllers
                 Addresses = addresses,
                 ViewHistory = viewHistory,
                 RewardPoints = user.RewardPoints,
+                ReferralCode = user.ReferralCode,
                 PointHistory = pointHistory
             };
 
@@ -491,7 +530,7 @@ namespace Websitebanhang.Controllers
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> RequestReturn(int id, string returnReason)
+        public async Task<IActionResult> RequestReturn(int id, string reasonType, string returnReason)
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
@@ -506,24 +545,74 @@ namespace Websitebanhang.Controllers
 
             if (order.Status != OrderStatus.Delivered)
             {
-                TempData["Error"] = "Chỉ có thể yêu cầu trả hàng cho đơn đã giao.";
+                TempData["Error"] = "Chỉ có thể yêu cầu trả hàng cho đơn đã giao thành công.";
                 return RedirectToAction("OrderDetails", new { id });
             }
 
-            if (string.IsNullOrWhiteSpace(returnReason))
+            var fullReason = reasonType;
+            if (reasonType == "Lý do khác" && !string.IsNullOrWhiteSpace(returnReason))
             {
-                TempData["Error"] = "Vui lòng nhập lý do trả hàng.";
-                return RedirectToAction("OrderDetails", new { id });
+                fullReason = returnReason;
+            }
+            else if (!string.IsNullOrWhiteSpace(returnReason))
+            {
+                fullReason = $"{reasonType}: {returnReason}";
             }
 
-            order.Status = OrderStatus.Returned; // mark as returned/requested
-            order.ReturnReason = returnReason;
+            order.Status = OrderStatus.ReturnRequested;
+            order.ReturnReason = fullReason;
             order.ReturnRequestedAt = DateTime.Now;
 
-            // If paid by bank, we will let admin process refund (or could auto-refund depending on policy)
             await _context.SaveChangesAsync();
 
-            TempData["SuccessMessage"] = "Yêu cầu trả hàng đã được gửi. Admin sẽ xử lý.";
+            TempData["SuccessMessage"] = "Yêu cầu trả hàng đã được gửi thành công. Vui lòng chờ Admin xét duyệt.";
+            return RedirectToAction("OrderDetails", new { id });
+        }
+
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ConfirmReceived(int id)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+                return RedirectToAction("Login");
+
+            var order = await _context.Orders
+                .FirstOrDefaultAsync(o => o.Id == id && o.Email == user.Email);
+
+            if (order == null)
+            {
+                TempData["Error"] = "Không tìm thấy đơn hàng!";
+                return RedirectToAction("Profile");
+            }
+
+            if (order.Status != OrderStatus.Shipping)
+            {
+                TempData["Error"] = "Đơn hàng phải ở trạng thái đang giao mới có thể xác nhận!";
+                return RedirectToAction("OrderDetails", new { id });
+            }
+
+            order.Status = OrderStatus.Delivered;
+
+            // 🔥 TÍCH ĐIỂM THƯỞNG (1000đ = 1 điểm)
+            int pointsEarned = (int)(order.TotalAmount / 1000);
+            if (pointsEarned > 0)
+            {
+                user.RewardPoints += pointsEarned;
+                _context.RewardPointHistories.Add(new RewardPointHistory
+                {
+                    UserId = user.Id,
+                    PointsChanged = pointsEarned,
+                    BalanceAfter = user.RewardPoints,
+                    Note = $"Tích điểm từ đơn hàng #{order.Id} (Người dùng xác nhận)",
+                    CreatedAt = DateTime.Now
+                });
+            }
+
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Xác nhận đã nhận hàng thành công! Bạn đã được cộng điểm thưởng.";
             return RedirectToAction("OrderDetails", new { id });
         }
 

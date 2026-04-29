@@ -30,5 +30,6 @@ namespace Websitebanhang.Models.ViewModels
         [Compare("Password")]
         [DataType(DataType.Password)]
         public string ConfirmPassword { get; set; } = string.Empty;
+        public string? ReferralCode { get; set; }
     }
 }

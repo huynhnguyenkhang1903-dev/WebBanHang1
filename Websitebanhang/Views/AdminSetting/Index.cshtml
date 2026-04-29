@@ -1,0 +1,101 @@
+@model List<Websitebanhang.Models.WebsiteSetting>
+@{
+    ViewData["Title"] = "Quản lý Cài đặt Website";
+    Layout = "_AdminLayout";
+    var logo = Model.FirstOrDefault(s => s.Key == "Logo")?.Value ?? "/images/logo.png";
+}
+
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Cài đặt Website</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a asp-controller="Admin" asp-action="Index">Dashboard</a></li>
+        <li class="breadcrumb-item active">Cài đặt</li>
+    </ol>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">@TempData["Success"]</div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">@TempData["Error"]</div>
+    }
+
+    <div class="row">
+        <!-- LOGO MANAGEMENT -->
+        <div class="col-xl-6">
+            <div class="card mb-4 shadow-sm border-0">
+                <div class="card-header bg-primary text-white fw-bold">
+                    <i class="fas fa-image me-1"></i> Quản lý Logo
+                </div>
+                <div class="card-body text-center">
+                    <div class="mb-4 p-3 border rounded bg-light d-inline-block">
+                        <img src="@logo" id="logoPreview" style="max-height: 120px; max-width: 100%;" alt="Current Logo" />
+                    </div>
+                    
+                    <form asp-action="UpdateLogo" method="post" enctype="multipart/form-data" class="mt-3">
+                        <div class="input-group mb-3">
+                            <input type="file" name="logoFile" class="form-control" id="logoInput" accept="image/*" required>
+                            <button class="btn btn-primary" type="submit">Tải lên Logo mới</button>
+                        </div>
+                        <small class="text-muted">Định dạng hỗ trợ: PNG, JPG, GIF. Kích thước đề xuất: 250x100px.</small>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- OTHER SETTINGS -->
+        <div class="col-xl-6">
+            <div class="card mb-4 shadow-sm border-0">
+                <div class="card-header bg-dark text-white fw-bold">
+                    <i class="fas fa-cog me-1"></i> Thông tin Website
+                </div>
+                <div class="card-body">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th>Cài đặt</th>
+                                <th>Giá trị</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var setting in Model.Where(s => s.Key != "Logo"))
+                            {
+                                <tr>
+                                    <td><strong>@setting.Key</strong><br/><small class="text-muted">@setting.Description</small></td>
+                                    <td>
+                                        <form asp-action="UpdateSetting" method="post">
+                                            <input type="hidden" name="key" value="@setting.Key" />
+                                            <div class="input-group input-group-sm">
+                                                <input type="text" name="value" class="form-control" value="@setting.Value" />
+                                                <button class="btn btn-outline-success" type="submit">Lưu</button>
+                                            </div>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                            @if (!Model.Any(s => s.Key != "Logo"))
+                            {
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted">Chưa có cài đặt bổ sung.</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('logoInput').onchange = function (evt) {
+            var [file] = this.files;
+            if (file) {
+                document.getElementById('logoPreview').src = URL.createObjectURL(file);
+            }
+        }
+    </script>
+}

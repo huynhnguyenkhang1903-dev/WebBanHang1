@@ -37,6 +37,7 @@ namespace Websitebanhang.Data
         public DbSet<RewardPointHistory> RewardPointHistories { get; set; }
         public DbSet<Supplier> Suppliers { get; set; }
         public DbSet<AdminActivityLog> AdminActivityLogs { get; set; }
+        public DbSet<WebsiteSetting> WebsiteSettings { get; set; }
 
         // CONFIG DATABASE
         protected override void OnModelCreating(ModelBuilder modelBuilder)

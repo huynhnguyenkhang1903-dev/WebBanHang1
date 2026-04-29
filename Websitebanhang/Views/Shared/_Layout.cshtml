@@ -2,13 +2,22 @@
 @using Websitebanhang.Models
 @inject SignInManager<ApplicationUser> SignInManager
 @inject UserManager<ApplicationUser> UserManager
+@inject Websitebanhang.Services.IWebsiteSettingService SettingService
+@{
+    var logoUrl = await SettingService.GetSettingAsync("Logo", "/images/logo.png");
+    var siteTitle = await SettingService.GetSettingAsync("SiteTitle", "Aura Coffee");
+    var hotline = await SettingService.GetSettingAsync("Hotline", "0344.506.553");
+    var email = await SettingService.GetSettingAsync("Email", "support@auracoffee.com");
+    var address = await SettingService.GetSettingAsync("Address", "123 Đường Cà Phê, TP. Hồ Chí Minh");
+    var facebook = await SettingService.GetSettingAsync("Facebook", "#");
+}
 
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>@ViewData["Title"] - Aura Coffee</title>
+    <title>@ViewData["Title"] - @siteTitle</title>
 
     <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
@@ -87,8 +96,11 @@
     <div class="container d-flex align-items-center">
         <!-- LOGO -->
         <a class="navbar-brand d-flex align-items-center gap-2" asp-controller="Home" asp-action="Index">
-            <i class="fa-solid fa-mug-hot text-gold fs-3"></i>
-            <span>Aura Coffee</span>
+            <img src="@logoUrl" alt="Logo" style="height: 45px; width: auto;" onerror="this.onerror=null; this.style.display='none'; document.getElementById('logoFallback').style.display='flex';" />
+            <div id="logoFallback" class="d-none align-items-center gap-2">
+                <i class="fa-solid fa-mug-hot text-gold fs-3"></i>
+                <span>@siteTitle</span>
+            </div>
         </a>
 
         <!-- MOBILE BUTTON -->
@@ -202,34 +214,39 @@
         <div class="row gy-4">
             <div class="col-md-4 text-center text-md-start">
                 <a class="d-flex align-items-center gap-2 justify-content-center justify-content-md-start text-white mb-3" asp-controller="Home" asp-action="Index">
-                    <i class="fa-solid fa-mug-hot text-gold fs-3"></i>
-                    <span class="fs-4 fw-bold">Aura Coffee</span>
+                    <img src="@logoUrl" alt="Logo" style="height: 40px; width: auto; filter: brightness(0) invert(1);" onerror="this.style.display='none';" />
+                    <span class="fs-4 fw-bold">@siteTitle</span>
                 </a>
                 <p class="small text-white-50">Mang đến trải nghiệm cà phê nguyên bản, đậm vị và đầy cảm hứng cho người Việt.</p>
+                <div class="small text-white-50 mt-2">
+                    <i class="fa-solid fa-location-dot me-2"></i> @address <br/>
+                    <i class="fa-solid fa-phone me-2"></i> @hotline <br/>
+                    <i class="fa-solid fa-envelope me-2"></i> @email
+                </div>
             </div>
             <div class="col-md-4 text-center">
                 <h5 class="text-gold mb-3">Liên Kết</h5>
                 <ul class="list-unstyled d-flex flex-column gap-2">
                     <li><a href="/">Trang Chủ</a></li>
-                    <li><a href="/Product">Cà Phê</a></li>
-                    <li><a href="#">Về Chúng Tôi</a></li>
+                    <li><a href="/Product">Hạt Cà Phê</a></li>
+                    <li><a href="/Home/Contact">Liên Hệ</a></li>
                 </ul>
             </div>
             <div class="col-md-4 text-center text-md-end">
                 <h5 class="text-gold mb-3">Kết Nối</h5>
                 <div class="d-flex justify-content-center justify-content-md-end gap-3 fs-4">
-                    <a href="#"><i class="fa-brands fa-facebook"></i></a>
+                    <a href="@facebook" target="_blank"><i class="fa-brands fa-facebook"></i></a>
                     <a href="#"><i class="fa-brands fa-instagram"></i></a>
                     <a href="#"><i class="fa-brands fa-tiktok"></i></a>
                 </div>
-                <p class="small text-white-50 mt-3 mb-0">© 2026 Aura Coffee. All Rights Reserved.</p>
+                <p class="small text-white-50 mt-3 mb-0">© @DateTime.Now.Year @siteTitle. All Rights Reserved.</p>
             </div>
         </div>
     </div>
 </footer>
 
 <!-- ZALO CHAT BUTTON -->
-<a href="https://zalo.me/0344506553" target="_blank" class="zalo-float" title="Chat với shop qua Zalo">
+<a href="https://zalo.me/@hotline.Replace(".", "").Replace(" ", "")" target="_blank" class="zalo-float" title="Chat với shop qua Zalo">
     <img src="https://upload.wikimedia.org/wikipedia/commons/9/91/Icon_of_Zalo.svg" alt="Zalo Logo">
 </a>
 

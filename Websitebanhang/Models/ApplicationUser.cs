@@ -14,5 +14,7 @@ namespace Websitebanhang.Models
         public string? OtpCode { get; set; }
         public DateTime? OtpExpiry { get; set; }
         public int RewardPoints { get; set; } = 0;
+        public string? ReferralCode { get; set; }
+        public string? ReferredByUserId { get; set; }
     }
 }

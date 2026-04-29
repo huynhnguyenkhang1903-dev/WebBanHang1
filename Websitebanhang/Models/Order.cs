@@ -49,5 +49,6 @@ namespace Websitebanhang.Models
         // Trả hàng
         public string? ReturnReason { get; set; }
         public DateTime? ReturnRequestedAt { get; set; }
+        public string? ReturnAdminNote { get; set; }
     }
 }

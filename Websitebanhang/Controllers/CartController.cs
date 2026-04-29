@@ -495,5 +495,26 @@ namespace Websitebanhang.Controllers
             ViewBag.OrderId = id;
             return View();
         }
+        // ================= KIỂM TRA VOUCHER =================
+        [HttpGet]
+        public IActionResult ValidateVoucher(string code)
+        {
+            if (string.IsNullOrWhiteSpace(code))
+                return Json(new { success = false, message = "Vui lòng nhập mã!" });
+
+            var voucher = _context.Voucher.FirstOrDefault(v => v.Code == code);
+
+            if (voucher == null)
+                return Json(new { success = false, message = "Mã giảm giá không tồn tại!" });
+
+            if (voucher.ExpiryDate < DateTime.Now)
+                return Json(new { success = false, message = "Mã giảm giá đã hết hạn!" });
+
+            return Json(new { 
+                success = true, 
+                message = "Áp dụng mã thành công!", 
+                discountPercent = voucher.DiscountPercent 
+            });
+        }
     }
 }

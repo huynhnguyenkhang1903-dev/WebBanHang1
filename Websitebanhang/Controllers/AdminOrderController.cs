@@ -217,6 +217,32 @@ namespace Websitebanhang.Controllers
             return RedirectToAction("Details", new { id });
         }
 
+        // ================= ĐÓNG GÓI =================
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Preparing(int id)
+        {
+            var order = await _context.Orders.FindAsync(id);
+            if (order == null) return NotFound();
+
+            if (order.Status != "Confirmed")
+            {
+                TempData["Error"] = "Chưa duyệt đơn!";
+                return RedirectToAction("Details", new { id });
+            }
+
+            order.Status = "Preparing";
+            await _context.SaveChangesAsync();
+
+            if (!string.IsNullOrEmpty(order.UserId))
+            {
+                await _hubContext.Clients.User(order.UserId).SendAsync("ReceiveUserNotification", $"Đơn hàng #{order.Id} của bạn đang được đóng gói!", $"/Account/OrderDetails/{order.Id}");
+            }
+
+            TempData["Success"] = "Đã chuyển sang trạng thái Đóng gói!";
+            return RedirectToAction("Details", new { id });
+        }
+
         // ================= GIAO =================
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -225,9 +251,9 @@ namespace Websitebanhang.Controllers
             var order = await _context.Orders.FindAsync(id);
             if (order == null) return NotFound();
 
-            if (order.Status != "Confirmed")
+            if (order.Status != "Preparing" && order.Status != "Confirmed")
             {
-                TempData["Error"] = "Phải duyệt trước!";
+                TempData["Error"] = "Phải duyệt hoặc đóng gói trước!";
                 return RedirectToAction("Details", new { id });
             }
 
@@ -358,36 +384,33 @@ namespace Websitebanhang.Controllers
             return RedirectToAction("Details", new { id });
         }
 
-        // ================= TRẢ HÀNG =================
+        // ================= DUYỆT TRẢ HÀNG / HOÀN TIỀN =================
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ProcessReturn(int id)
+        public async Task<IActionResult> ApproveReturn(int id, string adminNote)
         {
-            var order = await _context.Orders.FindAsync(id);
+            var order = await _context.Orders.Include(o => o.Items).FirstOrDefaultAsync(o => o.Id == id);
             if (order == null) return NotFound();
 
-            if (order.Status != OrderStatus.Delivered &&
-                order.Status != OrderStatus.Returned)
+            if (order.Status != OrderStatus.ReturnRequested)
             {
-                TempData["Error"] = "Chỉ xử lý đơn đã giao!";
+                TempData["Error"] = "Đơn hàng không ở trạng thái yêu cầu trả hàng!";
                 return RedirectToAction("Details", new { id });
             }
 
-            if (order.IsPaid &&
-                string.Equals(order.PaymentMethod, "bank", StringComparison.OrdinalIgnoreCase))
+            // 1. Cập nhật trạng thái
+            if (order.IsPaid && string.Equals(order.PaymentMethod, "bank", StringComparison.OrdinalIgnoreCase))
             {
                 order.Status = OrderStatus.Refunded;
                 order.IsPaid = false;
-                order.TransactionId = null;
             }
             else
             {
                 order.Status = OrderStatus.Returned;
             }
+            order.ReturnAdminNote = adminNote;
 
-            await _context.SaveChangesAsync();
-
-            // 🔥 HOÀN TỒN KHO KHI TRẢ HÀNG
+            // 2. 🔥 HOÀN TỒN KHO
             foreach (var item in order.Items)
             {
                 var product = await _context.Products.FindAsync(item.ProductId);
@@ -399,20 +422,77 @@ namespace Websitebanhang.Controllers
                         ProductId = product.Id,
                         QuantityChange = item.Quantity,
                         BalanceAfter = product.Stock,
-                        Type = "Nhập kho (Trả hàng)",
+                        Type = "Nhập kho (Trả hàng được duyệt)",
                         Note = $"Trả đơn hàng #{order.Id}",
                         CreatedAt = DateTime.Now
                     });
                 }
             }
+
+            // 3. 🔥 TRỪ ĐIỂM THƯỞNG ĐÃ NHẬN
+            if (!string.IsNullOrEmpty(order.UserId))
+            {
+                var user = await _userManager.FindByIdAsync(order.UserId);
+                if (user != null)
+                {
+                    int pointsToDeduct = (int)(order.TotalAmount / 1000);
+                    if (pointsToDeduct > 0)
+                    {
+                        user.RewardPoints -= pointsToDeduct;
+                        _context.RewardPointHistories.Add(new RewardPointHistory
+                        {
+                            UserId = user.Id,
+                            PointsChanged = -pointsToDeduct,
+                            BalanceAfter = user.RewardPoints,
+                            Note = $"Thu hồi điểm thưởng do trả hàng (Đơn #{order.Id})",
+                            CreatedAt = DateTime.Now
+                        });
+                    }
+                }
+            }
+
             await _context.SaveChangesAsync();
 
             if (!string.IsNullOrEmpty(order.UserId))
             {
-                await _hubContext.Clients.User(order.UserId).SendAsync("ReceiveUserNotification", $"Yêu cầu trả hàng cho đơn #{order.Id} đã được xử lý.", $"/Account/OrderDetails/{order.Id}");
+                await _hubContext.Clients.User(order.UserId).SendAsync("ReceiveUserNotification", $"Yêu cầu trả hàng cho đơn #{order.Id} đã được DUYỆT.", $"/Account/OrderDetails/{order.Id}");
             }
 
-            TempData["Success"] = "Đã xử lý trả hàng!";
+            TempData["Success"] = "Đã duyệt trả hàng và hoàn tất quy trình!";
+            return RedirectToAction("Details", new { id });
+        }
+
+        // ================= TỪ CHỐI TRẢ HÀNG =================
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RejectReturn(int id, string adminNote)
+        {
+            var order = await _context.Orders.FindAsync(id);
+            if (order == null) return NotFound();
+
+            if (order.Status != OrderStatus.ReturnRequested)
+            {
+                TempData["Error"] = "Không có yêu cầu trả hàng để từ chối!";
+                return RedirectToAction("Details", new { id });
+            }
+
+            if (string.IsNullOrWhiteSpace(adminNote))
+            {
+                TempData["Error"] = "Vui lòng nhập lý do từ chối!";
+                return RedirectToAction("Details", new { id });
+            }
+
+            order.Status = OrderStatus.Delivered; // Trả về trạng thái đã giao
+            order.ReturnAdminNote = adminNote;
+
+            await _context.SaveChangesAsync();
+
+            if (!string.IsNullOrEmpty(order.UserId))
+            {
+                await _hubContext.Clients.User(order.UserId).SendAsync("ReceiveUserNotification", $"Yêu cầu trả hàng cho đơn #{order.Id} đã bị TỪ CHỐI. Lý do: {adminNote}", $"/Account/OrderDetails/{order.Id}");
+            }
+
+            TempData["Success"] = "Đã từ chối yêu cầu trả hàng.";
             return RedirectToAction("Details", new { id });
         }
 

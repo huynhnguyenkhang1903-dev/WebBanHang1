@@ -119,10 +119,31 @@
                                     <input type="tel" class="form-control" name="PhoneNumber" id="PhoneNumber" value="@(Model?.PhoneNumber)" placeholder="Số điện thoại">
                                     <label for="PhoneNumber" class="ps-4">Số điện thoại</label>
                                 </div>
+                                <div class="col-md-12 mb-4">
+                                    <label class="form-label text-coffee fw-bold small mb-1">Mã giới thiệu của bạn</label>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control bg-light fw-bold text-center" value="@Model.ReferralCode" readonly id="myReferralCode" style="letter-spacing: 2px;">
+                                        <button class="btn btn-outline-coffee" type="button" onclick="copyReferralCode()">
+                                            <i class="fa-regular fa-copy me-1"></i> Sao chép
+                                        </button>
+                                    </div>
+                                    <p class="small text-muted mt-1">Chia sẻ mã này với bạn bè để cả hai cùng nhận được 50 điểm thưởng!</p>
+                                </div>
                             </div>
                             <button type="submit" class="btn btn-primary-custom px-4 rounded-pill">Lưu Thay Đổi</button>
                         </form>
                     </div>
+
+                    <script>
+                        function copyReferralCode() {
+                            var copyText = document.getElementById("myReferralCode");
+                            copyText.select();
+                            copyText.setSelectionRange(0, 99999);
+                            navigator.clipboard.writeText(copyText.value);
+                            
+                            alert("Đã sao chép mã giới thiệu: " + copyText.value);
+                        }
+                    </script>
 
                     <!-- TAB: Change Password -->
                     <div class="tab-pane fade" id="v-pills-password" role="tabpanel">
