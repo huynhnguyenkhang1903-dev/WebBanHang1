@@ -144,7 +144,7 @@ namespace Websitebanhang.Controllers
             var totalProductsSold = await _context.Orders
                 .Where(o => o.OrderDate >= start && o.OrderDate <= end &&
                             (o.IsPaid || o.Status == "Delivered"))
-                .SelectMany(o => o.Items)
+                .SelectMany(o => o.Items ?? new List<CartItem>())
                 .SumAsync(i => (int?)i.Quantity) ?? 0;
 
             var model = new RevenueViewModel
@@ -170,7 +170,7 @@ namespace Websitebanhang.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Confirm(int id)
         {
-            var order = await _context.Orders.FindAsync(id);
+            var order = await _context.Orders.Include(o => o.Items).FirstOrDefaultAsync(o => o.Id == id);
             if (order == null) return NotFound();
 
             if (order.Status != "Pending")
@@ -182,7 +182,7 @@ namespace Websitebanhang.Controllers
             order.Status = "Confirmed";
 
             // 🔥 TRỪ TỒN KHO KHI DUYỆT ĐƠN
-            foreach (var item in order.Items)
+            foreach (var item in order.Items ?? new List<CartItem>())
             {
                 var product = await _context.Products.FindAsync(item.ProductId);
                 if (product != null)
@@ -327,7 +327,7 @@ namespace Websitebanhang.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Cancel(int id, string cancelReason)
         {
-            var order = await _context.Orders.FindAsync(id);
+            var order = await _context.Orders.Include(o => o.Items).FirstOrDefaultAsync(o => o.Id == id);
 
             if (order == null)
             {
@@ -350,7 +350,7 @@ namespace Websitebanhang.Controllers
             // 🔥 HOÀN TỒN KHO NẾU ĐƠN ĐÃ ĐƯỢC DUYỆT/GIAO TRƯỚC ĐÓ
             if (order.Status == "Confirmed" || order.Status == "Shipping" || order.Status == "Paid")
             {
-                foreach (var item in order.Items)
+                foreach (var item in order.Items ?? new List<CartItem>())
                 {
                     var product = await _context.Products.FindAsync(item.ProductId);
                     if (product != null)
@@ -411,7 +411,7 @@ namespace Websitebanhang.Controllers
             order.ReturnAdminNote = adminNote;
 
             // 2. 🔥 HOÀN TỒN KHO
-            foreach (var item in order.Items)
+            foreach (var item in order.Items ?? new List<CartItem>())
             {
                 var product = await _context.Products.FindAsync(item.ProductId);
                 if (product != null)
@@ -536,6 +536,8 @@ namespace Websitebanhang.Controllers
             await SendStatusEmailAsync(order, newStatus);
             TempData["Success"] = $"Đã cập nhật trạng thái từ {oldStatus} sang {newStatus}!";
             return RedirectToAction("Details", new { id });
+        }
+
         // ================= HELPER =================
         private async Task SendStatusEmailAsync(Order order, string statusDescription)
         {
