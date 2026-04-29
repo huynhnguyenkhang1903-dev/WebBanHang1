@@ -5,16 +5,19 @@ using Websitebanhang.Models;
 using System.Linq;
 using Websitebanhang.Helpers;
 using System;
+using System.Threading.Tasks;
 
 namespace Websitebanhang.Controllers
 {
     public class HomeController : Controller
     {
         private readonly AppDbContext _context;
+        private readonly Microsoft.AspNetCore.Identity.UserManager<ApplicationUser> _userManager;
 
-        public HomeController(AppDbContext context)
+        public HomeController(AppDbContext context, Microsoft.AspNetCore.Identity.UserManager<ApplicationUser> userManager)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
+            _userManager = userManager;
         }
 
         public IActionResult Index()
@@ -149,9 +152,43 @@ namespace Websitebanhang.Controllers
             });
         }
 
-        public IActionResult Contact()
+        public async Task<IActionResult> Contact()
         {
+            if (User.Identity?.IsAuthenticated == true)
+            {
+                var user = await _userManager.GetUserAsync(User);
+                if (user != null)
+                {
+                    ViewBag.DefaultName = user.FullName;
+                    ViewBag.DefaultEmail = user.Email;
+                    ViewBag.DefaultPhone = user.PhoneNumber;
+                }
+            }
             return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Contact(SupportRequest model)
+        {
+            if (ModelState.IsValid)
+            {
+                if (User.Identity?.IsAuthenticated == true)
+                {
+                    model.UserId = _userManager.GetUserId(User);
+                }
+
+                model.CreatedAt = DateTime.Now;
+                model.Status = "Open";
+
+                _context.SupportRequests.Add(model);
+                await _context.SaveChangesAsync();
+
+                TempData["Success"] = "Yêu cầu của bạn đã được gửi thành công! Chúng tôi sẽ phản hồi sớm nhất có thể.";
+                return RedirectToAction("Contact");
+            }
+
+            return View(model);
         }
     }
 }

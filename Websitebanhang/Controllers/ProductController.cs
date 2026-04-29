@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using Websitebanhang.Repositores;
 using X.PagedList;
@@ -118,6 +119,32 @@ namespace Websitebanhang.Controllers
                 .ToList();
 
             ViewBag.RelatedProducts = relatedProducts;
+
+            // 🔥 Ghi nhận lịch sử xem sản phẩm
+            if (User.Identity?.IsAuthenticated == true)
+            {
+                var userId = _userManager.GetUserId(User);
+                if (!string.IsNullOrEmpty(userId))
+                {
+                    var existingHistory = _context.ProductViewHistories
+                        .FirstOrDefault(h => h.UserId == userId && h.ProductId == id);
+
+                    if (existingHistory != null)
+                    {
+                        existingHistory.ViewedAt = DateTime.Now;
+                    }
+                    else
+                    {
+                        _context.ProductViewHistories.Add(new ProductViewHistory
+                        {
+                            UserId = userId,
+                            ProductId = id,
+                            ViewedAt = DateTime.Now
+                        });
+                    }
+                    _context.SaveChanges();
+                }
+            }
 
             return View(product);
         }

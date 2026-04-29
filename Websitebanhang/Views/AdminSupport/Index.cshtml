@@ -1,0 +1,145 @@
+@model IEnumerable<Websitebanhang.Models.SupportRequest>
+
+@{
+    ViewData["Title"] = "Quản lý Hỗ trợ Khách hàng";
+    Layout = "_AdminLayout";
+}
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold mb-0 text-primary">
+            <i class="fa-solid fa-headset me-2"></i> Yêu Cầu Hỗ Trợ
+        </h2>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show mb-4 border-0 shadow-sm" role="alert">
+            <i class="fa-solid fa-check-circle me-2"></i> @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4">Ngày gửi</th>
+                            <th>Khách hàng</th>
+                            <th>Chủ đề</th>
+                            <th class="text-center">Trạng thái</th>
+                            <th class="text-end pe-4">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!Model.Any())
+                        {
+                            <tr>
+                                <td colspan="5" class="text-center py-5 text-muted">
+                                    <i class="fa-solid fa-inbox fa-3x mb-3 d-block"></i>
+                                    Chưa có yêu cầu hỗ trợ nào.
+                                </td>
+                            </tr>
+                        }
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td class="ps-4 small">@item.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td>
+                                    <div class="fw-bold">@item.Name</div>
+                                    <div class="small text-muted">@item.Email</div>
+                                    @if(!string.IsNullOrEmpty(item.Phone)) {
+                                        <div class="small text-muted">@item.Phone</div>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="fw-medium">@item.Subject</div>
+                                    <div class="text-truncate small" style="max-width: 300px;">@item.Message</div>
+                                </td>
+                                <td class="text-center">
+                                    @switch (item.Status)
+                                    {
+                                        case "Open":
+                                            <span class="badge bg-danger rounded-pill px-3">Mới</span>
+                                            break;
+                                        case "Processing":
+                                            <span class="badge bg-warning text-dark rounded-pill px-3">Đang xử lý</span>
+                                            break;
+                                        case "Resolved":
+                                            <span class="badge bg-success rounded-pill px-3">Đã giải quyết</span>
+                                            break;
+                                        default:
+                                            <span class="badge bg-secondary rounded-pill px-3">@item.Status</span>
+                                            break;
+                                    }
+                                </td>
+                                <td class="text-end pe-4">
+                                    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modal-@item.Id">
+                                        <i class="fa-solid fa-eye me-1"></i> Chi tiết
+                                    </button>
+                                </td>
+                            </tr>
+
+                            <!-- Detail Modal -->
+                            <div class="modal fade" id="modal-@item.Id" tabindex="-1">
+                                <div class="modal-dialog modal-lg">
+                                    <div class="modal-content border-0 shadow">
+                                        <div class="modal-header bg-light">
+                                            <h5 class="modal-title fw-bold">Yêu cầu hỗ trợ #@item.Id</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <form asp-action="UpdateStatus" method="post">
+                                            <input type="hidden" name="id" value="@item.Id" />
+                                            <div class="modal-body p-4">
+                                                <div class="row mb-4">
+                                                    <div class="col-md-6">
+                                                        <label class="small text-muted text-uppercase fw-bold">Thông tin gửi</label>
+                                                        <p class="mb-1"><strong>Họ tên:</strong> @item.Name</p>
+                                                        <p class="mb-1"><strong>Email:</strong> @item.Email</p>
+                                                        <p class="mb-1"><strong>SĐT:</strong> @(item.Phone ?? "N/A")</p>
+                                                        <p class="mb-0"><strong>Thời gian:</strong> @item.CreatedAt.ToString("dd/MM/yyyy HH:mm:ss")</p>
+                                                    </div>
+                                                    <div class="col-md-6 text-md-end">
+                                                        <label class="small text-muted text-uppercase fw-bold">Trạng thái hiện tại</label>
+                                                        <div class="mt-1">
+                                                            <select name="status" class="form-select form-select-sm d-inline-block w-auto">
+                                                                <!option value="Open" @(item.Status == "Open" ? "selected" : "")>Mới</!option>
+                                                                <!option value="Processing" @(item.Status == "Processing" ? "selected" : "")>Đang xử lý</!option>
+                                                                <!option value="Resolved" @(item.Status == "Resolved" ? "selected" : "")>Đã giải quyết</!option>
+                                                                <!option value="Closed" @(item.Status == "Closed" ? "selected" : "")>Đóng yêu cầu</!option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="mb-4">
+                                                    <label class="small text-muted text-uppercase fw-bold">Nội dung yêu cầu</label>
+                                                    <div class="p-3 bg-light rounded-3 mt-2" style="white-space: pre-wrap;">@item.Message</div>
+                                                </div>
+                                                <div class="mb-0">
+                                                    <label class="small text-muted text-uppercase fw-bold">Ghi chú của Admin</label>
+                                                    <textarea name="adminNote" class="form-control mt-2" rows="4" placeholder="Nhập phản hồi hoặc ghi chú nội bộ...">@item.AdminNote</textarea>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer bg-light border-0">
+                                                <button type="button" class="btn btn-link text-danger text-decoration-none fw-bold" 
+                                                        onclick="if(confirm('Xóa yêu cầu này?')) { document.getElementById('delete-form-@item.Id').submit(); }">
+                                                    Xóa yêu cầu
+                                                </button>
+                                                <button type="submit" class="btn btn-primary fw-bold px-4">Lưu cập nhật</button>
+                                            </div>
+                                        </form>
+                                        <form id="delete-form-@item.Id" asp-action="Delete" method="post" style="display:none;">
+                                            <input type="hidden" name="id" value="@item.Id" />
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

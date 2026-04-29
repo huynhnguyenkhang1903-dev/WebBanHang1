@@ -29,5 +29,6 @@ namespace Websitebanhang.Models.ViewModels
         public System.Collections.Generic.List<Websitebanhang.Models.Order>? Orders { get; set; }
 
         public System.Collections.Generic.List<Websitebanhang.Models.UserAddress>? Addresses { get; set; }
+        public System.Collections.Generic.List<Websitebanhang.Models.ProductViewHistory>? ViewHistory { get; set; }
     }
 }

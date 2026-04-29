@@ -1,0 +1,92 @@
+@{
+    ViewData["Title"] = "Xác thực tài khoản";
+}
+
+<div class="container mt-5 mb-5 fade-in">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="card-header bg-coffee text-white text-center py-4 border-0">
+                    <i class="fa-solid fa-envelope-circle-check fa-3x mb-3"></i>
+                    <h3 class="fw-bold mb-0">Xác Thực Email</h3>
+                </div>
+                <div class="card-body p-4 p-md-5">
+                    <p class="text-center text-muted mb-4">
+                        Chúng tôi đã gửi mã xác thực gồm 6 chữ số đến email:<br>
+                        <strong class="text-dark">@ViewBag.Email</strong>
+                    </p>
+
+                    <form asp-action="VerifyEmail" method="post">
+                        <input type="hidden" name="email" value="@ViewBag.Email" />
+                        <div asp-validation-summary="All" class="text-danger small mb-3"></div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold small text-uppercase">Nhập mã OTP</label>
+                            <div class="d-flex gap-2 justify-content-between otp-inputs">
+                                <input type="text" name="otp" class="form-control form-control-lg text-center fw-bold" 
+                                       maxlength="6" placeholder="000000" style="letter-spacing: 10px; font-size: 1.5rem;" required>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-coffee w-100 py-3 rounded-pill fw-bold shadow-sm mb-3">
+                            XÁC THỰC NGAY
+                        </button>
+                    </form>
+
+                    <div class="text-center">
+                        <p class="small text-muted mb-2">Không nhận được mã?</p>
+                        <button id="btnResend" class="btn btn-link text-coffee text-decoration-none fw-bold p-0 small">
+                            Gửi lại mã (<span id="timer">60</span>s)
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center mt-4">
+                <a asp-action="Login" class="text-decoration-none text-muted small">
+                    <i class="fa-solid fa-arrow-left me-1"></i> Quay lại đăng nhập
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let timeLeft = 60;
+        let timerId = setInterval(countdown, 1000);
+        const btnResend = document.getElementById('btnResend');
+        const timerSpan = document.getElementById('timer');
+
+        function countdown() {
+            if (timeLeft == 0) {
+                clearTimeout(timerId);
+                btnResend.disabled = false;
+                btnResend.innerHTML = "Gửi lại mã ngay";
+            } else {
+                timerSpan.innerHTML = timeLeft;
+                timeLeft--;
+                btnResend.disabled = true;
+            }
+        }
+
+        btnResend.addEventListener('click', function() {
+            fetch('/Account/ResendOtp', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'email=' + encodeURIComponent('@ViewBag.Email')
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Đã gửi lại mã OTP mới!');
+                    timeLeft = 60;
+                    btnResend.disabled = true;
+                    timerId = setInterval(countdown, 1000);
+                }
+            });
+        });
+    </script>
+}

@@ -37,7 +37,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 // ================= IDENTITY =================
 builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
 {
-    options.SignIn.RequireConfirmedAccount = false;
+    options.SignIn.RequireConfirmedAccount = true;
 
     options.Password.RequireDigit = true;
     options.Password.RequireUppercase = true;

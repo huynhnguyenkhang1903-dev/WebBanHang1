@@ -65,8 +65,11 @@
                     <button class="nav-link text-start fw-medium rounded-3 mb-2" id="v-pills-address-tab" data-bs-toggle="pill" data-bs-target="#v-pills-address" type="button" role="tab">
                         <i class="fa-solid fa-map-location-dot me-2 w-20px text-center"></i> Sổ Địa Chỉ
                     </button>
-                    <button class="nav-link text-start fw-medium rounded-3" id="v-pills-orders-tab" data-bs-toggle="pill" data-bs-target="#v-pills-orders" type="button" role="tab">
+                    <button class="nav-link text-start fw-medium rounded-3 mb-2" id="v-pills-orders-tab" data-bs-toggle="pill" data-bs-target="#v-pills-orders" type="button" role="tab">
                         <i class="fa-solid fa-receipt me-2 w-20px text-center"></i> Lịch Sử Đơn Hàng
+                    </button>
+                    <button class="nav-link text-start fw-medium rounded-3" id="v-pills-history-tab" data-bs-toggle="pill" data-bs-target="#v-pills-history" type="button" role="tab">
+                        <i class="fa-solid fa-clock-rotate-left me-2 w-20px text-center"></i> Sản Phẩm Đã Xem
                     </button>
                 </div>
 
@@ -299,11 +302,63 @@
                         }
                     </div>
 
+                    <!-- TAB: View History -->
+                    <div class="tab-pane fade" id="v-pills-history" role="tabpanel">
+                        <h4 class="text-coffee fw-bold mb-4 border-bottom pb-2">Sản Phẩm Đã Xem Gần Đây</h4>
+                        
+                        @if (Model.ViewHistory != null && Model.ViewHistory.Any())
+                        {
+                            <div class="row g-3">
+                                @foreach (var history in Model.ViewHistory)
+                                {
+                                    <div class="col-6 col-lg-4">
+                                        <div class="card h-100 border-0 shadow-sm transition-all shadow-hover" style="border-radius: 12px; overflow: hidden;">
+                                            <div class="position-relative">
+                                                <img src="@(string.IsNullOrEmpty(history.Product?.ImageUrl) ? "/images/placeholder.jpg" : history.Product.ImageUrl)" 
+                                                     class="card-img-top object-fit-cover" 
+                                                     style="height: 150px;" 
+                                                     alt="@history.Product?.Name">
+                                                <div class="position-absolute top-0 end-0 p-2">
+                                                    <span class="badge bg-light text-dark shadow-sm x-small">
+                                                        @history.ViewedAt.ToString("dd/MM HH:mm")
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div class="card-body p-3">
+                                                <h6 class="card-title text-truncate fw-bold mb-1 small">
+                                                    <a asp-controller="Product" asp-action="Display" asp-route-id="@history.ProductId" class="text-dark text-decoration-none">
+                                                        @history.Product?.Name
+                                                    </a>
+                                                </h6>
+                                                <div class="text-gold fw-bold small">@history.Product?.Price.ToString("N0") ₫</div>
+                                                <a asp-controller="Product" asp-action="Display" asp-route-id="@history.ProductId" class="btn btn-outline-coffee btn-sm w-100 mt-2 rounded-pill">Xem lại</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="text-center py-5 text-muted">
+                                <i class="fa-solid fa-history fs-1 mb-3"></i>
+                                <p>Bạn chưa xem sản phẩm nào.</p>
+                                <a asp-controller="Product" asp-action="Index" class="btn btn-coffee btn-sm rounded-pill mt-2">Khám phá ngay</a>
+                            </div>
+                        }
+                    </div>
+
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    .shadow-hover:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important; }
+    .transition-all { transition: all 0.3s ease; }
+    .x-small { font-size: 0.7rem; }
+</style>
 
 <!-- Add Address Modal -->
 <div class="modal fade" id="addAddressModal" tabindex="-1">

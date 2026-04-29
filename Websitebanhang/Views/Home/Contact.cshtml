@@ -1,8 +1,17 @@
+@model Websitebanhang.Models.SupportRequest
 @{
     ViewData["Title"] = "Liên Hệ Aura Coffee";
 }
 
 <div class="container mt-5 mb-5 fade-in">
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show mb-4 rounded-3 shadow-sm border-0 bg-success text-white" role="alert">
+            <i class="fa-solid fa-circle-check me-2"></i> @TempData["Success"]
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
     <div class="row text-center mb-5">
         <div class="col-12">
             <h1 class="display-4 fw-bold text-coffee mb-3">Liên Hệ Với Chúng Tôi</h1>
@@ -73,31 +82,37 @@
         <div class="col-md-7">
             <div class="card border-0 shadow-sm rounded-4 h-100">
                 <div class="card-body p-5">
-                    <h3 class="mb-4 text-coffee">Gửi Tin Nhắn Cho Aura Coffee</h3>
-                    <form onsubmit="alert('Cảm ơn bạn đã liên hệ! Chúng tôi sẽ phản hồi sớm nhất.'); return false;">
+                    <h3 class="mb-4 text-coffee">Gửi Yêu Cầu Hỗ Trợ</h3>
+                    <form asp-action="Contact" method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label class="form-label fw-bold">Họ và Tên</label>
-                                <input type="text" class="form-control" placeholder="Nhập tên của bạn" required>
+                                <label asp-for="Name" class="form-label fw-bold">Họ và Tên</label>
+                                <input asp-for="Name" class="form-control" placeholder="Nhập tên của bạn" value="@ViewBag.DefaultName">
+                                <span asp-validation-for="Name" class="text-danger small"></span>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label fw-bold">Số Điện Thoại</label>
-                                <input type="tel" class="form-control" placeholder="Nhập số điện thoại" required>
+                                <label asp-for="Phone" class="form-label fw-bold">Số Điện Thoại</label>
+                                <input asp-for="Phone" class="form-control" placeholder="Nhập số điện thoại" value="@ViewBag.DefaultPhone">
+                                <span asp-validation-for="Phone" class="text-danger small"></span>
                             </div>
                             <div class="col-12">
-                                <label class="form-label fw-bold">Email</label>
-                                <input type="email" class="form-control" placeholder="Nhập địa chỉ email">
+                                <label asp-for="Email" class="form-label fw-bold">Email</label>
+                                <input asp-for="Email" class="form-control" placeholder="Nhập địa chỉ email" value="@ViewBag.DefaultEmail">
+                                <span asp-validation-for="Email" class="text-danger small"></span>
                             </div>
                             <div class="col-12">
-                                <label class="form-label fw-bold">Chủ Đề</label>
-                                <input type="text" class="form-control" placeholder="Nhập chủ đề liên hệ" required>
+                                <label asp-for="Subject" class="form-label fw-bold">Chủ Đề</label>
+                                <input asp-for="Subject" class="form-control" placeholder="Nhập chủ đề cần hỗ trợ">
+                                <span asp-validation-for="Subject" class="text-danger small"></span>
                             </div>
                             <div class="col-12">
-                                <label class="form-label fw-bold">Nội Dung</label>
-                                <textarea class="form-control" rows="5" placeholder="Nhập nội dung chi tiết..." required></textarea>
+                                <label asp-for="Message" class="form-label fw-bold">Nội Dung</label>
+                                <textarea asp-for="Message" class="form-control" rows="5" placeholder="Bạn cần chúng tôi giúp đỡ điều gì?"></textarea>
+                                <span asp-validation-for="Message" class="text-danger small"></span>
                             </div>
                             <div class="col-12 mt-4">
-                                <button type="submit" class="btn btn-primary-custom px-5 py-2 w-100">Gửi Tin Nhắn <i class="fa-solid fa-paper-plane ms-2"></i></button>
+                                <button type="submit" class="btn btn-primary-custom px-5 py-2 w-100 fw-bold">Gửi Yêu Cầu Hỗ Trợ <i class="fa-solid fa-paper-plane ms-2"></i></button>
                             </div>
                         </div>
                     </form>
