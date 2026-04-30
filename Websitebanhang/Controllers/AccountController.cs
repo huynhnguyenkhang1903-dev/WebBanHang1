@@ -247,6 +247,56 @@ namespace Websitebanhang.Controllers
             return View(model);
         }
 
+        [HttpGet]
+        [AllowAnonymous]
+        public IActionResult VerifyEmail(string email)
+        {
+            if (string.IsNullOrEmpty(email)) return RedirectToAction("Login");
+            ViewBag.Email = email;
+            return View();
+        }
+
+        [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> VerifyEmail(string email, string otp)
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null) return NotFound();
+
+            if (user.OtpCode == otp && user.OtpExpiry > DateTime.Now)
+            {
+                user.EmailConfirmed = true;
+                user.OtpCode = null; // Clear OTP
+                await _userManager.UpdateAsync(user);
+
+                TempData["SuccessMessage"] = "Xác thực thành công! Bạn có thể đăng nhập ngay.";
+                return RedirectToAction("Login");
+            }
+
+            ModelState.AddModelError("", "Mã OTP không đúng hoặc đã hết hạn.");
+            ViewBag.Email = email;
+            return View();
+        }
+
+        [HttpPost]
+        [AllowAnonymous]
+        public async Task<IActionResult> ResendOtp(string email)
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null) return Json(new { success = false });
+
+            var otp = new Random().Next(100000, 999999).ToString();
+            user.OtpCode = otp;
+            user.OtpExpiry = DateTime.Now.AddMinutes(10);
+            await _userManager.UpdateAsync(user);
+
+            await _emailService.SendEmailAsync(user.Email!, "Mã OTP mới - Aura Coffee", 
+                $"Mã xác thực mới của bạn là: <strong>{otp}</strong>");
+
+            return Json(new { success = true });
+        }
+
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]

@@ -39,8 +39,8 @@ namespace Websitebanhang.Controllers
                 { "ReturnDaysLimit", "7", "Số ngày tối đa cho phép yêu cầu trả hàng" },
                 { "SmtpHost", "smtp.gmail.com", "SMTP Host (ví dụ: smtp.gmail.com)" },
                 { "SmtpPort", "587", "SMTP Port (thường là 587 hoặc 465)" },
-                { "SmtpUser", "your-email@gmail.com", "Email gửi hệ thống" },
-                { "SmtpPass", "", "Mật khẩu ứng dụng (App Password)" }
+                { "SmtpUser", "huynhnguyenkhang1903@gmail.com", "Email gửi hệ thống" },
+                { "SmtpPass", "ssca nmkx nacx jnkr", "Mật khẩu ứng dụng (App Password)" }
             };
 
             bool changed = false;

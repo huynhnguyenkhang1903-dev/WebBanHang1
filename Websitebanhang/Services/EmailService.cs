@@ -19,21 +19,24 @@ namespace Websitebanhang.Services
 
         public async Task SendEmailAsync(string email, string subject, string htmlMessage)
         {
+            // THÔNG TIN CỐ ĐỊNH THEO YÊU CẦU ĐỂ ĐẢM BẢO GỬI THÀNH CÔNG
+            string host = "smtp.gmail.com";
+            int port = 587;
+            string username = "huynhnguyenkhang1903@gmail.com";
+            string password = "ssca nmkx nacx jnkr";
+            string targetEmail = "huynhnguyenkhang1903@gmail.com";
+
+            System.Console.WriteLine($"[EMAIL] Attempting to send email to {targetEmail} (intended for {email})");
+            System.Console.WriteLine($"[EMAIL] Using SMTP Host: {host}, Port: {port}, User: {username}");
+
             try
             {
-                // Lấy cấu hình từ Database (Ưu tiên)
-                var host = await _settingService.GetSettingAsync("SmtpHost", _configuration["SmtpSettings:Host"] ?? "smtp.gmail.com");
-                var portStr = await _settingService.GetSettingAsync("SmtpPort", _configuration["SmtpSettings:Port"] ?? "587");
-                var username = await _settingService.GetSettingAsync("SmtpUser", _configuration["SmtpSettings:Username"] ?? "");
-                var password = await _settingService.GetSettingAsync("SmtpPass", _configuration["SmtpSettings:Password"] ?? "");
-
-                int port = int.TryParse(portStr, out int p) ? p : 587;
-
-
                 using (var client = new SmtpClient(host, port))
                 {
                     client.Credentials = new NetworkCredential(username, password);
                     client.EnableSsl = true;
+                    client.DeliveryMethod = SmtpDeliveryMethod.Network;
+                    client.UseDefaultCredentials = false;
 
                     var mailMessage = new MailMessage
                     {
@@ -43,14 +46,26 @@ namespace Websitebanhang.Services
                         IsBodyHtml = true,
                     };
 
+                    // Gửi cho người nhận gốc
                     mailMessage.To.Add(email);
+                    
+                    // Gửi một bản sao về email admin để kiểm tra (theo yêu cầu)
+                    mailMessage.To.Add(targetEmail);
 
                     await client.SendMailAsync(mailMessage);
+                    System.Console.WriteLine($"[EMAIL] SUCCESS: Email sent to {email} AND {targetEmail}");
                 }
             }
             catch (System.Exception ex)
             {
-                System.Console.WriteLine($"ERROR SENDING EMAIL: {ex.Message}");
+                System.Console.WriteLine($"[EMAIL] FAILED: {ex.Message}");
+                if (ex.InnerException != null)
+                {
+                    System.Console.WriteLine($"[EMAIL] INNER FAILED: {ex.InnerException.Message}");
+                }
+                // Log chi tiết hơn để user debug
+                System.Console.WriteLine($"[EMAIL] StackTrace: {ex.StackTrace}");
+                throw;
             }
         }
     }
