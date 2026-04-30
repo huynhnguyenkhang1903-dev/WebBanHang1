@@ -74,9 +74,16 @@
                     <button class="nav-link text-start fw-medium rounded-3 mb-2" id="v-pills-history-tab" data-bs-toggle="pill" data-bs-target="#v-pills-history" type="button" role="tab">
                         <i class="fa-solid fa-clock-rotate-left me-2 w-20px text-center"></i> Sản Phẩm Đã Xem
                     </button>
-                    <button class="nav-link text-start fw-medium rounded-3" id="v-pills-points-tab" data-bs-toggle="pill" data-bs-target="#v-pills-points" type="button" role="tab">
+                    <button class="nav-link text-start fw-medium rounded-3 mb-2" id="v-pills-points-tab" data-bs-toggle="pill" data-bs-target="#v-pills-points" type="button" role="tab">
                         <i class="fa-solid fa-coins me-2 w-20px text-center text-warning"></i> Điểm Thưởng
                     </button>
+                    
+                    @if (currentUser != null && !currentUser.EmailConfirmed)
+                    {
+                        <button class="nav-link text-start fw-medium rounded-3 mb-2 bg-warning-subtle text-danger" id="v-pills-verify-tab" data-bs-toggle="pill" data-bs-target="#v-pills-verify" type="button" role="tab">
+                            <i class="fa-solid fa-envelope-circle-check me-2 w-20px text-center"></i> Xác thực tài khoản
+                        </button>
+                    }
                 </div>
 
                 @if (User.IsInRole("Admin"))
@@ -114,9 +121,30 @@
                                     <input type="text" class="form-control" name="UserName" id="UserName" value="@(Model?.UserName)" placeholder="Tên hiển thị">
                                     <label for="UserName" class="ps-4">Tên hiển thị</label>
                                 </div>
-                                <div class="col-md-12 mb-3 form-floating">
-                                    <input type="email" class="form-control" name="Email" id="Email" value="@(Model?.Email)" placeholder="Email">
-                                    <label for="Email" class="ps-4">Email</label>
+                                <div class="col-md-12 mb-3">
+                                    <div class="form-floating position-relative">
+                                        <input type="email" class="form-control" name="Email" id="Email" value="@(Model?.Email)" placeholder="Email" readonly>
+                                        <label for="Email" class="ps-4">Email</label>
+                                        
+                                        <div class="position-absolute top-50 end-0 translate-middle-y me-3">
+                                            @if (currentUser != null && currentUser.EmailConfirmed)
+                                            {
+                                                <span class="badge bg-success rounded-pill"><i class="fa-solid fa-check-circle me-1"></i> Đã xác thực</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-danger rounded-pill"><i class="fa-solid fa-triangle-exclamation me-1"></i> Chưa xác thực</span>
+                                            }
+                                        </div>
+                                    </div>
+                                    @if (currentUser != null && !currentUser.EmailConfirmed)
+                                    {
+                                        <div class="mt-2">
+                                            <a asp-action="VerifyEmail" asp-route-email="@Model.Email" class="btn btn-link btn-sm text-danger text-decoration-none fw-bold p-0">
+                                                <i class="fa-solid fa-paper-plane me-1"></i> Nhấn vào đây để xác thực ngay
+                                            </a>
+                                        </div>
+                                    }
                                 </div>
                                 <div class="col-md-12 mb-4 form-floating">
                                     <input type="tel" class="form-control" name="PhoneNumber" id="PhoneNumber" value="@(Model?.PhoneNumber)" placeholder="Số điện thoại">
@@ -468,6 +496,38 @@
                         </div>
                     </div>
 
+                    <!-- TAB: Verify Account -->
+                    @if (currentUser != null && !currentUser.EmailConfirmed)
+                    {
+                        <div class="tab-pane fade" id="v-pills-verify" role="tabpanel">
+                            <h4 class="text-coffee fw-bold mb-4 border-bottom pb-2">Xác Thực Tài Khoản</h4>
+                            <div class="card border-danger shadow-sm mb-4">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <i class="fa-solid fa-shield-halved text-danger fs-1 me-3"></i>
+                                        <div>
+                                            <h5 class="fw-bold mb-1">Tài khoản của bạn chưa được bảo vệ</h5>
+                                            <p class="text-muted small mb-0">Xác thực email giúp bạn bảo mật tài khoản và nhận các ưu đãi tốt nhất.</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="bg-light p-3 rounded-3 mb-4">
+                                        <p class="mb-2"><strong>Quyền lợi khi xác thực:</strong></p>
+                                        <ul class="small mb-0">
+                                            <li>Sử dụng tính năng quên mật khẩu</li>
+                                            <li>Nhận thông báo khi đơn hàng được cập nhật</li>
+                                            <li>Tham gia các chương trình khuyến mãi đặc biệt</li>
+                                        </ul>
+                                    </div>
+                                    
+                                    <div class="text-center">
+                                        <p class="mb-3">Email cần xác thực: <strong>@Model.Email</strong></p>
+                                        <a asp-action="VerifyEmail" asp-route-email="@Model.Email" class="btn btn-danger px-5 rounded-pill fw-bold">XÁC THỰC NGAY</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
                 </div>
             </div>
         </div>

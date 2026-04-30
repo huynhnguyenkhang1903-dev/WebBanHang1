@@ -224,7 +224,7 @@ namespace Websitebanhang.Controllers
                     // 🔥 GỬI OTP XÁC THỰC
                     var otp = new Random().Next(100000, 999999).ToString();
                     user.OtpCode = otp;
-                    user.OtpExpiry = DateTime.Now.AddMinutes(10);
+                    user.OtpExpiry = DateTime.Now.AddMinutes(5);
                     await _userManager.UpdateAsync(user);
 
                     await _emailService.SendEmailAsync(user.Email!, "Xác thực tài khoản - Aura Coffee", 
@@ -233,7 +233,7 @@ namespace Websitebanhang.Controllers
                         $"<p>Chào <strong>{user.FullName}</strong>,</p>" +
                         $"<p>Mã xác thực (OTP) của bạn là:</p>" +
                         $"<div style='font-size: 24px; font-weight: bold; color: #6f4e37; letter-spacing: 5px; margin: 20px 0;'>{otp}</div>" +
-                        $"<p>Mã có hiệu lực trong 10 phút. Vui lòng không chia sẻ mã này với bất kỳ ai.</p>" +
+                        $"<p>Mã có hiệu lực trong 5 phút. Vui lòng không chia sẻ mã này với bất kỳ ai.</p>" +
                         $"</div>");
 
                     TempData["SuccessMessage"] = "Đăng ký thành công! Vui lòng kiểm tra email để nhận mã xác thực.";
@@ -288,11 +288,11 @@ namespace Websitebanhang.Controllers
 
             var otp = new Random().Next(100000, 999999).ToString();
             user.OtpCode = otp;
-            user.OtpExpiry = DateTime.Now.AddMinutes(10);
+            user.OtpExpiry = DateTime.Now.AddMinutes(5);
             await _userManager.UpdateAsync(user);
 
             await _emailService.SendEmailAsync(user.Email!, "Mã OTP mới - Aura Coffee", 
-                $"Mã xác thực mới của bạn là: <strong>{otp}</strong>");
+                $"Mã xác thực mới của bạn là: <strong>{otp}</strong> (Hiệu lực trong 5 phút)");
 
             return Json(new { success = true });
         }
