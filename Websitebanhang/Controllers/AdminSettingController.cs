@@ -36,7 +36,11 @@ namespace Websitebanhang.Controllers
                 { "Email", "support@auracoffee.com", "Email liên hệ" },
                 { "Address", "123 Đường Cà Phê, TP. Hồ Chí Minh", "Địa chỉ trụ sở" },
                 { "Facebook", "https://facebook.com/auracoffee", "Link Fanpage Facebook" },
-                { "ReturnDaysLimit", "7", "Số ngày tối đa cho phép yêu cầu trả hàng" }
+                { "ReturnDaysLimit", "7", "Số ngày tối đa cho phép yêu cầu trả hàng" },
+                { "SmtpHost", "smtp.gmail.com", "SMTP Host (ví dụ: smtp.gmail.com)" },
+                { "SmtpPort", "587", "SMTP Port (thường là 587 hoặc 465)" },
+                { "SmtpUser", "your-email@gmail.com", "Email gửi hệ thống" },
+                { "SmtpPass", "", "Mật khẩu ứng dụng (App Password)" }
             };
 
             bool changed = false;

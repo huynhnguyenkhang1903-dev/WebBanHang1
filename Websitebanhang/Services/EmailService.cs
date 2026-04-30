@@ -9,30 +9,26 @@ namespace Websitebanhang.Services
     public class EmailService : IEmailService
     {
         private readonly IConfiguration _configuration;
+        private readonly IWebsiteSettingService _settingService;
 
-        public EmailService(IConfiguration configuration)
+        public EmailService(IConfiguration configuration, IWebsiteSettingService settingService)
         {
             _configuration = configuration;
+            _settingService = settingService;
         }
 
-        public async Task SendEmailAsync(string toEmail, string subject, string documentBody)
+        public async Task SendEmailAsync(string email, string subject, string htmlMessage)
         {
             try
             {
-                var smtpsettings = _configuration.GetSection("SmtpSettings");
-                var host = smtpsettings["Host"];
-                var port = int.Parse(smtpsettings["Port"] ?? "587");
-                var username = smtpsettings["Username"];
-                var password = smtpsettings["Password"];
+                // Lấy cấu hình từ Database (Ưu tiên)
+                var host = await _settingService.GetSettingAsync("SmtpHost", _configuration["SmtpSettings:Host"] ?? "smtp.gmail.com");
+                var portStr = await _settingService.GetSettingAsync("SmtpPort", _configuration["SmtpSettings:Port"] ?? "587");
+                var username = await _settingService.GetSettingAsync("SmtpUser", _configuration["SmtpSettings:Username"] ?? "");
+                var password = await _settingService.GetSettingAsync("SmtpPass", _configuration["SmtpSettings:Password"] ?? "");
 
-                // Nếu chưa cấu hình email hoặc dùng giá trị mặc định, ghi ra file để test
-                if (string.IsNullOrWhiteSpace(username) || username == "your_email@gmail.com")
-                {
-                    var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "TestEmail.html");
-                    await File.WriteAllTextAsync(filePath, documentBody);
-                    System.Console.WriteLine("--- EMAIL MOCK MODE: Check wwwroot/TestEmail.html ---");
-                    return;
-                }
+                int port = int.TryParse(portStr, out int p) ? p : 587;
+
 
                 using (var client = new SmtpClient(host, port))
                 {
@@ -43,11 +39,11 @@ namespace Websitebanhang.Services
                     {
                         From = new MailAddress(username, "Aura Coffee"),
                         Subject = subject,
-                        Body = documentBody,
+                        Body = htmlMessage,
                         IsBodyHtml = true,
                     };
 
-                    mailMessage.To.Add(toEmail);
+                    mailMessage.To.Add(email);
 
                     await client.SendMailAsync(mailMessage);
                 }

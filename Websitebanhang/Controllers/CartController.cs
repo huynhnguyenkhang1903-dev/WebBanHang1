@@ -23,19 +23,22 @@ namespace Websitebanhang.Controllers
         private readonly Websitebanhang.Data.AppDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IHubContext<NotificationHub> _hubContext;
+        private readonly IWebsiteSettingService _settingService;
 
         public CartController(
             IProductRepository productRepository,
             IEmailService emailService,
             Websitebanhang.Data.AppDbContext context,
             UserManager<ApplicationUser> userManager,
-            IHubContext<NotificationHub> hubContext)
+            IHubContext<NotificationHub> hubContext,
+            IWebsiteSettingService settingService)
         {
             _productRepository = productRepository;
             _emailService = emailService;
             _context = context;
             _userManager = userManager;
             _hubContext = hubContext;
+            _settingService = settingService;
         }
 
         // ================= GIỎ HÀNG =================
@@ -330,31 +333,55 @@ namespace Websitebanhang.Controllers
 
             HttpContext.Session.Remove("Cart");
 
-            // --- SEND CONFIRMATION EMAIL ---
+            // --- SEND CONFIRMATION EMAIL (PREMIUM TEMPLATE) ---
             try
             {
+                var siteTitle = await _settingService.GetSettingAsync("SiteTitle", "Aura Coffee");
+                string paymentText = (order.PaymentMethod == "bank" ? "Chuyển khoản ngân hàng" : "Thanh toán khi nhận hàng (COD)");
+                
                 string emailBody = $@"
-                    <h2>Xác nhận đơn hàng #{order.Id}</h2>
-                    <p>Chào {order.CustomerName},</p>
-                    <p>Cảm ơn bạn đã đặt hàng tại Coffee Shop. Đơn hàng của bạn đang được xử lý.</p>
-                    <h3>Chi tiết đơn hàng:</h3>
-                    <ul>
-                        <li><strong>Tổng tiền:</strong> {order.TotalAmount:N0} ₫</li>
-                        <li><strong>Phương thức thanh toán:</strong> {(order.PaymentMethod == "bank" ? "Chuyển khoản ngân hàng" : "Thanh toán khi nhận hàng (COD)")}</li>
-                        <li><strong>Địa chỉ giao hàng:</strong> {order.Address}</li>
-                    </ul>
-                    <p>Chúng tôi sẽ liên hệ với bạn trong thời gian sớm nhất.</p>
-                    <br/>
-                    <p>Trân trọng,</p>
-                    <p><strong>Đội ngũ Coffee Shop</strong></p>
+                    <div style='font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #eee; padding: 20px; border-radius: 10px;'>
+                        <div style='text-align: center; margin-bottom: 20px;'>
+                            <h1 style='color: #6f4e37; margin: 0;'>{siteTitle}</h1>
+                            <p style='color: #888; margin: 0;'>Cảm ơn bạn đã tin tưởng chúng tôi</p>
+                        </div>
+                        <div style='background-color: #fdfaf7; padding: 20px; border-radius: 8px; margin-bottom: 25px;'>
+                            <h2 style='color: #6f4e37; text-align: center; margin-top: 0;'>Đặt hàng thành công!</h2>
+                            <p>Chào <strong>{order.CustomerName}</strong>,</p>
+                            <p>Đơn hàng <strong>#{order.Id}</strong> của bạn đã được tiếp nhận và đang chờ xử lý.</p>
+                        </div>
+                        <h3 style='color: #333; border-bottom: 2px solid #6f4e37; padding-bottom: 5px;'>Chi tiết đơn hàng:</h3>
+                        <table style='width: 100%; border-collapse: collapse;'>
+                            <tr>
+                                <td style='padding: 8px 0; color: #666;'>Tổng tiền:</td>
+                                <td style='padding: 8px 0; text-align: right; font-weight: bold; color: #d33;'>{order.TotalAmount:N0} ₫</td>
+                            </tr>
+                            <tr>
+                                <td style='padding: 8px 0; color: #666;'>Thanh toán:</td>
+                                <td style='padding: 8px 0; text-align: right;'>{paymentText}</td>
+                            </tr>
+                            <tr>
+                                <td style='padding: 8px 0; color: #666;'>Địa chỉ:</td>
+                                <td style='padding: 8px 0; text-align: right;'>{order.Address}</td>
+                            </tr>
+                        </table>
+                        <div style='text-align: center; margin: 30px 0;'>
+                            <a href='https://localhost:7196/Account/OrderDetails/{order.Id}' style='background: #6f4e37; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;'>Xem chi tiết đơn hàng</a>
+                        </div>
+                        <hr style='border: none; border-top: 1px solid #eee; margin: 30px 0;' />
+                        <div style='text-align: center; font-size: 12px; color: #888;'>
+                            <p>Đây là email tự động, vui lòng không phản hồi email này.</p>
+                            <p>© {DateTime.Now.Year} {siteTitle}. All rights reserved.</p>
+                        </div>
+                    </div>
                 ";
-                await _emailService.SendEmailAsync(order.Email, $"Coffee Shop - Xác nhận đơn hàng #{order.Id}", emailBody);
+                await _emailService.SendEmailAsync(order.Email, $"[{siteTitle}] Xác nhận đơn hàng #{order.Id}", emailBody);
             }
             catch
             {
                 // Ignore email sending error so order process doesn't fail
             }
-            // -------------------------------
+            // ---------------------------------------------------
 
             // 🔥 BANK
             if (paymentMethod == "bank")

@@ -174,7 +174,7 @@ namespace Websitebanhang.Controllers
                     PhoneNumber = model.PhoneNumber,
                     Address = model.Address,
                     DateOfBirth = model.DateOfBirth,
-                    EmailConfirmed = true, // Tự động xác thực
+                    EmailConfirmed = false, // Yêu cầu xác thực qua OTP
                     ReferralCode = Guid.NewGuid().ToString("N").Substring(0, 8).ToUpper()
                 };
 
@@ -220,8 +220,24 @@ namespace Websitebanhang.Controllers
                         await _context.SaveChangesAsync();
                     }
                     await _userManager.AddToRoleAsync(user, "User");
-                    TempData["SuccessMessage"] = "Đăng ký thành công! Bạn có thể đăng nhập ngay.";
-                    return RedirectToAction("Login");
+                    
+                    // 🔥 GỬI OTP XÁC THỰC
+                    var otp = new Random().Next(100000, 999999).ToString();
+                    user.OtpCode = otp;
+                    user.OtpExpiry = DateTime.Now.AddMinutes(10);
+                    await _userManager.UpdateAsync(user);
+
+                    await _emailService.SendEmailAsync(user.Email!, "Xác thực tài khoản - Aura Coffee", 
+                        $"<div style='font-family: Arial; padding: 20px; border: 1px solid #eee; border-radius: 10px;'>" +
+                        $"<h2 style='color: #6f4e37;'>Xác thực tài khoản</h2>" +
+                        $"<p>Chào <strong>{user.FullName}</strong>,</p>" +
+                        $"<p>Mã xác thực (OTP) của bạn là:</p>" +
+                        $"<div style='font-size: 24px; font-weight: bold; color: #6f4e37; letter-spacing: 5px; margin: 20px 0;'>{otp}</div>" +
+                        $"<p>Mã có hiệu lực trong 10 phút. Vui lòng không chia sẻ mã này với bất kỳ ai.</p>" +
+                        $"</div>");
+
+                    TempData["SuccessMessage"] = "Đăng ký thành công! Vui lòng kiểm tra email để nhận mã xác thực.";
+                    return RedirectToAction("VerifyEmail", new { email = user.Email });
                 }
 
                 foreach (var error in result.Errors)
