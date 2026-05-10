@@ -5,6 +5,7 @@ using Websitebanhang.Models;
 using Websitebanhang.Models.ViewModels;
 using Websitebanhang.Services;
 using System.Threading.Tasks;
+using System.Web;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using System.IO;
@@ -951,10 +952,98 @@ namespace Websitebanhang.Controllers
                 }
 
                 var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-                var callbackUrl = Url.Action(nameof(ResetPassword), "Account", new { token, email = model.Email }, protocol: Request.Scheme);
+                var encodedToken = HttpUtility.UrlEncode(token);
 
-                await _emailService.SendEmailAsync(model.Email, "Đặt lại mật khẩu - Aura Coffee",
-                    $"Vui lòng đặt lại mật khẩu của bạn bằng cách <a href='{callbackUrl}'>nhấn vào đây</a>.");
+                var resetLink = $"{Request.Scheme}://{Request.Host}/Account/ResetPassword?email={HttpUtility.UrlEncode(user.Email)}&token={encodedToken}";
+
+                string emailBody = $@"
+<!DOCTYPE html>
+<html>
+<head><meta charset='utf-8'></head>
+<body style='font-family: Arial, sans-serif; background:#FFF8F0; padding:20px;'> 
+<div style='max-width:500px; margin:auto; background:white; 
+border-radius:12px; overflow:hidden; 
+box-shadow:0 2px 8px rgba(0,0,0,0.1);'> 
+
+<div style='background:#6F4E37; padding:30px; text-align:center;'> 
+<h1 style='color:white; margin:0; font-size:24px;'>☕ Aura Coffee</h1> 
+</div> 
+
+<div style='padding:30px;'>
+
+<h2 style='color:#6F4E37;'>Reset Password</h2>
+
+<p style='color:#555; line-height:1.6;'>
+
+Hello <strong>{user.FullName}</strong>,
+
+</p>
+
+<p style='color:#555; line-height:1.6;'>
+
+We received a password reset request for the account
+
+<strong>{user.Email}</strong>.
+
+</p>
+
+<p style='color:#555;'>
+
+Click the button below to reset your password:
+
+</p>
+
+<div style='text-align:center; margin:30px 0;'>
+
+<a href='{resetLink}'
+style='background:#6F4E37; color:white; padding:14px 32px; 
+
+border-radius:8px; text-decoration:none; font-size:16px; 
+font-weight:bold; display:inline-block;'> 
+🔑 Reset password 
+</a> 
+</div> 
+
+<p style='color:#555; font-size:14px;'> 
+Or copy this link into your browser: 
+</p> 
+<p style='background:#f5f5f5; padding:10px; border-radius:6px; 
+word-break:break-all; font-size:13px; color:#333;'> 
+{resetLink} 
+</p> 
+
+<hr style='border:none; border-top:1px solid #eee; margin:20px 0;'> 
+
+<p style='color:#999; font-size:13px;'> 
+⚠️ This link will expire after <strong>24 time</strong>.<br>
+
+If you do not request a password reset, please ignore this email.
+
+</p>
+
+</div>
+
+<div style='background:#f9f9f9; padding:15px; text-align:center;'>
+
+<p style='color:#999; font-size:12px; margin:0;'>
+
+© 2026 Aura Coffee. All rights reserved.
+
+</p>
+
+</div>
+</div>
+
+</div>
+</body>
+</html>
+";
+
+                await _emailService.SendEmailAsync(
+                    user.Email,
+                    "Reset password - Aura Coffee",
+                    emailBody
+                );
 
                 return RedirectToAction(nameof(ForgotPasswordConfirmation));
             }
@@ -971,13 +1060,19 @@ namespace Websitebanhang.Controllers
 
         [HttpGet]
         [AllowAnonymous]
-        public IActionResult ResetPassword(string? token = null, string? email = null)
+        public IActionResult ResetPassword(string email, string token)
         {
-            if (token == null || email == null)
+            if (string.IsNullOrEmpty(token) || string.IsNullOrEmpty(email))
             {
                 return RedirectToAction("Login");
             }
-            return View(new ResetPasswordViewModel { Token = token, Email = email });
+            
+            var model = new ResetPasswordViewModel 
+            { 
+                Email = email, 
+                Token = token 
+            };
+            return View(model);
         }
 
         [HttpPost]
@@ -993,11 +1088,14 @@ namespace Websitebanhang.Controllers
             var user = await _userManager.FindByEmailAsync(model.Email);
             if (user == null)
             {
-                // Don't reveal that the user does not exist
-                return RedirectToAction(nameof(ResetPasswordConfirmation));
+                return RedirectToAction("Login");
             }
 
-            var result = await _userManager.ResetPasswordAsync(user, model.Token, model.Password);
+            // Log to check 
+            Console.WriteLine($"Received Token: {model.Token}"); 
+            Console.WriteLine($"Email: {model.Email}");
+
+            var result = await _userManager.ResetPasswordAsync(user, model.Token, model.NewPassword);
             if (result.Succeeded)
             {
                 return RedirectToAction(nameof(ResetPasswordConfirmation));
@@ -1007,7 +1105,7 @@ namespace Websitebanhang.Controllers
             {
                 ModelState.AddModelError(string.Empty, error.Description);
             }
-            return View();
+            return View(model);
         }
 
         [HttpGet]

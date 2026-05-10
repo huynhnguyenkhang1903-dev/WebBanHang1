@@ -20,7 +20,7 @@
                             <th>Email</th>
                             <th>Số điện thoại</th>
                             <th>Ngày đặt</th>
-                            <th>Phương thức</th>
+                            <th>Thanh toán</th>
                             <th>Tổng tiền</th>
                             <th>Trạng thái</th>
                             <th>Hành động</th>
@@ -35,35 +35,65 @@
                                 <td>@item.Email</td>
                                 <td>@item.Phone</td>
                                 <td>@item.OrderDate.ToString("dd/MM/yyyy HH:mm")</td>
-                                <td><span class="badge bg-secondary">@item.PaymentMethod</span></td>
+                                <td>
+                                    @if (item.PaymentMethod == "bank")
+                                    {
+                                        if (!item.IsPaid)
+                                        {
+                                            <span class="badge bg-danger">Unconfirmed</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-success">Confirmed</span>
+                                        }
+                                    }
+                                    else if (item.PaymentMethod == "cod")
+                                    {
+                                        <span class="badge bg-secondary">COD</span>
+                                    }
+                                    else if (item.PaymentMethod == "vnpay")
+                                    {
+                                        if (item.IsPaid)
+                                        {
+                                            <span class="badge bg-success">VNPay ✓</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">VNPay</span>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">@item.PaymentMethod</span>
+                                    }
+                                </td>
                                 <td class="text-danger fw-bold">@item.TotalAmount.ToString("N0") ₫</td>
                                 <td>
-                                    @switch(item.Status)
+                                    @if (User.IsInRole("Admin"))
                                     {
-                                        case "Pending":
-                                            <span class="badge bg-warning text-dark">Chờ xử lý</span>
-                                            break;
-                                        case "Confirmed":
-                                            <span class="badge bg-info">Đã duyệt</span>
-                                            break;
-                                        case "Shipping":
-                                            <span class="badge bg-primary">Đang giao</span>
-                                            break;
-                                        case "Delivered":
-                                            <span class="badge bg-success">Đã giao</span>
-                                            break;
-                                        case "Returned":
-                                            <span class="badge bg-secondary">Đã trả hàng</span>
-                                            break;
-                                        case "Refunded":
-                                            <span class="badge bg-success">Đã hoàn tiền</span>
-                                            break;
-                                        case "Cancelled":
-                                            <span class="badge bg-danger">Đã hủy</span>
-                                            break;
-                                        default:
-                                            <span class="badge bg-secondary">@item.Status</span>
-                                            break;
+                                        <form method="post" action="/Order/CapNhatTrangThai" class="m-0 p-0">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="id" value="@item.Id" />
+                                            <select name="trangThai" onchange="this.form.submit()"
+                                                    style="border-radius:8px; padding:4px 8px; font-size:13px;
+                                                           background-color: @(item.Status == "Waiting for confirmation" ? "#FEF3C7" :
+                                                                              item.Status == "Approved" ? "#DBEAFE" :
+                                                                              item.Status == "Packed" ? "#FED7AA" :
+                                                                              item.Status == "Delivering" ? "#E9D5FF" :
+                                                                              item.Status == "Completed" ? "#D1FAE5" :
+                                                                              item.Status == "Cancelled" ? "#FEE2E2" : "#f8f9fa");">
+                                                <option value="Waiting for confirmation" selected="@(item.Status == "Waiting for confirmation" ? "selected" : null)">⏳ Waiting for confirmation</option>
+                                                <option value="Approved" selected="@(item.Status == "Approved" ? "selected" : null)">✅ Approved</option>
+                                                <option value="Packed" selected="@(item.Status == "Packed" ? "selected" : null)">📦 Packed</option>
+                                                <option value="Delivering" selected="@(item.Status == "Delivering" ? "selected" : null)">🚚 Delivering</option>
+                                                <option value="Completed" selected="@(item.Status == "Completed" ? "selected" : null)">🎉 Completed</option>
+                                                <option value="Cancelled" selected="@(item.Status == "Cancelled" ? "selected" : null)">❌ Cancelled</option>
+                                            </select>
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">@item.Status</span>
                                     }
                                 </td>
                                 <td>
@@ -132,3 +162,27 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    @if (TempData["Success"] != null)
+    {
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                if (typeof Toastify !== 'undefined') {
+                    Toastify({
+                        text: "@Html.Raw(TempData["Success"]?.ToString())",
+                        duration: 3000,
+                        gravity: "top", // `top` or `bottom`
+                        position: "right", // `left`, `center` or `right`
+                        stopOnFocus: true, // Prevents dismissing of toast on hover
+                        style: {
+                            background: "linear-gradient(to right, #00b09b, #96c93d)",
+                            borderRadius: "8px",
+                            fontFamily: "'Inter', sans-serif"
+                        }
+                    }).showToast();
+                }
+            });
+        </script>
+    }
+}
