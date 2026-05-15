@@ -78,6 +78,18 @@ namespace Websitebanhang.Data
 
             context.Products.AddRange(products);
             context.SaveChanges();
+
+            // Update old orders
+            var paidOrders = context.Orders.Where(o => o.Status == "Paid").ToList();
+            if (paidOrders.Any())
+            {
+                foreach (var order in paidOrders)
+                {
+                    order.Status = "Completed";
+                    order.IsPaid = true;
+                }
+                context.SaveChanges();
+            }
         }
     }
 }
