@@ -23,7 +23,7 @@ namespace Websitebanhang.Services
             string host = "smtp.gmail.com";
             int port = 587;
             string username = "huynhnguyenkhang1903@gmail.com";
-            string password = "ssca nmkx nacx jnkr";
+            string password = "sscanmkxnacxjnkr";
             string targetEmail = "huynhnguyenkhang1903@gmail.com";
 
             System.Console.WriteLine($"[EMAIL] Attempting to send email to {targetEmail} (intended for {email})");
@@ -33,10 +33,10 @@ namespace Websitebanhang.Services
             {
                 using (var client = new SmtpClient(host, port))
                 {
+                    client.UseDefaultCredentials = false;
                     client.Credentials = new NetworkCredential(username, password);
                     client.EnableSsl = true;
                     client.DeliveryMethod = SmtpDeliveryMethod.Network;
-                    client.UseDefaultCredentials = false;
 
                     var mailMessage = new MailMessage
                     {
