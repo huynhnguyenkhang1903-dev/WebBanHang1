@@ -1,23 +1,31 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Websitebanhang.Data;
 using Websitebanhang.Models;
 using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using Websitebanhang.Services;
 
 namespace Websitebanhang.Controllers
 {
+    [Authorize(Roles = "Admin")]
     public class PromotionController : Controller
     {
         private readonly AppDbContext _context;
+        private readonly IActivityLogService _activityLogService;
 
-        public PromotionController(AppDbContext context)
+        public PromotionController(AppDbContext context, IActivityLogService activityLogService)
         {
             _context = context;
+            _activityLogService = activityLogService;
         }
 
         // READ
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            return View(_context.Promotions.ToList());
+            var promotions = await _context.Promotions.OrderByDescending(p => p.StartDate).ToListAsync();
+            return View(promotions);
         }
 
         // CREATE
@@ -27,55 +35,58 @@ namespace Websitebanhang.Controllers
         }
 
         [HttpPost]
-        public IActionResult Create(Promotion model)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(Promotion model)
         {
             if (ModelState.IsValid)
             {
                 _context.Promotions.Add(model);
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
+                await _activityLogService.LogAsync("Thêm Khuyến mãi", "Promotion", model.Id.ToString(), $"Admin đã thêm chương trình khuyến mãi: {model.Name}");
+                TempData["Success"] = "Đã thêm chương trình khuyến mãi mới.";
                 return RedirectToAction("Index");
             }
             return View(model);
         }
 
         // UPDATE
-        public IActionResult Edit(int id)
+        public async Task<IActionResult> Edit(int id)
         {
-            var promo = _context.Promotions.Find(id);
+            var promo = await _context.Promotions.FindAsync(id);
             if (promo == null) return NotFound();
             return View(promo);
         }
 
         [HttpPost]
-        public IActionResult Edit(Promotion model)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(Promotion model)
         {
             if (ModelState.IsValid)
             {
                 _context.Promotions.Update(model);
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
+                await _activityLogService.LogAsync("Cập nhật Khuyến mãi", "Promotion", model.Id.ToString(), $"Admin đã cập nhật chương trình khuyến mãi: {model.Name}");
+                TempData["Success"] = "Đã cập nhật chương trình khuyến mãi.";
                 return RedirectToAction("Index");
             }
             return View(model);
         }
 
-        // DELETE
-        public IActionResult Delete(int id)
+        // DELETE (Using Post for direct deletion from Index or a separate Delete view)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(int id)
         {
-            var promo = _context.Promotions.Find(id);
-            if (promo == null) return NotFound();
-            return View(promo);
-        }
-
-        [HttpPost, ActionName("Delete")]
-        public IActionResult DeleteConfirmed(int id)
-        {
-            var promo = _context.Promotions.Find(id);
+            var promo = await _context.Promotions.FindAsync(id);
             if (promo != null)
             {
+                string name = promo.Name;
                 _context.Promotions.Remove(promo);
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
+                await _activityLogService.LogAsync("Xóa Khuyến mãi", "Promotion", id.ToString(), $"Admin đã xóa chương trình khuyến mãi: {name}");
+                TempData["Success"] = "Đã xóa chương trình khuyến mãi.";
             }
             return RedirectToAction("Index");
         }
     }
-}
+}

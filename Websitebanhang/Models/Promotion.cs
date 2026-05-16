@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace Websitebanhang.Models
@@ -10,6 +10,10 @@ namespace Websitebanhang.Models
         [Required]
         [StringLength(100)]
         public string Name { get; set; } = "";
+
+        [Required]
+        [StringLength(50)]
+        public string Code { get; set; } = "";
 
         [Required]
         [Range(0, 100)]

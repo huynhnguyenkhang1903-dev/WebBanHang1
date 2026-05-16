@@ -1,16 +1,80 @@
-﻿@model Websitebanhang.Models.Promotion
+@model Websitebanhang.Models.Promotion
 
-<h2>Thêm khuyến mãi</h2>
+@{
+    ViewData["Title"] = "Chỉnh sửa Khuyến mãi";
+    Layout = "_AdminLayout";
+}
 
-<form asp-action="Edit" method="post">
-    <input asp-for="Name" class="form-control" placeholder="Tên" /><br />
-    <input asp-for="DiscountPercent" class="form-control" placeholder="%" /><br />
-    <input asp-for="StartDate" type="date" class="form-control" /><br />
-    <input asp-for="EndDate" type="date" class="form-control" /><br />
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-primary text-white py-3">
+                    <h5 class="card-title mb-0 fw-bold"><i class="fa-solid fa-edit me-2"></i> Chỉnh sửa Khuyến mãi</h5>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="Edit" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" asp-for="Id" />
+                        
+                        <div class="mb-3">
+                            <label asp-for="Name" class="form-label fw-bold">Tên chương trình</label>
+                            <input asp-for="Name" class="form-control" required />
+                            <span asp-validation-for="Name" class="text-danger small"></span>
+                        </div>
 
-    <label>
-        <input asp-for="IsActive" /> Hoạt động
-    </label><br />
+                        <div class="mb-3">
+                            <label asp-for="Code" class="form-label fw-bold">Mã khuyến mãi</label>
+                            <input asp-for="Code" class="form-control" required />
+                            <span asp-validation-for="Code" class="text-danger small"></span>
+                        </div>
 
-    <button class="btn btn-primary">Lưu</button>
-</form>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="DiscountPercent" class="form-label fw-bold">Giảm giá (%)</label>
+                                <div class="input-group">
+                                    <input asp-for="DiscountPercent" type="number" class="form-control" min="0" max="100" required />
+                                    <span class="input-group-text">%</span>
+                                </div>
+                                <span asp-validation-for="DiscountPercent" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold d-block">Trạng thái</label>
+                                <div class="form-check form-switch mt-2">
+                                    <input class="form-check-input" type="checkbox" asp-for="IsActive">
+                                    <label class="form-check-label" asp-for="IsActive">Đang kích hoạt</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label asp-for="StartDate" class="form-label fw-bold">Ngày bắt đầu</label>
+                                <input asp-for="StartDate" type="date" class="form-control" value="@Model.StartDate.ToString("yyyy-MM-dd")" required />
+                                <span asp-validation-for="StartDate" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="EndDate" class="form-label fw-bold">Ngày kết thúc</label>
+                                <input asp-for="EndDate" type="date" class="form-control" value="@Model.EndDate.ToString("yyyy-MM-dd")" required />
+                                <span asp-validation-for="EndDate" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between border-top pt-3">
+                            <a asp-action="Index" class="btn btn-outline-secondary rounded-pill px-4">
+                                <i class="fa-solid fa-arrow-left me-2"></i> Quay lại
+                            </a>
+                            <button type="submit" class="btn btn-primary rounded-pill px-5 fw-bold">
+                                <i class="fa-solid fa-save me-2"></i> Lưu thay đổi
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

@@ -100,6 +100,26 @@
                         }
                         @for (int i = Model.Count; i < 3; i++) { <td class="bg-light"></td> }
                     </tr>
+
+                    @{
+                        var allAttributeNames = Model
+                            .SelectMany(p => p.Attributes?.Select(a => a.Name) ?? new List<string>())
+                            .Distinct()
+                            .ToList();
+                    }
+                    @foreach (var attrName in allAttributeNames)
+                    {
+                        <tr>
+                            <td class="fw-bold text-start text-muted bg-light">@attrName</td>
+                            @foreach (var product in Model)
+                            {
+                                var attrValue = product.Attributes?.FirstOrDefault(a => a.Name == attrName)?.Value;
+                                <td>@(attrValue ?? "-")</td>
+                            }
+                            @for (int i = Model.Count; i < 3; i++) { <td class="bg-light"></td> }
+                        </tr>
+                    }
+
                     <tr>
                         <td class="fw-bold text-start text-muted bg-light">Hành động</td>
                         @foreach (var product in Model)

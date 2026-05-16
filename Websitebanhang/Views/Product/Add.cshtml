@@ -55,6 +55,22 @@
                                 </select>
                                 <span asp-validation-for="SupplierId" class="text-danger"></span>
                             </div>
+
+                            <div class="col-md-3 mb-3">
+                                <label asp-for="VoucherId" class="form-label fw-bold text-danger">Khuyến mãi (Voucher)</label>
+                                <select asp-for="VoucherId" class="form-select border-danger" asp-items="@(new SelectList(ViewBag.Vouchers, "Id", "Code"))">
+                                    <option value="">-- Không có khuyến mãi --</option>
+                                </select>
+                                <span asp-validation-for="VoucherId" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-3 mb-3">
+                                <label asp-for="Unit" class="form-label fw-bold text-primary">Đơn vị tính</label>
+                                <select asp-for="Unit" class="form-select border-primary" asp-items="@(new SelectList(ViewBag.Units, "Name", "Name"))">
+                                    <option value="">-- Chọn đơn vị --</option>
+                                </select>
+                                <span asp-validation-for="Unit" class="text-danger"></span>
+                            </div>
                         </div>
 
                         <div class="mb-3">

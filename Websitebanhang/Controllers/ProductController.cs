@@ -239,11 +239,39 @@ namespace Websitebanhang.Controllers
         // ================= ADMIN =================
 
         [Authorize(Roles = "Admin")]
-        public IActionResult Manage(int page = 1)
+        public IActionResult Manage(string sortOrder, int page = 1)
         {
+            ViewBag.CurrentSort = sortOrder;
+            ViewBag.NameSortParm = string.IsNullOrEmpty(sortOrder) ? "name_desc" : "";
+            ViewBag.PriceSortParm = sortOrder == "Price" ? "price_desc" : "Price";
+            ViewBag.UnitSortParm = sortOrder == "Unit" ? "unit_desc" : "Unit";
+
+            var products = _context.Products.Include(p => p.Category).AsQueryable();
+
+            switch (sortOrder)
+            {
+                case "name_desc":
+                    products = products.OrderByDescending(s => s.Name);
+                    break;
+                case "Price":
+                    products = products.OrderBy(s => s.Price);
+                    break;
+                case "price_desc":
+                    products = products.OrderByDescending(s => s.Price);
+                    break;
+                case "Unit":
+                    products = products.OrderBy(s => s.Unit);
+                    break;
+                case "unit_desc":
+                    products = products.OrderByDescending(s => s.Unit);
+                    break;
+                default:
+                    products = products.OrderBy(s => s.Name);
+                    break;
+            }
+
             int pageSize = 10;
-            var products = _productRepository.GetAll().ToPagedList(page, pageSize);
-            return View(products);
+            return View(products.ToPagedList(page, pageSize));
         }
 
         [Authorize(Roles = "Admin")]
@@ -251,6 +279,8 @@ namespace Websitebanhang.Controllers
         {
             ViewBag.Categories = _categoryRepository.GetAll();
             ViewBag.Suppliers = _context.Suppliers.ToList();
+            ViewBag.Vouchers = _context.Voucher.Where(v => v.ExpiryDate >= System.DateTime.Now).ToList();
+            ViewBag.Units = _context.UnitsOfMeasure.ToList();
             return View();
         }
 
@@ -282,6 +312,8 @@ namespace Websitebanhang.Controllers
 
             ViewBag.Categories = _categoryRepository.GetAll();
             ViewBag.Suppliers = _context.Suppliers.ToList();
+            ViewBag.Vouchers = _context.Voucher.Where(v => v.ExpiryDate >= System.DateTime.Now).ToList();
+            ViewBag.Units = _context.UnitsOfMeasure.ToList();
             return View(product);
         }
 
@@ -292,6 +324,8 @@ namespace Websitebanhang.Controllers
 
             ViewBag.Categories = _categoryRepository.GetAll();
             ViewBag.Suppliers = _context.Suppliers.ToList();
+            ViewBag.Vouchers = _context.Voucher.Where(v => v.ExpiryDate >= System.DateTime.Now).ToList();
+            ViewBag.Units = _context.UnitsOfMeasure.ToList();
             return View(product);
         }
 
@@ -331,6 +365,8 @@ namespace Websitebanhang.Controllers
 
             ViewBag.Categories = _categoryRepository.GetAll();
             ViewBag.Suppliers = _context.Suppliers.ToList();
+            ViewBag.Vouchers = _context.Voucher.Where(v => v.ExpiryDate >= System.DateTime.Now).ToList();
+            ViewBag.Units = _context.UnitsOfMeasure.ToList();
             return View(product);
         }
 
@@ -350,6 +386,59 @@ namespace Websitebanhang.Controllers
             _productRepository.Delete(id);
             await _activityLogService.LogAsync("Xóa SP", "Product", id.ToString(), $"Admin đã xóa sản phẩm: {productName}");
             return RedirectToAction("Manage");
+        }
+
+        // ================= ATTRIBUTES =================
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> ManageAttributes(int id)
+        {
+            var product = await _context.Products
+                .Include(p => p.Attributes)
+                .FirstOrDefaultAsync(p => p.Id == id);
+
+            if (product == null) return NotFound();
+
+            return View(product);
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "Admin")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddAttribute(int productId, string name, string value)
+        {
+            if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(value))
+            {
+                TempData["Error"] = "Tên và giá trị thuộc tính không được để trống.";
+                return RedirectToAction("ManageAttributes", new { id = productId });
+            }
+
+            var attribute = new ProductAttribute
+            {
+                ProductId = productId,
+                Name = name.Trim(),
+                Value = value.Trim()
+            };
+
+            _context.ProductAttributes.Add(attribute);
+            await _context.SaveChangesAsync();
+            
+            TempData["Success"] = "Đã thêm thuộc tính thành công.";
+            return RedirectToAction("ManageAttributes", new { id = productId });
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "Admin")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteAttribute(int attributeId, int productId)
+        {
+            var attribute = await _context.ProductAttributes.FindAsync(attributeId);
+            if (attribute != null && attribute.ProductId == productId)
+            {
+                _context.ProductAttributes.Remove(attribute);
+                await _context.SaveChangesAsync();
+                TempData["Success"] = "Đã xóa thuộc tính thành công.";
+            }
+            return RedirectToAction("ManageAttributes", new { id = productId });
         }
     }
 }

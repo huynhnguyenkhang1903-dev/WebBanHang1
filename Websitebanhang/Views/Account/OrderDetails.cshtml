@@ -160,7 +160,11 @@
                     <div class="p-3 bg-light rounded h-100">
                         <strong>Người nhận:</strong> @Model.CustomerName <br />
                         <strong>SĐT:</strong> @Model.Phone <br />
-                        <strong>Địa chỉ:</strong> @Model.Address
+                        <strong>Địa chỉ:</strong> @Model.Address <br />
+                        @if (!string.IsNullOrEmpty(Model.OrderNotes))
+                        {
+                            <strong>Ghi chú:</strong> @Model.OrderNotes
+                        }
                     </div>
                 </div>
 
@@ -295,7 +299,7 @@
                     </form>
                 }
 
-                @if (status == OrderStatus.Delivered)
+                if (status == OrderStatus.Delivered)
                 {
                     var daysSinceOrder = (DateTime.Now - Model.OrderDate).TotalDays;
                     if (daysSinceOrder <= returnDaysLimit)
@@ -389,4 +393,25 @@
             reasonArea.removeAttribute('required');
         }
     }
+
+    // --- REAL-TIME ORDER TRACKING ---
+    const orderId = @Model.Id;
+    const currentStatus = '@Model.Status';
+
+    setInterval(function() {
+        if (currentStatus === 'Delivered' || currentStatus === 'Cancelled' || currentStatus === 'Returned' || currentStatus === 'Refunded') {
+            return; // No need to poll if order is finished
+        }
+
+        fetch('/Account/GetOrderStatus?id=' + orderId)
+            .then(response => response.json())
+            .then(data => {
+                if (data && data.status && data.status !== currentStatus) {
+                    console.log('Order status changed from', currentStatus, 'to', data.status);
+                    // Reload page to reflect new status & UI
+                    window.location.reload();
+                }
+            })
+            .catch(error => console.error('Error tracking order status:', error));
+    }, 10000); // Poll every 10 seconds
 </script>

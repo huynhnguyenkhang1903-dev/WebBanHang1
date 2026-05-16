@@ -171,6 +171,18 @@
                     Danh mục tính
                 </a>
             </li>
+            <li class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "AdminVoucher" ? "active" : "")">
+                <a asp-controller="AdminVoucher" asp-action="Index">
+                    <i class="fa-solid fa-ticket-simple text-danger"></i>
+                    Quản lý Voucher
+                </a>
+            </li>
+            <li class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Promotion" ? "active" : "")">
+                <a asp-controller="Promotion" asp-action="Index">
+                    <i class="fa-solid fa-bullhorn text-success"></i>
+                    Chương trình Khuyến mãi
+                </a>
+            </li>
             <li class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Unit" ? "active" : "")">
                 <a asp-controller="Unit" asp-action="Index">
                     <i class="fa-solid fa-balance-scale"></i>

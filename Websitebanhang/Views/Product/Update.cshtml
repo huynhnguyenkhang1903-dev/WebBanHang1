@@ -91,6 +91,28 @@
                         </div>
                         <span asp-validation-for="SupplierId" class="text-danger small mt-1 d-block"></span>
                     </div>
+
+                    <!-- Voucher -->
+                    <div class="col-md-3">
+                        <div class="form-floating border border-danger rounded-3 h-100">
+                            <select asp-for="VoucherId" class="form-select bg-light border-0 text-danger fw-bold" id="floatingVoucher" asp-items="@(new SelectList(ViewBag.Vouchers, "Id", "Code", Model.VoucherId))">
+                                <option value="">-- Không khuyến mãi --</option>
+                            </select>
+                            <label for="floatingVoucher" class="ps-4 text-danger"><i class="fa-solid fa-tags me-1"></i> Khuyến Mãi</label>
+                        </div>
+                        <span asp-validation-for="VoucherId" class="text-danger small mt-1 d-block"></span>
+                    </div>
+
+                    <!-- Unit -->
+                    <div class="col-md-3">
+                        <div class="form-floating border border-primary rounded-3 h-100">
+                            <select asp-for="Unit" class="form-select bg-light border-0 text-primary fw-bold" id="floatingUnit" asp-items="@(new SelectList(ViewBag.Units, "Name", "Name", Model.Unit))">
+                                <option value="">-- Đơn vị --</option>
+                            </select>
+                            <label for="floatingUnit" class="ps-4 text-primary"><i class="fa-solid fa-balance-scale me-1"></i> Đơn vị tính</label>
+                        </div>
+                        <span asp-validation-for="Unit" class="text-danger small mt-1 d-block"></span>
+                    </div>
                 </div>
 
                 <div class="row g-4 mb-4">

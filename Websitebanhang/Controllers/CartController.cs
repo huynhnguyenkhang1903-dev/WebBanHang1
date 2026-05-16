@@ -141,13 +141,24 @@ namespace Websitebanhang.Controllers
             HttpContext.Session.SetObject("Cart", selectedItems);
 
             // load available vouchers
-            var vouchers = _context.Voucher
+            var vouchersList = _context.Voucher
                 .Where(v => v.ExpiryDate >= DateTime.Now)
+                .Select(v => new { Code = v.Code, DiscountPercent = v.DiscountPercent, ExpiryDate = v.ExpiryDate, Type = "Voucher" })
+                .ToList();
+
+            // load active promotions with codes
+            var promotionsList = _context.Promotions
+                .Where(p => p.IsActive && p.StartDate <= DateTime.Now && p.EndDate >= DateTime.Now)
+                .Select(p => new { Code = p.Code, DiscountPercent = p.DiscountPercent, ExpiryDate = p.EndDate, Type = "Promotion" })
+                .ToList();
+
+            // Merge both
+            var allVouchers = vouchersList.Concat(promotionsList)
                 .OrderBy(v => v.ExpiryDate)
                 .ToList();
 
-            ViewBag.Vouchers = vouchers;
-            ViewBag.ShippingVouchers = vouchers; // reuse same list for shipping vouchers
+            ViewBag.Vouchers = allVouchers;
+            ViewBag.ShippingVouchers = allVouchers; 
 
             return View(selectedItems);
         }
@@ -179,7 +190,7 @@ namespace Websitebanhang.Controllers
         // ================= ĐẶT HÀNG =================
         [HttpPost]
         [Authorize]
-        public async Task<IActionResult> PlaceOrder(string name, string email, string address, string phone, string paymentMethod, string shippingProvider, string? voucherCode, string? shippingVoucherCode, bool usePoints = false)
+        public async Task<IActionResult> PlaceOrder(string name, string email, string address, string phone, string paymentMethod, string shippingProvider, string? orderNotes, string? voucherCode, string? shippingVoucherCode, bool usePoints = false)
         {
             var cart = HttpContext.Session.GetObject<List<CartItem>>("Cart") ?? new List<CartItem>();
             if (cart.Count == 0) return RedirectToAction("Index");
@@ -189,32 +200,56 @@ namespace Websitebanhang.Controllers
             if (appUser == null) return RedirectToAction("Login", "Account");
 
             // Apply order voucher discount if provided
-            Voucher? appliedVoucher = null;
             int orderVoucherPercent = 0;
+            string? finalVoucherCode = null;
             if (!string.IsNullOrEmpty(voucherCode))
             {
-                appliedVoucher = _context.Voucher.FirstOrDefault(v => v.Code == voucherCode && v.ExpiryDate >= DateTime.Now);
-                if (appliedVoucher != null)
-                    orderVoucherPercent = appliedVoucher.DiscountPercent;
+                var v = await _context.Voucher.FirstOrDefaultAsync(v => v.Code == voucherCode && v.ExpiryDate >= DateTime.Now);
+                if (v != null)
+                {
+                    orderVoucherPercent = v.DiscountPercent;
+                    finalVoucherCode = v.Code;
+                }
+                else
+                {
+                    var p = await _context.Promotions.FirstOrDefaultAsync(p => p.Code == voucherCode && p.IsActive && p.StartDate <= DateTime.Now && p.EndDate >= DateTime.Now);
+                    if (p != null)
+                    {
+                        orderVoucherPercent = p.DiscountPercent;
+                        finalVoucherCode = p.Code;
+                    }
+                }
             }
 
             decimal orderDiscountAmount = Math.Round(subtotal * (orderVoucherPercent / 100m));
 
             // Determine shipping cost server-side
             decimal shippingCost = 0m;
-            if (shippingProvider == "Viettel Post") shippingCost = 20000m;
-            else if (shippingProvider == "GHN") shippingCost = 25000m;
-            else if (shippingProvider == "Hỏa tốc") shippingCost = 50000m;
-            else shippingCost = 15000m; // GHTK default
+            if (shippingProvider == "Viettel Post") shippingCost = 35000m;
+            else if (shippingProvider == "Giao Hàng Nhanh") shippingCost = 30000m;
+            else if (shippingProvider == "Nhận tại cửa hàng") shippingCost = 0m;
+            else shippingCost = 15000m; // Default backup
 
             // Apply shipping voucher if provided
-            Voucher? appliedShippingVoucher = null;
             int shippingVoucherPercent = 0;
+            string? finalShippingVoucherCode = null;
             if (!string.IsNullOrEmpty(shippingVoucherCode))
             {
-                appliedShippingVoucher = _context.Voucher.FirstOrDefault(v => v.Code == shippingVoucherCode && v.ExpiryDate >= DateTime.Now);
-                if (appliedShippingVoucher != null)
-                    shippingVoucherPercent = appliedShippingVoucher.DiscountPercent;
+                var sv = await _context.Voucher.FirstOrDefaultAsync(v => v.Code == shippingVoucherCode && v.ExpiryDate >= DateTime.Now);
+                if (sv != null)
+                {
+                    shippingVoucherPercent = sv.DiscountPercent;
+                    finalShippingVoucherCode = sv.Code;
+                }
+                else
+                {
+                    var sp = await _context.Promotions.FirstOrDefaultAsync(p => p.Code == shippingVoucherCode && p.IsActive && p.StartDate <= DateTime.Now && p.EndDate >= DateTime.Now);
+                    if (sp != null)
+                    {
+                        shippingVoucherPercent = sp.DiscountPercent;
+                        finalShippingVoucherCode = sp.Code;
+                    }
+                }
             }
 
             decimal shippingDiscountAmount = Math.Round(shippingCost * (shippingVoucherPercent / 100m));
@@ -277,6 +312,7 @@ namespace Websitebanhang.Controllers
                 ShippingCost = shippingCost,
                 OrderDate = DateTime.Now,
                 Status = "Pending",
+                OrderNotes = orderNotes,
                 IsPaid = false,
                 Items = cart.Select(c => new CartItem
                 {
@@ -285,7 +321,11 @@ namespace Websitebanhang.Controllers
                     Price = c.Price,
                     Quantity = c.Quantity,
                     ImageUrl = c.ImageUrl
-                }).ToList()
+                }).ToList(),
+                VoucherCode = finalVoucherCode,
+                VoucherDiscountPercent = orderVoucherPercent,
+                ShippingVoucherCode = finalShippingVoucherCode,
+                ShippingVoucherDiscountPercent = shippingVoucherPercent
             };
 
             // If user is authenticated, set UserId and prefer account email
@@ -306,20 +346,6 @@ namespace Websitebanhang.Controllers
             await _hubContext.Clients.All.SendAsync("ReceiveAdminNotification", $"Có đơn hàng mới #{order.Id} từ {order.CustomerName}!", $"/AdminOrder/Details/{order.Id}");
 
             order.PaymentContent = $"ORDER{order.Id}";
-
-            // persist applied voucher info on order
-            if (appliedVoucher != null)
-            {
-                order.VoucherCode = appliedVoucher.Code;
-                order.VoucherDiscountPercent = appliedVoucher.DiscountPercent;
-                order.VoucherExpires = appliedVoucher.ExpiryDate;
-            }
-
-            if (appliedShippingVoucher != null)
-            {
-                order.ShippingVoucherCode = appliedShippingVoucher.Code;
-                order.ShippingVoucherDiscountPercent = appliedShippingVoucher.DiscountPercent;
-            }
 
             try
             {

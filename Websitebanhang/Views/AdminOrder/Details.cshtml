@@ -56,10 +56,14 @@
     <!-- THÔNG TIN -->
     <div class="row mb-4">
         <div class="col-md-6">
-            <div class="card p-3">
+            <div class="card p-3 h-100">
                 <strong>Khách hàng:</strong> @Model.CustomerName <br />
                 <strong>SĐT:</strong> @Model.Phone <br />
-                <strong>Địa chỉ:</strong> @Model.Address
+                <strong>Địa chỉ:</strong> @Model.Address <br />
+                @if (!string.IsNullOrEmpty(Model.OrderNotes))
+                {
+                    <strong>Ghi chú:</strong> @Model.OrderNotes
+                }
             </div>
         </div>
 
@@ -84,6 +88,7 @@
                         <th>SL</th>
                         <th>Giá</th>
                         <th>Tổng</th>
+                        <th class="text-center">Thao tác</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -99,14 +104,31 @@
                                 <td>@item.Name</td>
                                 <td>@item.Quantity</td>
                                 <td>@item.Price.ToString("N0") ₫</td>
-                                <td>@(item.Price* item.Quantity) ₫</td>
+                                <td>@(item.Price * item.Quantity) ₫</td>
+                                <td class="text-center">
+                                    @if (status != "Delivered" && status != "Cancelled")
+                                    {
+                                        <form asp-action="RemoveItem" method="post" onsubmit="return confirm('Xóa sản phẩm này khỏi đơn hàng?');">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="itemId" value="@item.Id" />
+                                            <input type="hidden" name="orderId" value="@Model.Id" />
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                <i class="fa-solid fa-trash me-1"></i> Xóa
+                                            </button>
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted small">N/A</span>
+                                    }
+                                </td>
                             </tr>
                         }
                     }
                     else
                     {
                         <tr>
-                            <td colspan="5" class="text-center text-muted">
+                            <td colspan="6" class="text-center text-muted">
                                 Không có sản phẩm
                             </td>
                         </tr>

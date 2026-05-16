@@ -33,6 +33,11 @@ namespace Websitebanhang.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Banner model, IFormFile? imageFile)
         {
+            if (imageFile != null)
+            {
+                ModelState.Remove("ImageUrl");
+            }
+
             if (ModelState.IsValid)
             {
                 if (imageFile != null && imageFile.Length > 0)

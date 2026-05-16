@@ -510,6 +510,72 @@ namespace Websitebanhang.Controllers
             return View("PrintInvoice", order);
         }
 
+        // ================= XÓA SẢN PHẨM KHỎI ĐƠN =================
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RemoveItem(int itemId, int orderId)
+        {
+            var order = await _context.Orders
+                .Include(o => o.Items)
+                .FirstOrDefaultAsync(o => o.Id == orderId);
+
+            if (order == null) return NotFound();
+
+            // Chỉ cho phép sửa đơn chưa hoàn thành hoặc chưa hủy
+            if (order.Status == "Delivered" || order.Status == "Cancelled")
+            {
+                TempData["Error"] = "Không thể sửa đơn hàng đã hoàn thành hoặc đã hủy!";
+                return RedirectToAction("Details", new { id = orderId });
+            }
+
+            var itemToRemove = order.Items?.FirstOrDefault(i => i.Id == itemId);
+            if (itemToRemove == null)
+            {
+                TempData["Error"] = "Không tìm thấy sản phẩm trong đơn hàng!";
+                return RedirectToAction("Details", new { id = orderId });
+            }
+
+            // Nếu đơn đã được duyệt, hoàn lại tồn kho
+            if (order.Status == "Confirmed" || order.Status == "Preparing" || order.Status == "Shipping")
+            {
+                var product = await _context.Products.FindAsync(itemToRemove.ProductId);
+                if (product != null)
+                {
+                    product.Stock += itemToRemove.Quantity;
+                    _context.StockHistories.Add(new StockHistory
+                    {
+                        ProductId = product.Id,
+                        QuantityChange = itemToRemove.Quantity,
+                        BalanceAfter = product.Stock,
+                        Type = "Nhập kho (Xóa SP khỏi đơn)",
+                        Note = $"Đơn hàng #{order.Id}",
+                        CreatedAt = DateTime.Now
+                    });
+                }
+            }
+
+            // Xóa item khỏi danh sách của đơn hàng
+            order.Items?.Remove(itemToRemove);
+            
+            // Tính lại tổng tiền
+            // Lưu ý: Chúng ta cần tính lại Subtotal, sau đó áp dụng VoucherDiscountPercent nếu có
+            decimal newSubtotal = (order.Items?.Where(i => i.Id != itemId).Sum(i => i.Price * i.Quantity) ?? 0m);
+            decimal discount = 0m;
+            if (order.VoucherDiscountPercent.HasValue && order.VoucherDiscountPercent > 0)
+            {
+                discount = Math.Round(newSubtotal * (order.VoucherDiscountPercent.Value / 100m));
+            }
+            
+            order.TotalAmount = newSubtotal - discount + order.ShippingCost;
+
+            await _context.SaveChangesAsync();
+
+            await _activityLogService.LogAsync("Xóa SP khỏi đơn", "Order", orderId.ToString(), $"Admin đã xóa sản phẩm {itemToRemove.Name} khỏi đơn hàng #{orderId}");
+            
+            TempData["Success"] = "Đã xóa sản phẩm khỏi đơn hàng và cập nhật lại tổng tiền.";
+            return RedirectToAction("Details", new { id = orderId });
+        }
+
         // ================= CẬP NHẬT TRẠNG THÁI =================
         [HttpPost]
         [ValidateAntiForgeryToken]

@@ -25,6 +25,17 @@ namespace Websitebanhang.Data
             }
             context.SaveChanges();
 
+            // Seed Units of Measure
+            var unitNames = new[] { "Kg", "Lít", "Ml", "Gói", "Hộp", "Ly", "Cái", "Bộ" };
+            foreach (var uName in unitNames)
+            {
+                if (!context.UnitsOfMeasure.Any(u => u.Name == uName))
+                {
+                    context.UnitsOfMeasure.Add(new UnitOfMeasure { Name = uName, Description = "Đơn vị tính " + uName });
+                }
+            }
+            context.SaveChanges();
+
             // Xóa các danh mục cũ (Máy pha cà phê, Linh kiện)
             var oldCategories = context.Categories
                 .Where(c => c.Name == "Máy pha cà phê" || c.Name == "Linh kiện")

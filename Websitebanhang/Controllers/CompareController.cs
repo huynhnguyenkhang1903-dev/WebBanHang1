@@ -23,6 +23,7 @@ namespace Websitebanhang.Controllers
 
             var products = await _context.Products
                 .Include(p => p.Category)
+                .Include(p => p.Attributes)
                 .Where(p => compareList.Contains(p.Id))
                 .ToListAsync();
 

@@ -43,6 +43,9 @@ namespace Websitebanhang.Models
         public string? ShippingVoucherCode { get; set; }
         public int? ShippingVoucherDiscountPercent { get; set; }
 
+        // Ghi chú đơn hàng
+        public string? OrderNotes { get; set; }
+
         // Lý do hủy đơn
         public string? CancelReason { get; set; }
 

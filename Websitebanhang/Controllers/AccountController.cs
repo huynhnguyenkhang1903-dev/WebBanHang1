@@ -119,6 +119,22 @@ namespace Websitebanhang.Controllers
             return View(order);
         }
 
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> GetOrderStatus(int id)
+        {
+            var user = await _userManager.GetUserAsync(User!);
+            if (user == null) return Unauthorized();
+
+            var order = await _context.Orders.FirstOrDefaultAsync(o => o.Id == id);
+            if (order == null) return NotFound();
+
+            var isAdmin = await _userManager.IsInRoleAsync(user, "Admin");
+            if (!isAdmin && order.UserId != user.Id && order.Email != user.Email) return Forbid();
+
+            return Json(new { status = order.Status });
+        }
+
         [HttpPost]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
@@ -482,6 +498,103 @@ namespace Websitebanhang.Controllers
                 ModelState.AddModelError("", error.Description);
 
             return View(model);
+        }
+
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateEmail(string newEmail)
+        {
+            var user = await _userManager.GetUserAsync(User!);
+            if (user == null) return RedirectToAction("Login");
+
+            if (string.IsNullOrWhiteSpace(newEmail) || !new System.ComponentModel.DataAnnotations.EmailAddressAttribute().IsValid(newEmail))
+            {
+                TempData["Error"] = "Email không hợp lệ.";
+                return RedirectToAction("Profile");
+            }
+
+            if (user.Email == newEmail)
+            {
+                TempData["Error"] = "Email mới phải khác email hiện tại.";
+                return RedirectToAction("Profile");
+            }
+
+            var emailExists = await _userManager.FindByEmailAsync(newEmail);
+            if (emailExists != null)
+            {
+                TempData["Error"] = "Email này đã được sử dụng.";
+                return RedirectToAction("Profile");
+            }
+
+            user.Email = newEmail;
+            user.UserName = newEmail;
+            user.EmailConfirmed = false;
+            
+            var result = await _userManager.UpdateAsync(user);
+            if (result.Succeeded)
+            {
+                var otp = new Random().Next(100000, 999999).ToString();
+                user.OtpCode = otp;
+                user.OtpExpiry = DateTime.Now.AddMinutes(5);
+                await _userManager.UpdateAsync(user);
+                
+                try
+                {
+                    await _emailService.SendEmailAsync(user.Email!, "Xác thực email mới - Aura Coffee", 
+                        $"<div style='font-family: Arial; padding: 20px; border: 1px solid #eee; border-radius: 10px;'>" +
+                        $"<h2 style='color: #6f4e37;'>Xác thực email</h2>" +
+                        $"<p>Chào <strong>{user.FullName}</strong>,</p>" +
+                        $"<p>Mã xác thực (OTP) cho email mới của bạn là:</p>" +
+                        $"<div style='font-size: 24px; font-weight: bold; color: #6f4e37; letter-spacing: 5px; margin: 20px 0;'>{otp}</div>" +
+                        $"<p>Mã có hiệu lực trong 5 phút. Vui lòng không chia sẻ mã này với bất kỳ ai.</p>" +
+                        $"</div>");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[DEBUG] Email send failed: {ex.Message}");
+                    Console.WriteLine($"[DEBUG] YOUR OTP IS: {otp}");
+                }
+
+                await _signInManager.RefreshSignInAsync(user);
+                TempData["SuccessMessage"] = "Đã cập nhật email. Vui lòng kiểm tra email để xác thực.";
+                return RedirectToAction("VerifyEmail", new { email = user.Email });
+            }
+
+            foreach (var error in result.Errors)
+                ModelState.AddModelError("", error.Description);
+
+            TempData["Error"] = "Có lỗi xảy ra khi cập nhật email.";
+            return RedirectToAction("Profile");
+        }
+
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdatePhone(string newPhone)
+        {
+            var user = await _userManager.GetUserAsync(User!);
+            if (user == null) return RedirectToAction("Login");
+
+            if (string.IsNullOrWhiteSpace(newPhone))
+            {
+                TempData["Error"] = "Số điện thoại không được để trống.";
+                return RedirectToAction("Profile");
+            }
+
+            user.PhoneNumber = newPhone;
+            var result = await _userManager.UpdateAsync(user);
+            
+            if (result.Succeeded)
+            {
+                TempData["SuccessMessage"] = "Cập nhật số điện thoại thành công.";
+            }
+            else
+            {
+                TempData["Error"] = "Có lỗi xảy ra khi cập nhật số điện thoại.";
+            }
+
+            return RedirectToAction("Profile");
         }
 
         [Authorize]

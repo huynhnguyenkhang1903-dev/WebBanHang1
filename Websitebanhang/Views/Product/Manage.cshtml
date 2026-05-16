@@ -19,9 +19,10 @@
                     <thead class="table-light">
                         <tr>
                             <th>Ảnh</th>
-                            <th>Tên sản phẩm</th>
-                            <th>Giá (VNĐ)</th>
+                            <th><a asp-action="Manage" asp-route-sortOrder="@ViewBag.NameSortParm" class="text-dark text-decoration-none">Tên sản phẩm <i class="fa-solid fa-sort small ms-1"></i></a></th>
+                            <th><a asp-action="Manage" asp-route-sortOrder="@ViewBag.PriceSortParm" class="text-dark text-decoration-none">Giá (VNĐ) <i class="fa-solid fa-sort small ms-1"></i></a></th>
                             <th>Danh mục</th>
+                            <th><a asp-action="Manage" asp-route-sortOrder="@ViewBag.UnitSortParm" class="text-dark text-decoration-none">Đơn vị <i class="fa-solid fa-sort small ms-1"></i></a></th>
                             <th>Tồn kho</th>
                             <th>Hạn sử dụng</th>
                             <th>Hành động</th>
@@ -47,6 +48,7 @@
                                 <td class="fw-bold">@item.Name</td>
                                 <td class="text-success fw-bold">@item.Price.ToString("N0") ₫</td>
                                 <td>@(item.Category != null ? item.Category.Name : "Không có")</td>
+                                <td><span class="badge bg-light text-dark">@item.Unit</span></td>
                                 <td>
                                     @if (item.Stock > 0)
                                     {
@@ -72,6 +74,9 @@
                                     }
                                 </td>
                                 <td>
+                                    <a asp-action="ManageAttributes" asp-route-id="@item.Id" class="btn btn-sm btn-outline-secondary" title="Thuộc tính">
+                                        <i class="fa-solid fa-list"></i> Thuộc tính
+                                    </a>
                                     <a asp-controller="AdminProductImage" asp-action="Index" asp-route-productId="@item.Id" class="btn btn-sm btn-outline-info" title="Quản lý hình ảnh">
                                         <i class="fa-solid fa-images"></i> Ảnh
                                     </a>
@@ -89,7 +94,7 @@
     @if (Model.PageCount > 1)
     {
         <div class="mt-4 d-flex justify-content-center">
-            @Html.PagedListPager(Model, page => Url.Action("Manage", new { page }), new PagedListRenderOptions
+            @Html.PagedListPager(Model, page => Url.Action("Manage", new { page, sortOrder = ViewBag.CurrentSort }), new PagedListRenderOptions
             {
                 LiElementClasses = new string[] { "page-item" },
                 PageClasses = new string[] { "page-link" }

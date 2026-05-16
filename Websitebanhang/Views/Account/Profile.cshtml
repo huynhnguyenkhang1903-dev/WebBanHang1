@@ -122,20 +122,25 @@
                                     <label for="UserName" class="ps-4">Tên hiển thị</label>
                                 </div>
                                 <div class="col-md-12 mb-3">
-                                    <div class="form-floating position-relative">
-                                        <input type="email" class="form-control" name="Email" id="Email" value="@(Model?.Email)" placeholder="Email" readonly>
-                                        <label for="Email" class="ps-4">Email</label>
-                                        
-                                        <div class="position-absolute top-50 end-0 translate-middle-y me-3">
-                                            @if (currentUser != null && currentUser.EmailConfirmed)
-                                            {
-                                                <span class="badge bg-success rounded-pill"><i class="fa-solid fa-check-circle me-1"></i> Đã xác thực</span>
-                                            }
-                                            else
-                                            {
-                                                <span class="badge bg-danger rounded-pill"><i class="fa-solid fa-triangle-exclamation me-1"></i> Chưa xác thực</span>
-                                            }
+                                    <div class="input-group">
+                                        <div class="form-floating flex-grow-1 position-relative">
+                                            <input type="email" class="form-control rounded-start" name="Email" id="Email" value="@(Model?.Email)" placeholder="Email" readonly>
+                                            <label for="Email" class="ps-4">Email</label>
+                                            
+                                            <div class="position-absolute top-50 end-0 translate-middle-y me-3">
+                                                @if (currentUser != null && currentUser.EmailConfirmed)
+                                                {
+                                                    <span class="badge bg-success rounded-pill"><i class="fa-solid fa-check-circle me-1"></i> Đã xác thực</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-danger rounded-pill"><i class="fa-solid fa-triangle-exclamation me-1"></i> Chưa xác thực</span>
+                                                }
+                                            </div>
                                         </div>
+                                        <button class="btn btn-outline-secondary rounded-end px-3 fw-bold" type="button" data-bs-toggle="modal" data-bs-target="#updateEmailModal" style="z-index: 10;">
+                                            Cập nhật
+                                        </button>
                                     </div>
                                     @if (currentUser != null && !currentUser.EmailConfirmed)
                                     {
@@ -146,9 +151,16 @@
                                         </div>
                                     }
                                 </div>
-                                <div class="col-md-12 mb-4 form-floating">
-                                    <input type="tel" class="form-control" name="PhoneNumber" id="PhoneNumber" value="@(Model?.PhoneNumber)" placeholder="Số điện thoại">
-                                    <label for="PhoneNumber" class="ps-4">Số điện thoại</label>
+                                <div class="col-md-12 mb-4">
+                                    <div class="input-group">
+                                        <div class="form-floating flex-grow-1">
+                                            <input type="tel" class="form-control rounded-start" name="PhoneNumber" id="PhoneNumber" value="@(Model?.PhoneNumber)" placeholder="Số điện thoại" readonly>
+                                            <label for="PhoneNumber" class="ps-4">Số điện thoại</label>
+                                        </div>
+                                        <button class="btn btn-outline-secondary rounded-end px-3 fw-bold" type="button" data-bs-toggle="modal" data-bs-target="#updatePhoneModal" style="z-index: 10;">
+                                            Cập nhật
+                                        </button>
+                                    </div>
                                 </div>
                                 <div class="col-md-12 mb-4">
                                     <label class="form-label text-coffee fw-bold small mb-1">Mã giới thiệu của bạn</label>
@@ -592,3 +604,54 @@
 }
 .w-20px { width: 20px; }
 </style>
+
+<!-- Update Email Modal -->
+<div class="modal fade" id="updateEmailModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form asp-action="UpdateEmail" method="post">
+          <div class="modal-header">
+            <h5 class="modal-title text-coffee"><i class="fa-solid fa-envelope me-2"></i>Cập nhật Email</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <div class="alert alert-warning mb-3 small">
+                <i class="fa-solid fa-triangle-exclamation me-1"></i> <strong>Lưu ý:</strong> Thay đổi Email sẽ đồng thời thay đổi Tên đăng nhập của bạn. Bạn sẽ cần xác thực lại bằng mã OTP.
+            </div>
+            <div class="mb-3 form-floating">
+                <input type="email" class="form-control" name="newEmail" id="newEmail" value="@Model.Email" required placeholder="Nhập email mới" />
+                <label for="newEmail" class="ps-4">Nhập email mới</label>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+            <button type="submit" class="btn btn-primary-custom">Xác nhận cập nhật</button>
+          </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Update Phone Modal -->
+<div class="modal fade" id="updatePhoneModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form asp-action="UpdatePhone" method="post">
+          <div class="modal-header">
+            <h5 class="modal-title text-coffee"><i class="fa-solid fa-phone me-2"></i>Cập nhật Số điện thoại</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-3 form-floating">
+                <input type="tel" class="form-control" name="newPhone" id="newPhone" value="@Model.PhoneNumber" required placeholder="Nhập số điện thoại mới" />
+                <label for="newPhone" class="ps-4">Nhập số điện thoại mới</label>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+            <button type="submit" class="btn btn-primary-custom">Xác nhận cập nhật</button>
+          </div>
+      </form>
+    </div>
+  </div>
+</div>

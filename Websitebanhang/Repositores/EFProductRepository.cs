@@ -15,13 +15,14 @@ namespace Websitebanhang.Repositores
 
         public IEnumerable<Product> GetAll()
         {
-            return _context.Products.Include(p => p.Category).AsNoTracking().ToList();
+            return _context.Products.Include(p => p.Category).Include(p => p.Voucher).AsNoTracking().ToList();
         }
 
         public Product? GetById(int id)
         {
             return _context.Products
                 .Include(p => p.Category)
+                .Include(p => p.Voucher)
                 .Include(p => p.Images)
                 .Include(p => p.Reviews)
                     .ThenInclude(r => r.User)

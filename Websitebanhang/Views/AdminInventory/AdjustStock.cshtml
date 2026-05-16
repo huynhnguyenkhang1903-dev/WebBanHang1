@@ -1,0 +1,56 @@
+@{
+    ViewData["Title"] = "Nhập/Xuất Kho Thủ Công";
+    Layout = "_AdminLayout";
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0 rounded-4">
+                <div class="card-header bg-primary text-white p-4 rounded-top-4">
+                    <h4 class="mb-0 fw-bold"><i class="fa-solid fa-truck-ramp-box me-2"></i> Điều Chỉnh Kho</h4>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="AdjustStock" method="post">
+                        @Html.AntiForgeryToken()
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Sản phẩm</label>
+                            <select name="productId" class="form-select select2" required>
+                                <option value="">-- Chọn sản phẩm --</option>
+                                @foreach (var p in (List<Websitebanhang.Models.Product>)ViewBag.Products)
+                                {
+                                    <option value="@p.Id">@p.Name (Tồn: @p.Stock @p.Unit)</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Loại thao tác</label>
+                                <select name="type" class="form-select" required>
+                                    <option value="Nhập kho">Nhập kho (+)</option>
+                                    <option value="Xuất kho">Xuất kho (-)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Số lượng</label>
+                                <input type="number" name="quantity" class="form-control" min="1" value="1" required />
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Ghi chú / Lý do</label>
+                            <textarea name="note" class="form-control" rows="3" placeholder="Nhập lý do điều chỉnh..."></textarea>
+                        </div>
+
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg fw-bold">Xác nhận thực hiện</button>
+                            <a asp-action="History" class="btn btn-outline-secondary">Quay lại lịch sử</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

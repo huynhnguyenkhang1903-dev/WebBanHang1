@@ -24,6 +24,7 @@ namespace Websitebanhang.Controllers
         {
             var newProducts = _context.Products
                 .Include(p => p.Category)
+                .Include(p => p.Voucher)
                 .OrderByDescending(p => p.Id)
                 .Take(6)
                 .ToList();
@@ -44,6 +45,7 @@ namespace Websitebanhang.Controllers
 
                 var bestSellers = _context.Products
                     .Include(p => p.Category)
+                    .Include(p => p.Voucher)
                     .Where(p => bestSellingProductIds.Contains(p.Id))
                     .ToList();
 
@@ -51,6 +53,7 @@ namespace Websitebanhang.Controllers
                 {
                     bestSellers = _context.Products
                         .Include(p => p.Category)
+                        .Include(p => p.Voucher)
                         .Take(6)
                         .ToList();
                 }
@@ -61,6 +64,7 @@ namespace Websitebanhang.Controllers
             {
                 ViewBag.BestSellers = _context.Products
                     .Include(p => p.Category)
+                    .Include(p => p.Voucher)
                     .Take(6)
                     .ToList();
             }
