@@ -83,23 +83,46 @@
                     </div>
 
                     <div class="mt-4">
-                        <label class="form-label fw-bold">Voucher giảm giá đơn</label>
-                        <select name="voucherCode" id="orderVoucher" class="form-select mb-2">
-                            <option value="">-- Chọn mã giảm giá --</option>
-                            @foreach (var v in vouchers)
-                            {
-                                <option value="@v.Code" data-discount="@v.DiscountPercent">@v.Code - Giảm @v.DiscountPercent% (HSD: @v.ExpiryDate.ToString("dd/MM/yyyy"))</option>
-                            }
-                        </select>
+                    <div class="mt-4">
+                        <!-- Order Voucher: Combined Select and Input -->
+                        <div class="mb-4 p-3 border rounded-3 bg-light">
+                            <label class="form-label fw-bold text-coffee mb-2">
+                                <i class="fa-solid fa-ticket me-2"></i>Mã giảm giá đơn hàng
+                            </label>
+                            
+                            <div class="mb-2">
+                                <small class="text-muted d-block mb-1">Chọn từ danh sách:</small>
+                                <select id="orderVoucherSelect" class="form-select form-select-sm border-warning mb-2" onchange="copyVoucherToInput(this, 'orderVoucherCode')">
+                                    <option value="">-- Chọn mã có sẵn --</option>
+                                    @foreach (var v in vouchers)
+                                    {
+                                        <option value="@v.Code" data-discount="@v.DiscountPercent">@v.Code - Giảm @v.DiscountPercent% (HSD: @v.ExpiryDate.ToString("dd/MM/yyyy"))</option>
+                                    }
+                                </select>
+                            </div>
 
-                        <label class="form-label fw-bold">Voucher giảm phí vận chuyển</label>
-                        <select name="shippingVoucherCode" id="shippingVoucher" class="form-select">
-                            <option value="">-- Chọn mã vận chuyển --</option>
-                            @foreach (var v in vouchers)
-                            {
-                                <option value="@v.Code" data-discount="@v.DiscountPercent">@v.Code - Giảm @v.DiscountPercent% phí vận chuyển (HSD: @v.ExpiryDate.ToString("dd/MM/yyyy"))</option>
-                            }
-                        </select>
+                            <div class="input-group">
+                                <input type="text" name="voucherCode" id="orderVoucherCode" class="form-control border-warning" placeholder="Hoặc nhập mã thủ công...">
+                                <button type="button" class="btn btn-warning fw-bold" onclick="applyVoucher('order')">Áp dụng</button>
+                            </div>
+                            <div id="orderVoucherMsg" class="small mt-1"></div>
+                        </div>
+
+                        <!-- Shipping Voucher: Select Only -->
+                        <div class="mb-3 p-3 border rounded-3">
+                            <label class="form-label fw-bold text-coffee mb-2">
+                                <i class="fa-solid fa-truck-fast me-2"></i>Mã giảm phí vận chuyển
+                            </label>
+                            <select name="shippingVoucherCode" id="shippingVoucher" class="form-select border-info" onchange="applyShippingVoucher(this)">
+                                <option value="">-- Chọn mã giảm phí vận chuyển --</option>
+                                @foreach (var v in vouchers)
+                                {
+                                    <option value="@v.Code" data-discount="@v.DiscountPercent">@v.Code - Giảm @v.DiscountPercent% phí vận chuyển</option>
+                                }
+                            </select>
+                            <div id="shippingVoucherMsg" class="small mt-1"></div>
+                        </div>
+                    </div>
                     </div>
                 </div>
 
@@ -232,6 +255,71 @@
         return n.toLocaleString('vi-VN') + ' ₫';
     }
 
+    var orderDiscountPercent = 0;
+    var shippingDiscountPercent = 0;
+
+    function copyVoucherToInput(select, inputId) {
+        if (select.value) {
+            document.getElementById(inputId).value = select.value;
+            applyVoucher('order');
+        }
+    }
+
+    function applyShippingVoucher(select) {
+        var code = select.value;
+        var msgEl = document.getElementById('shippingVoucherMsg');
+        
+        if (!code) {
+            shippingDiscountPercent = 0;
+            msgEl.innerHTML = '';
+            recalc();
+            return;
+        }
+
+        fetch('/Cart/ValidateVoucher?code=' + encodeURIComponent(code))
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    msgEl.innerHTML = '<span class="text-success"><i class="fa-solid fa-check"></i> ' + data.message + '</span>';
+                    shippingDiscountPercent = data.discountPercent;
+                } else {
+                    msgEl.innerHTML = '<span class="text-danger"><i class="fa-solid fa-xmark"></i> ' + data.message + '</span>';
+                    shippingDiscountPercent = 0;
+                }
+                recalc();
+            });
+    }
+
+    function applyVoucher(type) {
+        var inputId = type === 'order' ? 'orderVoucherCode' : 'shippingVoucherCode';
+        var msgId = type === 'order' ? 'orderVoucherMsg' : 'shippingVoucherMsg';
+        var code = document.getElementById(inputId).value;
+        var msgEl = document.getElementById(msgId);
+
+        if (!code) {
+            msgEl.innerHTML = '<span class="text-danger">Vui lòng nhập mã!</span>';
+            return;
+        }
+
+        fetch('/Cart/ValidateVoucher?code=' + encodeURIComponent(code))
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    msgEl.innerHTML = '<span class="text-success"><i class="fa-solid fa-check"></i> ' + data.message + '</span>';
+                    if (type === 'order') orderDiscountPercent = data.discountPercent;
+                    else shippingDiscountPercent = data.discountPercent;
+                } else {
+                    msgEl.innerHTML = '<span class="text-danger"><i class="fa-solid fa-xmark"></i> ' + data.message + '</span>';
+                    if (type === 'order') orderDiscountPercent = 0;
+                    else shippingDiscountPercent = 0;
+                }
+                recalc();
+            })
+            .catch(err => {
+                msgEl.innerHTML = '<span class="text-danger">Lỗi kết nối máy chủ!</span>';
+            });
+    }
+
     function recalc() {
         var subtotal = parseNumber(document.getElementById('subtotalValue').value);
 
@@ -239,25 +327,13 @@
         var shipRadio = document.querySelector('input[name="shippingProvider"]:checked');
         var shipCost = shipRadio ? parseNumber(shipRadio.dataset.cost) : 0;
 
-        // shipping voucher
-        var shipVoucherSelect = document.getElementById('shippingVoucher');
-        var shipVoucherDiscount = 0;
-        if (shipVoucherSelect && shipVoucherSelect.value) {
-            shipVoucherDiscount = parseNumber(shipVoucherSelect.options[shipVoucherSelect.selectedIndex].dataset.discount) || 0;
-        }
-
-        var shipDiscountAmount = Math.round(shipCost * (shipVoucherDiscount / 100));
+        // Apply shipping voucher discount
+        var shipDiscountAmount = Math.round(shipCost * (shippingDiscountPercent / 100));
         var shippingFinal = Math.max(0, shipCost - shipDiscountAmount);
         document.getElementById('shippingFee').innerText = formatVND(shippingFinal);
 
-        // order voucher
-        var orderVoucherSelect = document.getElementById('orderVoucher');
-        var orderVoucherDiscount = 0;
-        if (orderVoucherSelect && orderVoucherSelect.value) {
-            orderVoucherDiscount = parseNumber(orderVoucherSelect.options[orderVoucherSelect.selectedIndex].dataset.discount) || 0;
-        }
-
-        var orderDiscountAmount = Math.round(subtotal * (orderVoucherDiscount / 100));
+        // Apply order voucher discount
+        var orderDiscountAmount = Math.round(subtotal * (orderDiscountPercent / 100));
 
         var final = Math.max(0, subtotal - orderDiscountAmount + shippingFinal);
 
@@ -265,7 +341,7 @@
         var discountRow = document.getElementById('discountRow');
         if (orderDiscountAmount > 0 || shipDiscountAmount > 0) {
             discountRow.style.display = 'flex';
-            document.getElementById('discountAmount').innerText = formatVND(orderDiscountAmount + shipDiscountAmount);
+            document.getElementById('discountAmount').innerText = '-' + formatVND(orderDiscountAmount + shipDiscountAmount);
         } else {
             discountRow.style.display = 'none';
         }
@@ -275,13 +351,9 @@
 
     document.addEventListener('DOMContentLoaded', function() {
         document.querySelectorAll('input[name="shippingProvider"]').forEach(r => r.addEventListener('change', recalc));
-        document.getElementById('orderVoucher').addEventListener('change', recalc);
-        document.getElementById('shippingVoucher').addEventListener('change', recalc);
-
+        
         // initial calc
         recalc();
-
-        // before submit ensure final total value is same server-side: no extra handling, PlaceOrder recalculates server-side
     });
 </script>
 }

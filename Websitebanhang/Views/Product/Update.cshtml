@@ -31,7 +31,7 @@
                 </div>
             </div>
 
-            <form asp-action="Update" method="post">
+            <form asp-action="Update" method="post" enctype="multipart/form-data">
                 <div asp-validation-summary="ModelOnly" class="alert alert-danger px-4 rounded-3 text-sm"></div>
                 <input type="hidden" asp-for="Id" />
 
@@ -116,25 +116,41 @@
                 </div>
 
                 <div class="row g-4 mb-4">
-                    <!-- Image URL -->
-                    <div class="col-md-8">
+                    <!-- Main Image Upload -->
+                    <div class="col-md-6">
+                        <div class="form-group mb-2">
+                            <label class="form-label fw-bold small text-coffee"><i class="fa-solid fa-cloud-arrow-up me-1"></i> Thay đổi ảnh chính (Tải lên)</label>
+                            <input type="file" name="MainImage" class="form-control bg-light border-0" accept="image/*">
+                        </div>
                         <div class="form-floating">
                             <input asp-for="ImageUrl" class="form-control bg-light border-0" id="floatingImage" placeholder="Link Ảnh">
-                            <label for="floatingImage" class="ps-4">Link Ảnh (URL)</label>
+                            <label for="floatingImage" class="ps-4">Hoặc Link Ảnh (URL)</label>
                         </div>
                         <span asp-validation-for="ImageUrl" class="text-danger small mt-1 d-block"></span>
                     </div>
 
-                    <!-- Image Preview -->
-                    <div class="col-md-4 d-flex align-items-center justify-content-center bg-cream rounded-3 border preview-container">
-                        @if (!string.IsNullOrEmpty(Model.ImageUrl))
-                        {
-                            <img src="@Model.ImageUrl" alt="Preview" class="object-fit-cover rounded" style="max-height: 80px;" />
-                        }
-                        else
-                        {
-                            <span class="text-muted small"><i class="fa-regular fa-image me-1"></i>Trống</span>
-                        }
+                    <!-- Additional Images -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold small text-coffee"><i class="fa-solid fa-images me-1"></i> Thêm ảnh chi tiết (Chọn nhiều file)</label>
+                        <input type="file" name="OtherImages" class="form-control bg-light border-0" accept="image/*" multiple>
+                        <div class="mt-2 p-3 bg-light rounded-3 border border-dashed text-center">
+                            @if (Model.Images != null && Model.Images.Any())
+                            {
+                                <div class="d-flex gap-2 flex-wrap justify-content-center">
+                                    @foreach (var img in Model.Images)
+                                    {
+                                        <div class="position-relative">
+                                            <img src="@img.ImageUrl" class="rounded border shadow-sm" style="width: 50px; height: 50px; object-fit: cover;" />
+                                        </div>
+                                    }
+                                    <span class="badge bg-secondary d-flex align-items-center">+@Model.Images.Count ảnh cũ</span>
+                                </div>
+                            }
+                            else
+                            {
+                                <span class="text-muted small">Chưa có ảnh gallery chi tiết</span>
+                            }
+                        </div>
                     </div>
                 </div>
 

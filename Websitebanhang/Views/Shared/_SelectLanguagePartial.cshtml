@@ -1,0 +1,85 @@
+<div class="dropdown me-1">
+    <button class="btn btn-outline-secondary dropdown-toggle d-flex align-items-center justify-content-center" type="button" id="languageDropdown" data-bs-toggle="dropdown" aria-expanded="false" style="width: 38px; height: 38px; border-radius: 50%; padding: 0;">
+        <i class="fa-solid fa-globe"></i>
+    </button>
+    <ul class="dropdown-menu dropdown-menu-end shadow border-0 p-2" aria-labelledby="languageDropdown" style="min-width: 170px;">
+        <li class="dropdown-header fw-bold text-coffee small"><i class="fa-solid fa-language me-2"></i>Chọn ngôn ngữ</li>
+        <li><hr class="dropdown-divider"></li>
+        
+        @{
+            var languages = new Dictionary<string, (string name, string flag, string code)>
+            {
+                { "vi", ("Tiếng Việt", "🇻🇳", "vi|vi") },
+                { "en", ("English", "🇺🇸", "vi|en") },
+                { "ja", ("日本語", "🇯🇵", "vi|ja") },
+                { "ko", ("한국어", "🇰🇷", "vi|ko") },
+                { "fr", ("Français", "🇫🇷", "vi|fr") },
+                { "de", ("Deutsch", "🇩🇪", "vi|de") },
+                { "it", ("Italiano", "🇮🇹", "vi|it") },
+                { "zh-CN", ("简体中文", "🇨🇳", "vi|zh-CN") },
+                { "ru", ("Русский", "🇷🇺", "vi|ru") },
+                { "th", ("ไทย", "🇹🇭", "vi|th") }
+            };
+        }
+
+        @foreach (var lang in languages)
+        {
+            <li>
+                <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center gap-2 rounded-2 py-2 nturl" onclick="doGTranslate('@lang.Value.code')">
+                    <span class="fs-5">@lang.Value.flag</span>
+                    <span class="small">@lang.Value.name</span>
+                </a>
+            </li>
+        }
+    </ul>
+</div>
+
+<!-- GTranslate Wrapper -->
+<div id="google_translate_element2"></div>
+<script type="text/javascript">
+    function googleTranslateElementInit2() {
+        new google.translate.TranslateElement({pageLanguage: 'vi', autoDisplay: false}, 'google_translate_element2');
+    }
+</script>
+<script type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit2"></script>
+
+<script type="text/javascript">
+    function GTranslateGetCurrentLang() {
+        var keyValue = document.cookie.match('(^|;) ?googtrans=([^;]*)(;|$)');
+        return keyValue ? keyValue[2].split('/')[2] : null;
+    }
+
+    function doGTranslate(lang_pair) {
+        if (lang_pair.value) lang_pair = lang_pair.value;
+        if (lang_pair == '') return;
+        var lang = lang_pair.split('|')[1];
+        var teCombo = document.querySelector('.goog-te-combo');
+        if (teCombo == null || teCombo.innerHTML.length == 0) {
+            setTimeout(function() { doGTranslate(lang_pair) }, 500);
+        } else {
+            teCombo.value = lang;
+            GTranslateFireEvent(teCombo, 'change');
+            GTranslateFireEvent(teCombo, 'change');
+        }
+    }
+
+    function GTranslateFireEvent(element, event) {
+        try {
+            if (document.createEvent) {
+                var evt = document.createEvent("HTMLEvents");
+                evt.initEvent(event, true, true);
+                element.dispatchEvent(evt);
+            } else {
+                var evt = document.createEventObject();
+                element.fireEvent('on' + event, evt);
+            }
+        } catch (e) {}
+    }
+</script>
+
+<style>
+    /* Ẩn các thành phần không cần thiết của Google */
+    #google_translate_element2, .skiptranslate { display: none !important; }
+    body { top: 0px !important; }
+    .goog-te-banner-frame { display: none !important; }
+</style>

@@ -24,8 +24,9 @@
             <h5 class="fw-bold mb-4 text-coffee"><i class="fa-solid fa-filter me-2"></i>Bộ Lọc</h5>
 
             <form method="get">
-                <div class="mb-3">
-                    <input type="text" name="search" value="@Context.Request.Query["search"]" class="form-control" placeholder="Tên cà phê...">
+                <div class="mb-3 position-relative">
+                    <input type="text" id="sidebarSearchInput" name="search" value="@Context.Request.Query["search"]" class="form-control" placeholder="Tên cà phê..." autocomplete="off">
+                    <div id="sidebarSearchSuggestions" class="search-suggestions" style="width: 100%; top: 100%;"></div>
                 </div>
 
                 @{
@@ -56,7 +57,7 @@
 
                 <select name="hasPromotion" class="form-select mb-3">
                     <option value="">Tất cả sản phẩm</option>
-                    <option value="true" selected="@(currentPromotion == "true")">Đang khuyến mãi</option>
+                    <option value="true" selected="@(currentPromotion == "true")">🔥 Đang khuyến mãi</option>
                 </select>
 
                 <button class="btn btn-primary w-100">Lọc</button>
@@ -113,7 +114,19 @@
                             {
                                 <span class="badge bg-danger position-absolute top-0 start-0 m-2 z-index-2 shadow-sm rounded-pill">-@item.Voucher.DiscountPercent%</span>
                             }
-                            <img src="@(string.IsNullOrEmpty(item.ImageUrl) ? "/images/placeholder.jpg" : item.ImageUrl)" class="card-img-top" />
+                            <div class="position-relative overflow-hidden" style="aspect-ratio: 1/1;">
+                                @if (!string.IsNullOrEmpty(item.ImageUrl))
+                                {
+                                    <img src="@item.ImageUrl" class="card-img-top w-100 h-100 object-fit-cover" onerror="this.src='https://placehold.co/400x400?text=Chua+co+anh'" />
+                                }
+                                else
+                                {
+                                    <div class="w-100 h-100 bg-light d-flex flex-column align-items-center justify-content-center text-muted">
+                                        <i class="fa-regular fa-image fs-2 mb-2"></i>
+                                        <small>Chưa có ảnh</small>
+                                    </div>
+                                }
+                            </div>
                             <div class="card-body d-flex flex-column">
                                 <a asp-controller="Product" asp-action="Display" asp-route-id="@item.Id" class="text-decoration-none text-dark">
                                     <h6>@item.Name</h6>
@@ -170,4 +183,55 @@
             </div>
         }
     </div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebarSearchInput = document.getElementById('sidebarSearchInput');
+            const sidebarSuggestionsBox = document.getElementById('sidebarSearchSuggestions');
+            let debounceTimer;
+
+            if (sidebarSearchInput && sidebarSuggestionsBox) {
+                sidebarSearchInput.addEventListener('input', function() {
+                    clearTimeout(debounceTimer);
+                    const term = this.value.trim();
+
+                    if (term.length < 2) {
+                        sidebarSuggestionsBox.style.display = 'none';
+                        return;
+                    }
+
+                    debounceTimer = setTimeout(() => {
+                        fetch(`/Product/SearchSuggestions?term=${encodeURIComponent(term)}`)
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.length > 0) {
+                                    sidebarSuggestionsBox.innerHTML = data.map(item => `
+                                        <a href="/Product/Display/${item.id}" class="search-suggestion-item">
+                                            <img src="${item.imageUrl || '/images/default-coffee.jpg'}" class="search-suggestion-img" alt="${item.name}">
+                                            <div class="search-suggestion-info">
+                                                <p class="search-suggestion-name">${item.name}</p>
+                                                <span class="search-suggestion-price">${item.price.toLocaleString()} ₫</span>
+                                            </div>
+                                        </a>
+                                    `).join('');
+                                    sidebarSuggestionsBox.style.display = 'block';
+                                } else {
+                                    sidebarSuggestionsBox.style.display = 'none';
+                                }
+                            })
+                            .catch(err => console.error('Sidebar search error:', err));
+                    }, 300);
+                });
+
+                document.addEventListener('click', function(e) {
+                    if (!sidebarSearchInput.contains(e.target) && !sidebarSuggestionsBox.contains(e.target)) {
+                        sidebarSuggestionsBox.style.display = 'none';
+                    }
+                });
+            }
+        });
+    </script>
+}
+
 </div>

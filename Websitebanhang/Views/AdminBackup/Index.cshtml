@@ -65,6 +65,10 @@
                                             </button>
                                         </form>
 
+                                        <a asp-action="Download" asp-route-fileName="@file.FileName" class="btn btn-sm btn-outline-primary ms-1">
+                                            <i class="fa-solid fa-download"></i> Tải về
+                                        </a>
+
                                         <!-- Form Xóa -->
                                         <form asp-action="Delete" method="post" class="d-inline-block ms-1" onsubmit="return confirm('Bạn có chắc chắn muốn xóa bản sao lưu này không?');">
                                             <input type="hidden" name="fileName" value="@file.FileName" />

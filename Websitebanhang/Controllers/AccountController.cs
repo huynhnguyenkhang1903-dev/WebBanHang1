@@ -91,7 +91,6 @@ namespace Websitebanhang.Controllers
             return View(orders);
         }
 
-        // ✅ FIX: CHỈ CÒN 1 OrderDetails
         [Authorize]
         public async Task<IActionResult> OrderDetails(int id)
         {
@@ -136,6 +135,7 @@ namespace Websitebanhang.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
             if (ModelState.IsValid)
@@ -147,7 +147,7 @@ namespace Websitebanhang.Controllers
                         user.UserName!,
                         model.Password,
                         model.RememberMe,
-                        lockoutOnFailure: true); // Bật tính năng khóa tài khoản
+                        lockoutOnFailure: true);
 
                     if (result.Succeeded)
                     {
@@ -173,12 +173,88 @@ namespace Websitebanhang.Controllers
             return View(model);
         }
 
+        [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public IActionResult ExternalLogin(string provider, string returnUrl = null)
+        {
+            var redirectUrl = Url.Action("ExternalLoginCallback", "Account", new { returnUrl });
+            var properties = _signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
+            return Challenge(properties, provider);
+        }
+
+        [AllowAnonymous]
+        public async Task<IActionResult> ExternalLoginCallback(string returnUrl = null, string remoteError = null)
+        {
+            returnUrl = returnUrl ?? Url.Content("~/");
+            if (remoteError != null)
+            {
+                ModelState.AddModelError("", $"Lỗi từ dịch vụ ngoài: {remoteError}");
+                return RedirectToAction("Login");
+            }
+
+            var info = await _signInManager.GetExternalLoginInfoAsync();
+            if (info == null)
+            {
+                return RedirectToAction("Login");
+            }
+
+            var result = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: false, bypassTwoFactor: true);
+            if (result.Succeeded)
+            {
+                var user = await _userManager.FindByLoginAsync(info.LoginProvider, info.ProviderKey);
+                if (user != null)
+                {
+                    await MergeSessionWishlistToDatabaseAsync(user);
+                    var roles = await _userManager.GetRolesAsync(user);
+                    if (roles.Contains("Admin")) return RedirectToAction("Index", "Admin");
+                }
+                return LocalRedirect(returnUrl);
+            }
+
+            if (result.IsLockedOut)
+            {
+                return RedirectToAction("Lockout");
+            }
+            else
+            {
+                var email = info.Principal.FindFirstValue(ClaimTypes.Email);
+                var name = info.Principal.FindFirstValue(ClaimTypes.Name);
+
+                if (email != null)
+                {
+                    var user = await _userManager.FindByEmailAsync(email);
+                    if (user == null)
+                    {
+                        user = new ApplicationUser
+                        {
+                            UserName = email,
+                            Email = email,
+                            FullName = name ?? email,
+                            EmailConfirmed = true,
+                            ReferralCode = Guid.NewGuid().ToString("N").Substring(0, 8).ToUpper()
+                        };
+                        await _userManager.CreateAsync(user);
+                        await _userManager.AddToRoleAsync(user, "User");
+                    }
+
+                    await _userManager.AddLoginAsync(user, info);
+                    await _signInManager.SignInAsync(user, isPersistent: false);
+                    await MergeSessionWishlistToDatabaseAsync(user);
+                    return LocalRedirect(returnUrl);
+                }
+
+                return RedirectToAction("Login");
+            }
+        }
+
         public IActionResult Register()
         {
             return View();
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
             if (ModelState.IsValid)
@@ -191,19 +267,16 @@ namespace Websitebanhang.Controllers
                     PhoneNumber = model.PhoneNumber,
                     Address = model.Address,
                     DateOfBirth = model.DateOfBirth,
-                    EmailConfirmed = false, // Yêu cầu xác thực qua OTP
+                    EmailConfirmed = false,
                     ReferralCode = Guid.NewGuid().ToString("N").Substring(0, 8).ToUpper()
                 };
 
-                // Xử lý mã giới thiệu nếu có
                 if (!string.IsNullOrEmpty(model.ReferralCode))
                 {
                     var referrer = await _userManager.Users.FirstOrDefaultAsync(u => u.ReferralCode == model.ReferralCode.ToUpper());
                     if (referrer != null)
                     {
                         user.ReferredByUserId = referrer.Id;
-                        
-                        // Tặng điểm cho người giới thiệu (50 điểm)
                         referrer.RewardPoints += 50;
                         _context.RewardPointHistories.Add(new RewardPointHistory
                         {
@@ -213,10 +286,7 @@ namespace Websitebanhang.Controllers
                             Note = $"Thưởng giới thiệu thành viên mới ({model.Email})",
                             CreatedAt = DateTime.Now
                         });
-
-                        // Tặng điểm cho người được giới thiệu (50 điểm)
                         user.RewardPoints += 50;
-                        // Lưu ý: Lịch sử điểm của người mới sẽ được thêm sau khi CreateAsync thành công
                     }
                 }
 
@@ -238,7 +308,6 @@ namespace Websitebanhang.Controllers
                     }
                     await _userManager.AddToRoleAsync(user, "User");
                     
-                    // 🔥 GỬI OTP XÁC THỰC
                     var otp = new Random().Next(100000, 999999).ToString();
                     user.OtpCode = otp;
                     user.OtpExpiry = DateTime.Now.AddMinutes(5);
@@ -257,12 +326,10 @@ namespace Websitebanhang.Controllers
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine($"[DEBUG] Email send failed: {ex.Message}");
-                        Console.WriteLine($"[DEBUG] YOUR OTP IS: {otp}"); // 🔥 In OTP ra console để test
-                        TempData["WarningMessage"] = "Tài khoản đã tạo nhưng không thể gửi mail xác thực. Bạn có thể xem mã OTP trong Console của Visual Studio.";
+                        Console.WriteLine($"[DEBUG] Email failed: {ex.Message}");
                     }
 
-                    TempData["SuccessMessage"] = "Đăng ký thành công! Vui lòng kiểm tra email để nhận mã xác thực.";
+                    TempData["SuccessMessage"] = "Đăng ký thành công! Vui lòng kiểm tra email.";
                     return RedirectToAction("VerifyEmail", new { email = user.Email });
                 }
 
@@ -293,14 +360,14 @@ namespace Websitebanhang.Controllers
             if (user.OtpCode == otp && user.OtpExpiry > DateTime.Now)
             {
                 user.EmailConfirmed = true;
-                user.OtpCode = null; // Clear OTP
+                user.OtpCode = null;
                 await _userManager.UpdateAsync(user);
 
-                TempData["SuccessMessage"] = "Xác thực thành công! Bạn có thể đăng nhập ngay.";
+                TempData["SuccessMessage"] = "Xác thực thành công!";
                 return RedirectToAction("Login");
             }
 
-            ModelState.AddModelError("", "Mã OTP không đúng hoặc đã hết hạn.");
+            ModelState.AddModelError("", "Mã OTP không đúng hoặc hết hạn.");
             ViewBag.Email = email;
             return View();
         }
@@ -317,115 +384,16 @@ namespace Websitebanhang.Controllers
             user.OtpExpiry = DateTime.Now.AddMinutes(5);
             await _userManager.UpdateAsync(user);
 
-            try
-            {
-                await _emailService.SendEmailAsync(user.Email!, "Mã OTP mới - Aura Coffee", 
-                    $"Mã xác thực mới của bạn là: <strong>{otp}</strong> (Hiệu lực trong 5 phút)");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[DEBUG] Resend OTP email failed: {ex.Message}");
-                Console.WriteLine($"[DEBUG] YOUR NEW OTP IS: {otp}");
-            }
+            try { await _emailService.SendEmailAsync(user.Email!, "Mã OTP mới", $"Mã mới: {otp}"); } catch {}
 
             return Json(new { success = true });
-        }
-
-        [HttpPost]
-        [AllowAnonymous]
-        [ValidateAntiForgeryToken]
-        public IActionResult ExternalLogin(string provider, string? returnUrl = null)
-        {
-            var redirectUrl = Url.Action(nameof(ExternalLoginCallback), "Account", new { returnUrl });
-            var properties = _signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
-            return Challenge(properties, provider);
-        }
-
-        [AllowAnonymous]
-        public async Task<IActionResult> ExternalLoginCallback(string? returnUrl = null, string? remoteError = null)
-        {
-            returnUrl = returnUrl ?? Url.Content("~/");
-            if (remoteError != null)
-            {
-                ModelState.AddModelError(string.Empty, $"Lỗi từ nhà cung cấp ngoài: {remoteError}");
-                return View("Login");
-            }
-
-            var info = await _signInManager.GetExternalLoginInfoAsync();
-            if (info == null)
-            {
-                return RedirectToAction(nameof(Login));
-            }
-
-            // Thử đăng nhập với tài khoản liên kết
-            var result = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: false, bypassTwoFactor: true);
-            if (result.Succeeded)
-            {
-                var user = await _userManager.FindByLoginAsync(info.LoginProvider, info.ProviderKey);
-                if (user != null)
-                {
-                    await MergeSessionWishlistToDatabaseAsync(user);
-
-                    var roles = await _userManager.GetRolesAsync(user);
-                    if (roles.Contains("Admin"))
-                        return RedirectToAction("Index", "Admin");
-                }
-                return LocalRedirect(returnUrl);
-            }
-            if (result.IsLockedOut)
-            {
-                return View("Lockout");
-            }
-            else
-            {
-                // Nếu chưa có tài khoản, tự tạo mới
-                var email = info.Principal.FindFirstValue(System.Security.Claims.ClaimTypes.Email);
-                var name = info.Principal.FindFirstValue(System.Security.Claims.ClaimTypes.Name);
-
-                if (email != null)
-                {
-                    var user = await _userManager.FindByEmailAsync(email);
-                    if (user == null)
-                    {
-                        user = new ApplicationUser
-                        {
-                            UserName = email,
-                            Email = email,
-                            FullName = name ?? string.Empty
-                        };
-                        var createResult = await _userManager.CreateAsync(user);
-                        if (createResult.Succeeded)
-                        {
-                            await _userManager.AddToRoleAsync(user, "User");
-                        }
-                        else
-                        {
-                            foreach (var error in createResult.Errors)
-                                ModelState.AddModelError(string.Empty, error.Description);
-                            return View("Login");
-                        }
-                    }
-
-                    var linkResult = await _userManager.AddLoginAsync(user, info);
-                    if (linkResult.Succeeded)
-                    {
-                        await _signInManager.SignInAsync(user, isPersistent: false);
-                        await MergeSessionWishlistToDatabaseAsync(user);
-                        return LocalRedirect(returnUrl);
-                    }
-                }
-
-                ModelState.AddModelError(string.Empty, "Không thể xác thực bằng tài khoản mạng xã hội.");
-                return View("Login");
-            }
         }
 
         [Authorize]
         public async Task<IActionResult> Profile()
         {
             var user = await _userManager.GetUserAsync(User!);
-            if (user == null)
-                return RedirectToAction("Login");
+            if (user == null) return RedirectToAction("Login");
 
             var orders = await _context.Orders
                 .Include(o => o.Items)
@@ -433,22 +401,9 @@ namespace Websitebanhang.Controllers
                 .OrderByDescending(o => o.OrderDate)
                 .ToListAsync();
 
-            var addresses = await _context.UserAddresses
-                .Where(a => a.UserId == user.Id)
-                .ToListAsync();
-
-            var viewHistory = await _context.ProductViewHistories
-                .Include(h => h.Product)
-                .Where(h => h.UserId == user.Id)
-                .OrderByDescending(h => h.ViewedAt)
-                .Take(10)
-                .ToListAsync();
-
-            var pointHistory = await _context.RewardPointHistories
-                .Where(h => h.UserId == user.Id)
-                .OrderByDescending(h => h.CreatedAt)
-                .Take(20)
-                .ToListAsync();
+            var addresses = await _context.UserAddresses.Where(a => a.UserId == user.Id).ToListAsync();
+            var viewHistory = await _context.ProductViewHistories.Include(h => h.Product).Where(h => h.UserId == user.Id).OrderByDescending(h => h.ViewedAt).Take(10).ToListAsync();
+            var pointHistory = await _context.RewardPointHistories.Where(h => h.UserId == user.Id).OrderByDescending(h => h.CreatedAt).Take(20).ToListAsync();
 
             var model = new ProfileViewModel
             {
@@ -474,12 +429,9 @@ namespace Websitebanhang.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Profile(ProfileViewModel model)
         {
-            if (!ModelState.IsValid)
-                return View(model);
-
+            if (!ModelState.IsValid) return View(model);
             var user = await _userManager.GetUserAsync(User!);
-            if (user == null)
-                return RedirectToAction("Login");
+            if (user == null) return RedirectToAction("Login");
 
             user!.FullName = model.FullName ?? "";
             user.Address = model.Address ?? "";
@@ -487,16 +439,13 @@ namespace Websitebanhang.Controllers
             user.DateOfBirth = model.DateOfBirth;
 
             var result = await _userManager.UpdateAsync(user);
-
             if (result.Succeeded)
             {
                 TempData["SuccessMessage"] = "Cập nhật thành công!";
                 return RedirectToAction("Profile");
             }
 
-            foreach (var error in result.Errors)
-                ModelState.AddModelError("", error.Description);
-
+            foreach (var error in result.Errors) ModelState.AddModelError("", error.Description);
             return View(model);
         }
 
@@ -507,25 +456,6 @@ namespace Websitebanhang.Controllers
         {
             var user = await _userManager.GetUserAsync(User!);
             if (user == null) return RedirectToAction("Login");
-
-            if (string.IsNullOrWhiteSpace(newEmail) || !new System.ComponentModel.DataAnnotations.EmailAddressAttribute().IsValid(newEmail))
-            {
-                TempData["Error"] = "Email không hợp lệ.";
-                return RedirectToAction("Profile");
-            }
-
-            if (user.Email == newEmail)
-            {
-                TempData["Error"] = "Email mới phải khác email hiện tại.";
-                return RedirectToAction("Profile");
-            }
-
-            var emailExists = await _userManager.FindByEmailAsync(newEmail);
-            if (emailExists != null)
-            {
-                TempData["Error"] = "Email này đã được sử dụng.";
-                return RedirectToAction("Profile");
-            }
 
             user.Email = newEmail;
             user.UserName = newEmail;
@@ -538,33 +468,9 @@ namespace Websitebanhang.Controllers
                 user.OtpCode = otp;
                 user.OtpExpiry = DateTime.Now.AddMinutes(5);
                 await _userManager.UpdateAsync(user);
-                
-                try
-                {
-                    await _emailService.SendEmailAsync(user.Email!, "Xác thực email mới - Aura Coffee", 
-                        $"<div style='font-family: Arial; padding: 20px; border: 1px solid #eee; border-radius: 10px;'>" +
-                        $"<h2 style='color: #6f4e37;'>Xác thực email</h2>" +
-                        $"<p>Chào <strong>{user.FullName}</strong>,</p>" +
-                        $"<p>Mã xác thực (OTP) cho email mới của bạn là:</p>" +
-                        $"<div style='font-size: 24px; font-weight: bold; color: #6f4e37; letter-spacing: 5px; margin: 20px 0;'>{otp}</div>" +
-                        $"<p>Mã có hiệu lực trong 5 phút. Vui lòng không chia sẻ mã này với bất kỳ ai.</p>" +
-                        $"</div>");
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"[DEBUG] Email send failed: {ex.Message}");
-                    Console.WriteLine($"[DEBUG] YOUR OTP IS: {otp}");
-                }
-
                 await _signInManager.RefreshSignInAsync(user);
-                TempData["SuccessMessage"] = "Đã cập nhật email. Vui lòng kiểm tra email để xác thực.";
                 return RedirectToAction("VerifyEmail", new { email = user.Email });
             }
-
-            foreach (var error in result.Errors)
-                ModelState.AddModelError("", error.Description);
-
-            TempData["Error"] = "Có lỗi xảy ra khi cập nhật email.";
             return RedirectToAction("Profile");
         }
 
@@ -575,61 +481,31 @@ namespace Websitebanhang.Controllers
         {
             var user = await _userManager.GetUserAsync(User!);
             if (user == null) return RedirectToAction("Login");
-
-            if (string.IsNullOrWhiteSpace(newPhone))
-            {
-                TempData["Error"] = "Số điện thoại không được để trống.";
-                return RedirectToAction("Profile");
-            }
-
             user.PhoneNumber = newPhone;
-            var result = await _userManager.UpdateAsync(user);
-            
-            if (result.Succeeded)
-            {
-                TempData["SuccessMessage"] = "Cập nhật số điện thoại thành công.";
-            }
-            else
-            {
-                TempData["Error"] = "Có lỗi xảy ra khi cập nhật số điện thoại.";
-            }
-
+            await _userManager.UpdateAsync(user);
             return RedirectToAction("Profile");
         }
 
         [Authorize]
-        public IActionResult ChangePassword()
-        {
-            return View();
-        }
+        public IActionResult ChangePassword() => View();
 
         [HttpPost]
         [Authorize]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
         {
-            if (!ModelState.IsValid)
-                return View(model);
-
+            if (!ModelState.IsValid) return View(model);
             var user = await _userManager.GetUserAsync(User!);
-            if (user == null)
-                return RedirectToAction("Login");
+            if (user == null) return RedirectToAction("Login");
 
-            var result = await _userManager.ChangePasswordAsync(
-                user,
-                model.CurrentPassword,
-                model.NewPassword);
-
+            var result = await _userManager.ChangePasswordAsync(user, model.CurrentPassword, model.NewPassword);
             if (result.Succeeded)
             {
                 await _signInManager.RefreshSignInAsync(user);
                 TempData["SuccessMessage"] = "Đổi mật khẩu thành công!";
                 return RedirectToAction("Profile");
             }
-
-            foreach (var error in result.Errors)
-                ModelState.AddModelError("", error.Description);
-
+            foreach (var error in result.Errors) ModelState.AddModelError("", error.Description);
             return View(model);
         }
 
@@ -639,65 +515,13 @@ namespace Websitebanhang.Controllers
         public async Task<IActionResult> CancelOrder(int id, string cancelReason)
         {
             var user = await _userManager.GetUserAsync(User!);
-            if (user == null)
-                return RedirectToAction("Login");
-
-            var order = await _context.Orders
-                .FirstOrDefaultAsync(o => o.Id == id && o.Email == user.Email);
-
-            if (order == null)
-            {
-                TempData["Error"] = "Không tìm thấy đơn!";
-                return RedirectToAction("Profile");
-            }
-
-            if (order.Status != "Pending")
-            {
-                TempData["Error"] = "Chỉ hủy đơn đang chờ!";
-                return RedirectToAction("Profile");
-            }
-
-            if (string.IsNullOrWhiteSpace(cancelReason))
-            {
-                TempData["Error"] = "Vui lòng nhập lý do hủy đơn!";
-                return RedirectToAction("CancelOrder", new { id });
-            }
-
-            // If order was paid by bank, perform refund
-            if (order.IsPaid && string.Equals(order.PaymentMethod, "bank", StringComparison.OrdinalIgnoreCase))
-            {
-                order.Status = Models.OrderStatus.Refunded;
-                order.IsPaid = false;
-                order.TransactionId = null;
-                order.CancelReason = cancelReason;
-                await _context.SaveChangesAsync();
-
-                TempData["SuccessMessage"] = "Đã hủy đơn và hoàn tiền (chuyển khoản).";
-                return RedirectToAction("Profile");
-            }
+            if (user == null) return RedirectToAction("Login");
+            var order = await _context.Orders.FirstOrDefaultAsync(o => o.Id == id && o.Email == user.Email);
+            if (order == null || order.Status != "Pending") return RedirectToAction("Profile");
 
             order.Status = "Cancelled";
-            // ✅ LUÔN gán trước
             order.CancelReason = cancelReason;
-
-            // If order was paid by bank, perform refund
-            if (order.IsPaid && string.Equals(order.PaymentMethod, "bank", StringComparison.OrdinalIgnoreCase))
-            {
-                order.Status = Models.OrderStatus.Refunded;
-                order.IsPaid = false;
-                order.TransactionId = null;
-
-                await _context.SaveChangesAsync();
-
-                TempData["SuccessMessage"] = "Đã hủy đơn và hoàn tiền (chuyển khoản).";
-                return RedirectToAction("Profile");
-            }
-
-            order.Status = "Cancelled";
-
             await _context.SaveChangesAsync();
-
-            TempData["SuccessMessage"] = "Đã hủy đơn!";
             return RedirectToAction("Profile");
         }
 
@@ -706,137 +530,15 @@ namespace Websitebanhang.Controllers
         public async Task<IActionResult> CancelOrder(int id)
         {
             var user = await _userManager.GetUserAsync(User!);
-            if (user == null)
-                return RedirectToAction("Login");
-
-            var order = await _context.Orders
-                .FirstOrDefaultAsync(o => o.Id == id && o.Email == user.Email);
-
-            if (order == null)
-            {
-                TempData["Error"] = "Không tìm thấy đơn!";
-                return RedirectToAction("Profile");
-            }
-
-            if (order.Status != "Pending")
-            {
-                TempData["Error"] = "Chỉ hủy đơn đang chờ!";
-                return RedirectToAction("Profile");
-            }
-
-            return View(order);
-        }
-
-        [Authorize]
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> RequestReturn(int id, string reasonType, string returnReason)
-        {
-            var user = await _userManager.GetUserAsync(User!);
-            if (user == null)
-                return RedirectToAction("Login");
-
+            if (user == null) return RedirectToAction("Login");
             var order = await _context.Orders.FirstOrDefaultAsync(o => o.Id == id && o.Email == user.Email);
-            if (order == null)
-            {
-                TempData["Error"] = "Không tìm thấy đơn!";
-                return RedirectToAction("Profile");
-            }
-
-            if (order.Status != OrderStatus.Delivered)
-            {
-                TempData["Error"] = "Chỉ có thể yêu cầu trả hàng cho đơn đã giao thành công.";
-                return RedirectToAction("OrderDetails", new { id });
-            }
-
-            // 🔥 Kiểm tra chính sách trả hàng linh hoạt
-            var limitStr = await _settingService.GetSettingAsync("ReturnDaysLimit", "7");
-            if (int.TryParse(limitStr, out int returnDaysLimit))
-            {
-                if ((DateTime.Now - order.OrderDate).TotalDays > returnDaysLimit)
-                {
-                    TempData["Error"] = $"Đã quá thời hạn {returnDaysLimit} ngày kể từ khi đặt hàng. Không thể yêu cầu trả hàng.";
-                    return RedirectToAction("OrderDetails", new { id });
-                }
-            }
-
-            var fullReason = reasonType;
-            if (reasonType == "Lý do khác" && !string.IsNullOrWhiteSpace(returnReason))
-            {
-                fullReason = returnReason;
-            }
-            else if (!string.IsNullOrWhiteSpace(returnReason))
-            {
-                fullReason = $"{reasonType}: {returnReason}";
-            }
-
-            order.Status = OrderStatus.ReturnRequested;
-            order.ReturnReason = fullReason;
-            order.ReturnRequestedAt = DateTime.Now;
-
-            await _context.SaveChangesAsync();
-
-            TempData["SuccessMessage"] = "Yêu cầu trả hàng đã được gửi thành công. Vui lòng chờ Admin xét duyệt.";
-            return RedirectToAction("OrderDetails", new { id });
-        }
-
-        [Authorize]
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ConfirmReceived(int id)
-        {
-            var user = await _userManager.GetUserAsync(User!);
-            if (user == null)
-                return RedirectToAction("Login");
-
-            var order = await _context.Orders
-                .FirstOrDefaultAsync(o => o.Id == id && o.Email == user.Email);
-
-            if (order == null)
-            {
-                TempData["Error"] = "Không tìm thấy đơn hàng!";
-                return RedirectToAction("Profile");
-            }
-
-            if (order.Status != OrderStatus.Shipping)
-            {
-                TempData["Error"] = "Đơn hàng phải ở trạng thái đang giao mới có thể xác nhận!";
-                return RedirectToAction("OrderDetails", new { id });
-            }
-
-            order.Status = OrderStatus.Delivered;
-
-            // 🔥 TÍCH ĐIỂM THƯỞNG (1000đ = 1 điểm)
-            int pointsEarned = (int)(order.TotalAmount / 1000);
-            if (pointsEarned > 0)
-            {
-                user!.RewardPoints += pointsEarned;
-                _context.RewardPointHistories.Add(new RewardPointHistory
-                {
-                    UserId = user.Id,
-                    PointsChanged = pointsEarned,
-                    BalanceAfter = user.RewardPoints,
-                    Note = $"Tích điểm từ đơn hàng #{order.Id} (Người dùng xác nhận)",
-                    CreatedAt = DateTime.Now
-                });
-            }
-
-            await _context.SaveChangesAsync();
-
-            TempData["SuccessMessage"] = "Xác nhận đã nhận hàng thành công! Bạn đã được cộng điểm thưởng.";
-            return RedirectToAction("OrderDetails", new { id });
+            return (order == null || order.Status != "Pending") ? RedirectToAction("Profile") : View(order);
         }
 
         public async Task<IActionResult> Logout()
         {
             await _signInManager.SignOutAsync();
             return RedirectToAction("Index", "Home");
-        }
-        [Authorize]
-        [HttpGet]
-        public IActionResult UploadAvatar()
-        {
-            return View();
         }
 
         [Authorize]
@@ -845,404 +547,64 @@ namespace Websitebanhang.Controllers
         public async Task<IActionResult> UploadAvatar(IFormFile avatarFile)
         {
             var user = await _userManager.GetUserAsync(User!);
-            if (user == null)
-                return RedirectToAction("Login");
-
-            if (avatarFile == null || avatarFile.Length == 0)
-            {
-                ModelState.AddModelError("", "Vui lòng chọn ảnh!");
-                ViewBag.CurrentAvatar = user.AvatarUrl;
-                return View();
-            }
-
-            // Giới hạn 2MB
-            if (avatarFile.Length > 2 * 1024 * 1024)
-            {
-                ModelState.AddModelError("", "Ảnh vượt quá 2MB!");
-                ViewBag.CurrentAvatar = user.AvatarUrl;
-                return View();
-            }
-
+            if (user == null || avatarFile == null) return RedirectToAction("Profile");
             var fileName = Guid.NewGuid().ToString() + Path.GetExtension(avatarFile.FileName);
-            var uploadPath = Path.Combine(_env.WebRootPath, "uploads");
-
-            if (!Directory.Exists(uploadPath))
-                Directory.CreateDirectory(uploadPath);
-
-            var filePath = Path.Combine(uploadPath, fileName);
-
-            using (var stream = new FileStream(filePath, FileMode.Create))
-            {
-                await avatarFile.CopyToAsync(stream);
-            }
-
-            user!.AvatarUrl = "/uploads/" + fileName;
+            var filePath = Path.Combine(_env.WebRootPath, "uploads", fileName);
+            using (var stream = new FileStream(filePath, FileMode.Create)) { await avatarFile.CopyToAsync(stream); }
+            user.AvatarUrl = "/uploads/" + fileName;
             await _userManager.UpdateAsync(user);
-
-            TempData["SuccessMessage"] = "Upload thành công!";
             return RedirectToAction("Profile");
         }
 
-        [Authorize]
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteAvatar()
-        {
-            var user = await _userManager.GetUserAsync(User!);
-            if (user == null)
-                return RedirectToAction("Login");
-
-            if (string.IsNullOrEmpty(user.AvatarUrl))
-            {
-                TempData["Error"] = "Không có ảnh đại diện để xóa.";
-                return RedirectToAction("Profile");
-            }
-
-            // Only attempt to delete local files under wwwroot
-            try
-            {
-                var avatar = user.AvatarUrl ?? string.Empty;
-                if (!avatar.StartsWith("http", StringComparison.OrdinalIgnoreCase))
-                {
-                    // remove leading slash if present
-                    var relativePath = avatar.TrimStart('/').Replace("/", Path.DirectorySeparatorChar.ToString());
-                    var fullPath = Path.Combine(_env.WebRootPath ?? string.Empty, relativePath);
-
-                    if (System.IO.File.Exists(fullPath))
-                    {
-                        System.IO.File.Delete(fullPath);
-                    }
-                }
-            }
-            catch
-            {
-                // ignore file delete errors
-            }
-
-            user!.AvatarUrl = string.Empty;
-            var result = await _userManager.UpdateAsync(user);
-            if (result.Succeeded)
-            {
-                TempData["SuccessMessage"] = "Đã xóa ảnh đại diện.";
-                // refresh sign-in so claims updated if avatar used in claims
-                await _signInManager.RefreshSignInAsync(user);
-                return RedirectToAction("Profile");
-            }
-
-            TempData["Error"] = "Không thể xóa ảnh đại diện.";
-            return RedirectToAction("Profile");
-        }
-
-        // ================= IN HÓA ĐƠN =================
         [Authorize]
         [HttpGet]
         public async Task<IActionResult> PrintInvoice(int id)
         {
             var user = await _userManager.GetUserAsync(User!);
-            if (user == null)
-                return RedirectToAction("Login", "Account");
-
-            var order = await _context.Orders
-                .Include(o => o.Items)
-                .FirstOrDefaultAsync(o => o.Id == id && o.Email == user.Email);
-
-            if (order == null)
-                return NotFound();
-
-            return View("PrintInvoice", order);
-        }
-
-        // ================= ADDRESS BOOK =================
-        [HttpPost]
-        [Authorize]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AddAddress(UserAddress model)
-        {
-            var user = await _userManager.GetUserAsync(User!);
-            if (user == null) return RedirectToAction("Login");
-
-            model.UserId = user.Id;
-
-            var existingAddressesCount = await _context.UserAddresses.CountAsync(a => a.UserId == user.Id);
-            if (existingAddressesCount == 0 || model.IsDefault)
-            {
-                if (model.IsDefault)
-                {
-                    var oldDefaults = await _context.UserAddresses.Where(a => a.UserId == user.Id && a.IsDefault).ToListAsync();
-                    foreach (var addr in oldDefaults) addr.IsDefault = false;
-                }
-                else if (existingAddressesCount == 0)
-                {
-                    model.IsDefault = true;
-                }
-            }
-
-            _context.UserAddresses.Add(model);
-            await _context.SaveChangesAsync();
-            TempData["SuccessMessage"] = "Đã thêm địa chỉ mới!";
-            return RedirectToAction("Profile");
-        }
-
-        [HttpPost]
-        [Authorize]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditAddress(int id, UserAddress model)
-        {
-            var user = await _userManager.GetUserAsync(User!);
-            if (user == null) return RedirectToAction("Login");
-
-            var addr = await _context.UserAddresses.FirstOrDefaultAsync(a => a.Id == id && a.UserId == user.Id);
-            if (addr == null) return NotFound();
-
-            addr.FullName = model.FullName;
-            addr.PhoneNumber = model.PhoneNumber;
-            addr.AddressLine = model.AddressLine;
-
-            if (model.IsDefault && !addr.IsDefault)
-            {
-                var oldDefaults = await _context.UserAddresses.Where(a => a.UserId == user.Id && a.IsDefault).ToListAsync();
-                foreach (var old in oldDefaults) old.IsDefault = false;
-                addr.IsDefault = true;
-            }
-
-            await _context.SaveChangesAsync();
-            TempData["SuccessMessage"] = "Đã cập nhật địa chỉ!";
-            return RedirectToAction("Profile");
-        }
-
-        [HttpPost]
-        [Authorize]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteAddress(int id)
-        {
-            var user = await _userManager.GetUserAsync(User!);
-            if (user == null) return RedirectToAction("Login");
-
-            var addr = await _context.UserAddresses.FirstOrDefaultAsync(a => a.Id == id && a.UserId == user.Id);
-            if (addr != null)
-            {
-                _context.UserAddresses.Remove(addr);
-                await _context.SaveChangesAsync();
-
-                if (addr.IsDefault)
-                {
-                    var firstRemaining = await _context.UserAddresses.FirstOrDefaultAsync(a => a.UserId == user.Id);
-                    if (firstRemaining != null)
-                    {
-                        firstRemaining.IsDefault = true;
-                        await _context.SaveChangesAsync();
-                    }
-                }
-                TempData["SuccessMessage"] = "Đã xóa địa chỉ!";
-            }
-            return RedirectToAction("Profile");
-        }
-
-        [HttpPost]
-        [Authorize]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> SetDefaultAddress(int id)
-        {
-            var user = await _userManager.GetUserAsync(User!);
-            if (user == null) return RedirectToAction("Login");
-
-            var oldDefaults = await _context.UserAddresses.Where(a => a.UserId == user.Id && a.IsDefault).ToListAsync();
-            foreach (var old in oldDefaults) old.IsDefault = false;
-
-            var addr = await _context.UserAddresses.FirstOrDefaultAsync(a => a.Id == id && a.UserId == user.Id);
-            if (addr != null)
-            {
-                addr.IsDefault = true;
-            }
-
-            await _context.SaveChangesAsync();
-            TempData["SuccessMessage"] = "Đã đặt làm địa chỉ mặc định!";
-            return RedirectToAction("Profile");
+            var order = await _context.Orders.Include(o => o.Items).FirstOrDefaultAsync(o => o.Id == id && o.Email == user!.Email);
+            return order == null ? NotFound() : View("PrintInvoice", order);
         }
 
         [HttpGet]
         [AllowAnonymous]
-        public IActionResult ForgotPassword()
-        {
-            return View();
-        }
+        public IActionResult ForgotPassword() => View();
 
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel model)
         {
-            if (ModelState.IsValid)
-            {
-                var user = await _userManager.FindByEmailAsync(model.Email);
-                if (user == null)
-                {
-                    // Don't reveal that the user does not exist
-                    return RedirectToAction(nameof(ForgotPasswordConfirmation));
-                }
-
-                var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-                var encodedToken = HttpUtility.UrlEncode(token);
-
-                var resetLink = $"{Request.Scheme}://{Request.Host}/Account/ResetPassword?email={HttpUtility.UrlEncode(user.Email)}&token={encodedToken}";
-
-                string emailBody = $@"
-<!DOCTYPE html>
-<html>
-<head><meta charset='utf-8'></head>
-<body style='font-family: Arial, sans-serif; background:#FFF8F0; padding:20px;'> 
-<div style='max-width:500px; margin:auto; background:white; 
-border-radius:12px; overflow:hidden; 
-box-shadow:0 2px 8px rgba(0,0,0,0.1);'> 
-
-<div style='background:#6F4E37; padding:30px; text-align:center;'> 
-<h1 style='color:white; margin:0; font-size:24px;'>☕ Aura Coffee</h1> 
-</div> 
-
-<div style='padding:30px;'>
-
-<h2 style='color:#6F4E37;'>Reset Password</h2>
-
-<p style='color:#555; line-height:1.6;'>
-
-Hello <strong>{user.FullName}</strong>,
-
-</p>
-
-<p style='color:#555; line-height:1.6;'>
-
-We received a password reset request for the account
-
-<strong>{user.Email}</strong>.
-
-</p>
-
-<p style='color:#555;'>
-
-Click the button below to reset your password:
-
-</p>
-
-<div style='text-align:center; margin:30px 0;'>
-
-<a href='{resetLink}'
-style='background:#6F4E37; color:white; padding:14px 32px; 
-
-border-radius:8px; text-decoration:none; font-size:16px; 
-font-weight:bold; display:inline-block;'> 
-🔑 Reset password 
-</a> 
-</div> 
-
-<p style='color:#555; font-size:14px;'> 
-Or copy this link into your browser: 
-</p> 
-<p style='background:#f5f5f5; padding:10px; border-radius:6px; 
-word-break:break-all; font-size:13px; color:#333;'> 
-{resetLink} 
-</p> 
-
-<hr style='border:none; border-top:1px solid #eee; margin:20px 0;'> 
-
-<p style='color:#999; font-size:13px;'> 
-⚠️ This link will expire after <strong>24 time</strong>.<br>
-
-If you do not request a password reset, please ignore this email.
-
-</p>
-
-</div>
-
-<div style='background:#f9f9f9; padding:15px; text-align:center;'>
-
-<p style='color:#999; font-size:12px; margin:0;'>
-
-© 2026 Aura Coffee. All rights reserved.
-
-</p>
-
-</div>
-</div>
-
-</div>
-</body>
-</html>
-";
-
-                await _emailService.SendEmailAsync(
-                    user.Email,
-                    "Reset password - Aura Coffee",
-                    emailBody
-                );
-
-                return RedirectToAction(nameof(ForgotPasswordConfirmation));
-            }
-
-            return View(model);
+            if (!ModelState.IsValid) return View(model);
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user == null) return RedirectToAction(nameof(ForgotPasswordConfirmation));
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var resetLink = Url.Action("ResetPassword", "Account", new { email = user.Email, token }, Request.Scheme);
+            await _emailService.SendEmailAsync(user.Email!, "Reset Password", $"Link: {resetLink}");
+            return RedirectToAction(nameof(ForgotPasswordConfirmation));
         }
 
         [HttpGet]
         [AllowAnonymous]
-        public IActionResult ForgotPasswordConfirmation()
-        {
-            return View();
-        }
+        public IActionResult ForgotPasswordConfirmation() => View();
 
         [HttpGet]
         [AllowAnonymous]
-        public IActionResult ResetPassword(string email, string token)
-        {
-            if (string.IsNullOrEmpty(token) || string.IsNullOrEmpty(email))
-            {
-                return RedirectToAction("Login");
-            }
-            
-            var model = new ResetPasswordViewModel 
-            { 
-                Email = email, 
-                Token = token 
-            };
-            return View(model);
-        }
+        public IActionResult ResetPassword(string email, string token) => View(new ResetPasswordViewModel { Email = email, Token = token });
 
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
         {
-            if (!ModelState.IsValid)
-            {
-                return View(model);
-            }
-
+            if (!ModelState.IsValid) return View(model);
             var user = await _userManager.FindByEmailAsync(model.Email);
-            if (user == null)
-            {
-                return RedirectToAction("Login");
-            }
-
-            // Log to check 
-            Console.WriteLine($"Received Token: {model.Token}"); 
-            Console.WriteLine($"Email: {model.Email}");
-
+            if (user == null) return RedirectToAction("Login");
             var result = await _userManager.ResetPasswordAsync(user, model.Token, model.NewPassword);
-            if (result.Succeeded)
-            {
-                return RedirectToAction(nameof(ResetPasswordConfirmation));
-            }
-
-            foreach (var error in result.Errors)
-            {
-                ModelState.AddModelError(string.Empty, error.Description);
-            }
-            return View(model);
+            return result.Succeeded ? RedirectToAction(nameof(ResetPasswordConfirmation)) : View(model);
         }
 
         [HttpGet]
         [AllowAnonymous]
-        public IActionResult ResetPasswordConfirmation()
-        {
-            return View();
-        }
+        public IActionResult ResetPasswordConfirmation() => View();
     }
 }

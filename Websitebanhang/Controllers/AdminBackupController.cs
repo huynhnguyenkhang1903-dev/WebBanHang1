@@ -156,6 +156,18 @@ namespace Websitebanhang.Controllers
             return RedirectToAction("Index");
         }
 
+        [HttpGet]
+        public IActionResult Download(string fileName)
+        {
+            if (string.IsNullOrEmpty(fileName)) return BadRequest();
+
+            string backupPath = Path.Combine(_backupFolder, fileName);
+            if (!System.IO.File.Exists(backupPath)) return NotFound();
+
+            var fileBytes = System.IO.File.ReadAllBytes(backupPath);
+            return File(fileBytes, "application/octet-stream", fileName);
+        }
+
         private string GetDatabaseName()
         {
             string connectionString = _configuration.GetConnectionString("DefaultConnection") ?? "";

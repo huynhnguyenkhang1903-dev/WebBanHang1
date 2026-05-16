@@ -12,6 +12,38 @@
         <a asp-action="Add" class="btn btn-primary"><i class="fa fa-plus me-1"></i> Thêm Mới</a>
     </div>
 
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <form asp-action="Manage" method="get" class="row g-3">
+                <div class="col-md-4">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white"><i class="fa fa-search text-muted"></i></span>
+                        <input type="text" name="search" value="@ViewBag.CurrentSearch" class="form-control border-start-0" placeholder="Tìm tên sản phẩm...">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <select name="categoryId" class="form-select">
+                        <option value="">-- Tất cả danh mục --</option>
+                        @foreach (var cat in ViewBag.Categories)
+                        {
+                            <option value="@cat.Id" selected="@(ViewBag.CurrentCategory == cat.Id ? "selected" : null)">@cat.Name</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select name="hasPromotion" class="form-select">
+                        <option value="">-- Tất cả sản phẩm --</option>
+                        <option value="true" selected="@(ViewBag.CurrentPromotion == true ? "selected" : null)">Đang khuyến mãi</option>
+                        <option value="false" selected="@(ViewBag.CurrentPromotion == false ? "selected" : null)">Không khuyến mãi</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-dark w-100">Lọc</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <div class="card shadow-sm">
         <div class="card-body">
             <div class="table-responsive">
@@ -38,11 +70,13 @@
                                 <td>
                                     @if (!string.IsNullOrWhiteSpace(item.ImageUrl))
                                     {
-                                        <img src="@item.ImageUrl" alt="@item.Name" style="width: 50px; height: 50px; object-fit: cover;" class="rounded" onerror="this.onerror=null; this.src='/images/placeholder.jpg';" />
+                                        <img src="@item.ImageUrl" alt="@item.Name" style="width: 50px; height: 50px; object-fit: cover;" class="rounded" onerror="this.onerror=null; this.src='https://placehold.co/100x100?text=No+Img';" />
                                     }
                                     else
                                     {
-                                        <img src="/images/placeholder.jpg" alt="@item.Name" style="width: 50px; height: 50px; object-fit: cover;" class="rounded" onerror="this.onerror=null;" />
+                                        <div class="bg-light rounded d-flex align-items-center justify-content-center text-muted border" style="width: 50px; height: 50px;">
+                                            <i class="fa-regular fa-image" style="font-size: 12px;"></i>
+                                        </div>
                                     }
                                 </td>
                                 <td class="fw-bold">@item.Name</td>
@@ -94,7 +128,7 @@
     @if (Model.PageCount > 1)
     {
         <div class="mt-4 d-flex justify-content-center">
-            @Html.PagedListPager(Model, page => Url.Action("Manage", new { page, sortOrder = ViewBag.CurrentSort }), new PagedListRenderOptions
+            @Html.PagedListPager(Model, page => Url.Action("Manage", new { page, sortOrder = ViewBag.CurrentSort, search = ViewBag.CurrentSearch, hasPromotion = ViewBag.CurrentPromotion, categoryId = ViewBag.CurrentCategory }), new PagedListRenderOptions
             {
                 LiElementClasses = new string[] { "page-item" },
                 PageClasses = new string[] { "page-link" }

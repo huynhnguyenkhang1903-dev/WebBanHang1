@@ -1,0 +1,31 @@
+@model Websitebanhang.Models.Category
+
+@{
+    ViewData["Title"] = "Xóa Danh Mục";
+    Layout = "_AdminLayout";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="alert alert-danger text-center">
+                <i class="fa fa-exclamation-triangle fa-3x mb-3"></i>
+                <h4 class="fw-bold">Xác Nhận Xóa Danh Mục?</h4>
+                <p>Hành động này không thể hoàn tác. Các sản phẩm thuộc danh mục này sẽ bị ảnh hưởng (mất danh mục).</p>
+            </div>
+
+            <div class="card shadow-sm border-danger border-top border-4">
+                <div class="card-body p-4 text-center">
+                    <h5 class="fw-bold">@Model.Name</h5>
+                    
+                    <form asp-action="Delete" asp-route-id="@Model.Id" method="post" class="mt-4">
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="Index" class="btn btn-outline-secondary px-4">Hủy</a>
+                            <button type="submit" class="btn btn-danger px-4 fw-bold"><i class="fa fa-trash me-1"></i> Xác nhận Xóa</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

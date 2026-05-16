@@ -2,42 +2,99 @@
 
 @{
     ViewData["Title"] = "Danh Mục Sản Phẩm";
+    bool isAdmin = User.IsInRole("Admin");
+    if (isAdmin)
+    {
+        Layout = "_AdminLayout";
+    }
 }
 
-<div class="container my-5">
+<div class="container @(isAdmin ? "mt-4" : "my-5")">
     <div class="row mb-4">
-        <div class="col-12">
-            <h2 class="fw-bold text-center">☕ Danh Mục Sản Phẩm</h2>
-            <p class="text-muted text-center">Khám phá các danh mục cà phê chất lượng của chúng tôi</p>
+        <div class="col-12 d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="fw-bold mb-0">☕ Danh Mục Sản Phẩm</h2>
+                @if (!isAdmin)
+                {
+                    <p class="text-muted mb-0">Khám phá các danh mục cà phê chất lượng của chúng tôi</p>
+                }
+            </div>
+            @if (isAdmin)
+            {
+                <a asp-action="Add" class="btn btn-primary"><i class="fa fa-plus me-1"></i> Thêm Danh Mục</a>
+            }
         </div>
     </div>
 
-    <div class="row gx-4 gy-4">
-        @if (Model != null && Model.Any())
-        {
-            foreach (var item in Model)
+    @if (isAdmin)
+    {
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 80px;">ID</th>
+                                <th>Tên danh mục</th>
+                                <th class="text-end">Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model != null && Model.Any())
+                            {
+                                foreach (var item in Model)
+                                {
+                                    <tr>
+                                        <td>@item.Id</td>
+                                        <td class="fw-bold">@item.Name</td>
+                                        <td class="text-end">
+                                            <a asp-action="Update" asp-route-id="@item.Id" class="btn btn-sm btn-outline-warning"><i class="fa fa-edit"></i> Sửa</a>
+                                            <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger"><i class="fa fa-trash"></i> Xóa</a>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted">Không có danh mục nào.</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="row gx-4 gy-4">
+            @if (Model != null && Model.Any())
             {
-                <div class="col-md-4">
-                    <div class="card shadow-sm h-100 border-0 rounded-3 text-center p-4" style="transition: transform 0.3s ease;">
-                        <div class="card-body">
-                            <div class="mb-3">
-                                <i class="fa fa-coffee fa-3x" style="color: #6F4E37;"></i>
+                foreach (var item in Model)
+                {
+                    <div class="col-md-4">
+                        <div class="card shadow-sm h-100 border-0 rounded-3 text-center p-4" style="transition: transform 0.3s ease;">
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <i class="fa fa-coffee fa-3x" style="color: #6F4E37;"></i>
+                                </div>
+                                <h4 class="card-title fw-bold text-dark mb-3">@item.Name</h4>
+                                <p class="card-text text-muted mb-4">Mua các sản phẩm tuyệt vời thuộc danh mục @item.Name.</p>
+                                <a asp-controller="Product" asp-action="Index" asp-route-categoryId="@item.Id" class="btn btn-outline-dark px-4 rounded-pill">
+                                    Xem Sản Phẩm
+                                </a>
                             </div>
-                            <h4 class="card-title fw-bold text-dark mb-3">@item.Name</h4>
-                            <p class="card-text text-muted mb-4">Mua các sản phẩm tuyệt vời thuộc danh mục @item.Name.</p>
-                            <a asp-controller="Product" asp-action="Index" asp-route-categoryId="@item.Id" class="btn btn-outline-dark px-4 rounded-pill">
-                                Xem Sản Phẩm
-                            </a>
                         </div>
                     </div>
+                }
+            }
+            else
+            {
+                <div class="col-12 text-center text-muted">
+                    <p>Không có danh mục nào.</p>
                 </div>
             }
-        }
-        else
-        {
-            <div class="col-12 text-center text-muted">
-                <p>Không có danh mục nào.</p>
-            </div>
-        }
-    </div>
+        </div>
+    }
 </div>

@@ -1,6 +1,11 @@
 @model Websitebanhang.Models.SupportRequest
+@inject Websitebanhang.Services.IWebsiteSettingService SettingService
 @{
     ViewData["Title"] = "Liên Hệ Aura Coffee";
+    var hotline = await SettingService.GetSettingAsync("Hotline", "0344.506.553");
+    var email = await SettingService.GetSettingAsync("Email", "support@auracoffee.com");
+    var address = await SettingService.GetSettingAsync("Address", "123 Đường Cà Phê, TP. Hồ Chí Minh");
+    var facebook = await SettingService.GetSettingAsync("Facebook", "#");
 }
 
 <div class="container mt-5 mb-5 fade-in">
@@ -33,7 +38,7 @@
                     </div>
                     <div class="ms-3">
                         <h6 class="mb-1 fw-bold">Địa Chỉ</h6>
-                        <p class="text-muted mb-0">123 Đường Cà Phê, Quận 1, TP. Hồ Chí Minh</p>
+                        <p class="text-muted mb-0">@address</p>
                     </div>
                 </div>
 
@@ -43,7 +48,7 @@
                     </div>
                     <div class="ms-3">
                         <h6 class="mb-1 fw-bold">Hotline</h6>
-                        <p class="text-muted mb-0">0123 456 789 (Zalo/Viber)</p>
+                        <p class="text-muted mb-0">@hotline</p>
                     </div>
                 </div>
 
@@ -53,7 +58,7 @@
                     </div>
                     <div class="ms-3">
                         <h6 class="mb-1 fw-bold">Email</h6>
-                        <p class="text-muted mb-0">support@auracoffee.vn</p>
+                        <p class="text-muted mb-0">@email</p>
                     </div>
                 </div>
 
@@ -71,7 +76,7 @@
                 
                 <h6 class="fw-bold text-coffee mb-3">Kết nối Mạng Xã Hội</h6>
                 <div class="d-flex gap-3 fs-4">
-                    <a href="#" class="text-coffee"><i class="fa-brands fa-facebook"></i></a>
+                    <a href="@facebook" target="_blank" class="text-coffee"><i class="fa-brands fa-facebook"></i></a>
                     <a href="#" class="text-coffee"><i class="fa-brands fa-instagram"></i></a>
                     <a href="#" class="text-coffee"><i class="fa-brands fa-tiktok"></i></a>
                 </div>

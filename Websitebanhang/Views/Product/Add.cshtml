@@ -12,7 +12,7 @@
             
             <div class="card shadow-sm">
                 <div class="card-body p-4">
-                    <form asp-action="Add" method="post">
+                    <form asp-action="Add" method="post" enctype="multipart/form-data">
                         <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
                         <div class="mb-3">
@@ -73,10 +73,23 @@
                             </div>
                         </div>
 
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold"><i class="fa fa-image me-1"></i> Ảnh chính (Tải lên)</label>
+                                <input type="file" name="MainImage" class="form-control" accept="image/*" />
+                                <div class="form-text">Nếu tải lên ảnh, hệ thống sẽ ưu tiên dùng ảnh này thay vì Link URL.</div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="ImageUrl" class="form-label fw-bold">Hoặc Link Ảnh (URL)</label>
+                                <input asp-for="ImageUrl" class="form-control" placeholder="https://..." />
+                                <span asp-validation-for="ImageUrl" class="text-danger"></span>
+                            </div>
+                        </div>
+
                         <div class="mb-3">
-                            <label asp-for="ImageUrl" class="form-label fw-bold">Link Ảnh (URL)</label>
-                            <input asp-for="ImageUrl" class="form-control" placeholder="https://..." />
-                            <span asp-validation-for="ImageUrl" class="text-danger"></span>
+                            <label class="form-label fw-bold"><i class="fa fa-images me-1"></i> Ảnh chi tiết / Gallery (Chọn nhiều ảnh)</label>
+                            <input type="file" name="OtherImages" class="form-control" accept="image/*" multiple />
+                            <div class="form-text">Bạn có thể chọn nhiều ảnh cùng lúc để làm bộ sưu tập ảnh cho sản phẩm.</div>
                         </div>
 
                         <div class="mb-3">

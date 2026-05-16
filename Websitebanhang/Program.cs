@@ -117,12 +117,18 @@ var supportedCultures = new[]
     new CultureInfo("ms")      // 🇲🇾 Malay
 };
 
-app.UseRequestLocalization(new RequestLocalizationOptions
+var localizationOptions = new RequestLocalizationOptions
 {
     DefaultRequestCulture = new RequestCulture("vi"),
     SupportedCultures = supportedCultures,
     SupportedUICultures = supportedCultures
-});
+};
+
+// Ưu tiên đọc ngôn ngữ từ Cookie
+localizationOptions.RequestCultureProviders.Clear();
+localizationOptions.RequestCultureProviders.Add(new CookieRequestCultureProvider());
+
+app.UseRequestLocalization(localizationOptions);
 
 // ================= MIDDLEWARE =================
 if (!app.Environment.IsDevelopment())

@@ -20,19 +20,22 @@ namespace Websitebanhang.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly AppDbContext _context;
         private readonly Services.IActivityLogService _activityLogService;
+        private readonly IWebHostEnvironment _env;
 
         public ProductController(
             IProductRepository productRepository,
             ICategoryRepository categoryRepository,
             UserManager<ApplicationUser> userManager,
             AppDbContext context,
-            Services.IActivityLogService activityLogService)
+            Services.IActivityLogService activityLogService,
+            IWebHostEnvironment env)
         {
             _productRepository = productRepository;
             _categoryRepository = categoryRepository;
             _userManager = userManager;
             _context = context;
             _activityLogService = activityLogService;
+            _env = env;
         }
 
         [AllowAnonymous]
@@ -86,7 +89,7 @@ namespace Websitebanhang.Controllers
 
             if (hasPromotion == true)
             {
-                products = products.Where(p => p.VoucherId != null);
+                products = products.Where(p => p.VoucherId != null && p.Voucher != null && p.Voucher.ExpiryDate >= DateTime.Now);
             }
 
             // ================= SORT =================
@@ -239,15 +242,36 @@ namespace Websitebanhang.Controllers
         // ================= ADMIN =================
 
         [Authorize(Roles = "Admin")]
-        public IActionResult Manage(string sortOrder, int page = 1)
+        public IActionResult Manage(string sortOrder, string search, bool? hasPromotion, int? categoryId, int page = 1)
         {
             ViewBag.CurrentSort = sortOrder;
+            ViewBag.CurrentSearch = search;
+            ViewBag.CurrentPromotion = hasPromotion;
+            ViewBag.CurrentCategory = categoryId;
+
             ViewBag.NameSortParm = string.IsNullOrEmpty(sortOrder) ? "name_desc" : "";
             ViewBag.PriceSortParm = sortOrder == "Price" ? "price_desc" : "Price";
             ViewBag.UnitSortParm = sortOrder == "Unit" ? "unit_desc" : "Unit";
 
             var products = _context.Products.Include(p => p.Category).AsQueryable();
 
+            // FILTER
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                products = products.Where(p => p.Name.Contains(search));
+            }
+
+            if (hasPromotion == true)
+            {
+                products = products.Where(p => p.VoucherId != null);
+            }
+
+            if (categoryId.HasValue)
+            {
+                products = products.Where(p => p.CategoryId == categoryId);
+            }
+
+            // SORT
             switch (sortOrder)
             {
                 case "name_desc":
@@ -270,6 +294,8 @@ namespace Websitebanhang.Controllers
                     break;
             }
 
+            ViewBag.Categories = _context.Categories.ToList();
+
             int pageSize = 10;
             return View(products.ToPagedList(page, pageSize));
         }
@@ -286,11 +312,54 @@ namespace Websitebanhang.Controllers
 
         [HttpPost]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Add(ProductModel product)
+        public async Task<IActionResult> Add(ProductModel product, IFormFile? MainImage, List<IFormFile>? OtherImages)
         {
             if (ModelState.IsValid)
             {
+                // 1. Xử lý ảnh chính (MainImage)
+                if (MainImage != null && MainImage.Length > 0)
+                {
+                    string fileName = Guid.NewGuid().ToString() + Path.GetExtension(MainImage.FileName);
+                    string filePath = Path.Combine(_env.WebRootPath, "images", "products", fileName);
+                    
+                    // Tạo thư mục nếu chưa có
+                    string? directory = Path.GetDirectoryName(filePath);
+                    if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory)) 
+                        Directory.CreateDirectory(directory);
+
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await MainImage.CopyToAsync(stream);
+                    }
+                    product.ImageUrl = "/images/products/" + fileName;
+                }
+
                 _productRepository.Add(product);
+
+                // 2. Xử lý ảnh phụ (OtherImages)
+                if (OtherImages != null && OtherImages.Count > 0)
+                {
+                    foreach (var file in OtherImages)
+                    {
+                        if (file.Length > 0)
+                        {
+                            string fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+                            string filePath = Path.Combine(_env.WebRootPath, "images", "products", fileName);
+
+                            using (var stream = new FileStream(filePath, FileMode.Create))
+                            {
+                                await file.CopyToAsync(stream);
+                            }
+
+                            var productImage = new ProductImage
+                            {
+                                ProductId = product.Id,
+                                ImageUrl = "/images/products/" + fileName
+                            };
+                            _context.ProductImages.Add(productImage);
+                        }
+                    }
+                }
 
                 // Log history
                 var history = new StockHistory
@@ -331,15 +400,57 @@ namespace Websitebanhang.Controllers
 
         [HttpPost]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Update(ProductModel product)
+        public async Task<IActionResult> Update(ProductModel product, IFormFile? MainImage, List<IFormFile>? OtherImages)
         {
             if (ModelState.IsValid)
             {
-                // Lấy stock cũ trước khi update
+                // 1. Xử lý ảnh chính mới (nếu có tải lên)
+                if (MainImage != null && MainImage.Length > 0)
+                {
+                    string fileName = Guid.NewGuid().ToString() + Path.GetExtension(MainImage.FileName);
+                    string filePath = Path.Combine(_env.WebRootPath, "images", "products", fileName);
+
+                    string? directory = Path.GetDirectoryName(filePath);
+                    if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory)) 
+                        Directory.CreateDirectory(directory);
+
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await MainImage.CopyToAsync(stream);
+                    }
+                    product.ImageUrl = "/images/products/" + fileName;
+                }
+
+                // Lấy stock cũ trước khi update để log
                 var oldProduct = await _context.Products.AsNoTracking().FirstOrDefaultAsync(p => p.Id == product.Id);
                 int oldStock = oldProduct?.Stock ?? 0;
 
                 _productRepository.Update(product);
+
+                // 2. Xử lý ảnh phụ mới (nếu có tải lên)
+                if (OtherImages != null && OtherImages.Count > 0)
+                {
+                    foreach (var file in OtherImages)
+                    {
+                        if (file.Length > 0)
+                        {
+                            string fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+                            string filePath = Path.Combine(_env.WebRootPath, "images", "products", fileName);
+
+                            using (var stream = new FileStream(filePath, FileMode.Create))
+                            {
+                                await file.CopyToAsync(stream);
+                            }
+
+                            var productImage = new ProductImage
+                            {
+                                ProductId = product.Id,
+                                ImageUrl = "/images/products/" + fileName
+                            };
+                            _context.ProductImages.Add(productImage);
+                        }
+                    }
+                }
 
                 // Nếu có thay đổi stock thì log
                 if (product.Stock != oldStock)
@@ -356,8 +467,9 @@ namespace Websitebanhang.Controllers
                         UserId = (await _userManager.GetUserAsync(User))?.Id
                     };
                     _context.StockHistories.Add(history);
-                    await _context.SaveChangesAsync();
                 }
+
+                await _context.SaveChangesAsync();
                 await _activityLogService.LogAsync("Cập nhật SP", "Product", product.Id.ToString(), $"Admin đã cập nhật sản phẩm: {product.Name}");
 
                 return RedirectToAction("Manage");
@@ -379,6 +491,9 @@ namespace Websitebanhang.Controllers
             return View(product);
         }
 
+        [HttpPost, ActionName("Delete")]
+        [Authorize(Roles = "Admin")]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var product = _productRepository.GetById(id);
