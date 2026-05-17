@@ -217,14 +217,7 @@
         <div class="bg-white p-4 p-md-5 rounded-4 shadow-sm">
             <h3 class="text-coffee fw-bold border-bottom pb-3 mb-4">Đánh Giá Sản Phẩm</h3>
             
-            @if (TempData["Success"] != null)
-            {
-                <div class="alert alert-success">@TempData["Success"]</div>
-            }
-            @if (TempData["Error"] != null)
-            {
-                <div class="alert alert-danger">@TempData["Error"]</div>
-            }
+
 
             <div class="row">
                 <!-- Review Form -->
@@ -304,39 +297,7 @@
                                                 <i class="fa-solid fa-flag me-1 text-danger"></i>Báo cáo
                                             </button>
 
-                                            <!-- Report Modal -->
-                                            <div class="modal fade" id="reportModal-@review.Id" tabindex="-1">
-                                                <div class="modal-dialog modal-sm">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header py-2">
-                                                            <h6 class="modal-title"><i class="fa-solid fa-flag text-danger me-2"></i>Báo cáo bình luận</h6>
-                                                            <button type="button" class="btn-close btn-sm" data-bs-dismiss="modal"></button>
-                                                        </div>
-                                                        <form asp-controller="Product" asp-action="ReportReview" method="post">
-                                                            @Html.AntiForgeryToken()
-                                                            <input type="hidden" name="reviewId" value="@review.Id" />
-                                                            <input type="hidden" name="productId" value="@Model.Id" />
-                                                            <div class="modal-body">
-                                                                <label class="form-label small fw-medium">Lý do báo cáo</label>
-                                                                <select name="reason" class="form-select form-select-sm" required>
-                                                                    <option value="">-- Chọn lý do --</option>
-                                                                    <option value="Nội dung tục tử">Nội dung tục tử</option>
-                                                                    <option value="Spam / Quảng cáo">Spam / Quảng cáo</option>
-                                                                    <option value="Thông tin sai sự thật">Thông tin sai sự thật</option>
-                                                                    <option value="Ngôn ngữ thù hằn / khích lệ bạo lực">Ngôn ngữ thù hằn</option>
-                                                                    <option value="Lý do khác">Lý do khác</option>
-                                                                </select>
-                                                            </div>
-                                                            <div class="modal-footer py-2">
-                                                                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Hủy</button>
-                                                                <button type="submit" class="btn btn-danger btn-sm">
-                                                                    <i class="fa-solid fa-flag me-1"></i>Gửi báo cáo
-                                                                </button>
-                                                            </div>
-                                                        </form>
-                                                    </div>
-                                                </div>
-                                            </div>
+
                                         }
                                     </div>
                                 </div>
@@ -404,3 +365,43 @@
         </div>
     }
 </div>
+
+@if (User.Identity != null && User.Identity.IsAuthenticated && Model.Reviews != null)
+{
+    foreach (var review in Model.Reviews.Where(r => r.IsApproved && !r.IsHidden))
+    {
+        <!-- Report Modal -->
+        <div class="modal fade" id="reportModal-@review.Id" tabindex="-1">
+            <div class="modal-dialog modal-sm modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header py-2">
+                        <h6 class="modal-title"><i class="fa-solid fa-flag text-danger me-2"></i>Báo cáo bình luận</h6>
+                        <button type="button" class="btn-close btn-sm" data-bs-dismiss="modal"></button>
+                    </div>
+                    <form asp-controller="Product" asp-action="ReportReview" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="reviewId" value="@review.Id" />
+                        <input type="hidden" name="productId" value="@Model.Id" />
+                        <div class="modal-body">
+                            <label class="form-label small fw-medium">Lý do báo cáo</label>
+                            <select name="reason" class="form-select form-select-sm" required>
+                                <option value="">-- Chọn lý do --</option>
+                                <option value="Nội dung tục tĩu">Nội dung tục tĩu</option>
+                                <option value="Spam / Quảng cáo">Spam / Quảng cáo</option>
+                                <option value="Thông tin sai sự thật">Thông tin sai sự thật</option>
+                                <option value="Ngôn ngữ thù hằn / khích lệ bạo lực">Ngôn ngữ thù hằn</option>
+                                <option value="Lý do khác">Lý do khác</option>
+                            </select>
+                        </div>
+                        <div class="modal-footer py-2">
+                            <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Hủy</button>
+                            <button type="submit" class="btn btn-danger btn-sm">
+                                <i class="fa-solid fa-flag me-1"></i>Gửi báo cáo
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    }
+}

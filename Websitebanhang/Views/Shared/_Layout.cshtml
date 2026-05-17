@@ -338,7 +338,7 @@
         {
             <text>
             Toastify({
-                text: "@TempData["Success"]",
+                text: @Html.Raw(Json.Serialize(TempData["Success"])),
                 duration: 5000,
                 gravity: "top",
                 position: "right",
@@ -350,7 +350,7 @@
         {
             <text>
             Toastify({
-                text: "@TempData["Error"]",
+                text: @Html.Raw(Json.Serialize(TempData["Error"])),
                 duration: 5000,
                 gravity: "top",
                 position: "right",

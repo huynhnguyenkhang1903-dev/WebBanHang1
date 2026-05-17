@@ -176,11 +176,38 @@ namespace Websitebanhang.Controllers
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
-        public IActionResult ExternalLogin(string provider, string returnUrl = null)
+        public async Task<IActionResult> ExternalLogin(string provider, string returnUrl = null)
         {
-            var redirectUrl = Url.Action("ExternalLoginCallback", "Account", new { returnUrl });
-            var properties = _signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
-            return Challenge(properties, provider);
+            // MOCK LOGIN: Tự động đăng nhập mà không cần ClientID/Secret thật
+            string mockEmail = provider == "Google" ? "trantan45674567@gmail.com" : "vcao12097@gmail.com";
+            string mockName = provider == "Google" ? "Tran Tan (Google)" : "V Cao (Facebook)";
+
+            var user = await _userManager.FindByEmailAsync(mockEmail);
+            if (user == null)
+            {
+                user = new ApplicationUser
+                {
+                    UserName = mockEmail,
+                    Email = mockEmail,
+                    FullName = mockName,
+                    EmailConfirmed = true,
+                    ReferralCode = Guid.NewGuid().ToString("N").Substring(0, 8).ToUpper()
+                };
+                
+                // Mật khẩu "tienvinh00" của bạn thiếu ký tự hoa và ký tự đặc biệt theo yêu cầu của hệ thống.
+                // Do đó hệ thống tạm dùng "Tienvinh00@" để khởi tạo. Bạn có thể đăng nhập bằng nút Google/Facebook.
+                var result = await _userManager.CreateAsync(user, "Tienvinh00@");
+                if (result.Succeeded)
+                {
+                    await _userManager.AddToRoleAsync(user, "User");
+                }
+            }
+
+            await _signInManager.SignInAsync(user, isPersistent: false);
+            await MergeSessionWishlistToDatabaseAsync(user);
+
+            returnUrl = returnUrl ?? Url.Content("~/");
+            return LocalRedirect(returnUrl);
         }
 
         [AllowAnonymous]
@@ -429,23 +456,54 @@ namespace Websitebanhang.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Profile(ProfileViewModel model)
         {
-            if (!ModelState.IsValid) return View(model);
             var user = await _userManager.GetUserAsync(User!);
             if (user == null) return RedirectToAction("Login");
+
+            if (!ModelState.IsValid) 
+            {
+                model.Orders = await _context.Orders.Include(o => o.Items).Where(o => o.Email == user.Email).OrderByDescending(o => o.OrderDate).ToListAsync();
+                model.Addresses = await _context.UserAddresses.Where(a => a.UserId == user.Id).ToListAsync();
+                model.ViewHistory = await _context.ProductViewHistories.Include(h => h.Product).Where(h => h.UserId == user.Id).OrderByDescending(h => h.ViewedAt).Take(10).ToListAsync();
+                model.PointHistory = await _context.RewardPointHistories.Where(h => h.UserId == user.Id).OrderByDescending(h => h.CreatedAt).Take(20).ToListAsync();
+                model.RewardPoints = user.RewardPoints;
+                model.ReferralCode = user.ReferralCode;
+                model.Email = user.Email;
+                return View(model);
+            }
 
             user!.FullName = model.FullName ?? "";
             user.Address = model.Address ?? "";
             user.PhoneNumber = model.PhoneNumber;
             user.DateOfBirth = model.DateOfBirth;
+            
+            bool isUserNameChanged = false;
+            if (!string.IsNullOrWhiteSpace(model.UserName) && model.UserName != user.UserName)
+            {
+                user.UserName = model.UserName;
+                isUserNameChanged = true;
+            }
 
             var result = await _userManager.UpdateAsync(user);
             if (result.Succeeded)
             {
+                if (isUserNameChanged)
+                {
+                    await _signInManager.RefreshSignInAsync(user);
+                }
                 TempData["SuccessMessage"] = "Cập nhật thành công!";
                 return RedirectToAction("Profile");
             }
 
             foreach (var error in result.Errors) ModelState.AddModelError("", error.Description);
+            
+            model.Orders = await _context.Orders.Include(o => o.Items).Where(o => o.Email == user.Email).OrderByDescending(o => o.OrderDate).ToListAsync();
+            model.Addresses = await _context.UserAddresses.Where(a => a.UserId == user.Id).ToListAsync();
+            model.ViewHistory = await _context.ProductViewHistories.Include(h => h.Product).Where(h => h.UserId == user.Id).OrderByDescending(h => h.ViewedAt).Take(10).ToListAsync();
+            model.PointHistory = await _context.RewardPointHistories.Where(h => h.UserId == user.Id).OrderByDescending(h => h.CreatedAt).Take(20).ToListAsync();
+            model.RewardPoints = user.RewardPoints;
+            model.ReferralCode = user.ReferralCode;
+            model.Email = user.Email;
+            
             return View(model);
         }
 
