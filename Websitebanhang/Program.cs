@@ -62,12 +62,38 @@ builder.Services.AddAuthentication()
         var googleAuthNSection = builder.Configuration.GetSection("Authentication:Google");
         options.ClientId = googleAuthNSection["ClientId"]!;
         options.ClientSecret = googleAuthNSection["ClientSecret"]!;
+        
+        // Force Google to show the account selection screen
+        options.Events = new Microsoft.AspNetCore.Authentication.OAuth.OAuthEvents
+        {
+            OnRedirectToAuthorizationEndpoint = context =>
+            {
+                context.Response.Redirect(context.RedirectUri + "&prompt=select_account");
+                return Task.CompletedTask;
+            },
+            OnRemoteFailure = context =>
+            {
+                context.Response.Redirect("/Account/Login?remoteError=" + System.Net.WebUtility.UrlEncode(context.Failure?.Message ?? "Authentication failed"));
+                context.HandleResponse();
+                return Task.CompletedTask;
+            }
+        };
     })
     .AddFacebook(options =>
     {
         var facebookAuthNSection = builder.Configuration.GetSection("Authentication:Facebook");
         options.AppId = facebookAuthNSection["AppId"]!;
         options.AppSecret = facebookAuthNSection["AppSecret"]!;
+        
+        options.Events = new Microsoft.AspNetCore.Authentication.OAuth.OAuthEvents
+        {
+            OnRemoteFailure = context =>
+            {
+                context.Response.Redirect("/Account/Login?remoteError=" + System.Net.WebUtility.UrlEncode(context.Failure?.Message ?? "Authentication failed"));
+                context.HandleResponse();
+                return Task.CompletedTask;
+            }
+        };
     });
 
 // ================= COOKIE =================

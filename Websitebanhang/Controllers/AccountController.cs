@@ -43,8 +43,12 @@ namespace Websitebanhang.Controllers
             _settingService = settingService;
         }
 
-        public IActionResult Login()
+        public IActionResult Login(string remoteError = null)
         {
+            if (!string.IsNullOrEmpty(remoteError))
+            {
+                ModelState.AddModelError("", remoteError);
+            }
             return View();
         }
 
@@ -176,38 +180,11 @@ namespace Websitebanhang.Controllers
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ExternalLogin(string provider, string returnUrl = null)
+        public IActionResult ExternalLogin(string provider, string returnUrl = null)
         {
-            // MOCK LOGIN: Tự động đăng nhập mà không cần ClientID/Secret thật
-            string mockEmail = provider == "Google" ? "trantan45674567@gmail.com" : "vcao12097@gmail.com";
-            string mockName = provider == "Google" ? "Tran Tan (Google)" : "V Cao (Facebook)";
-
-            var user = await _userManager.FindByEmailAsync(mockEmail);
-            if (user == null)
-            {
-                user = new ApplicationUser
-                {
-                    UserName = mockEmail,
-                    Email = mockEmail,
-                    FullName = mockName,
-                    EmailConfirmed = true,
-                    ReferralCode = Guid.NewGuid().ToString("N").Substring(0, 8).ToUpper()
-                };
-                
-                // Mật khẩu "tienvinh00" của bạn thiếu ký tự hoa và ký tự đặc biệt theo yêu cầu của hệ thống.
-                // Do đó hệ thống tạm dùng "Tienvinh00@" để khởi tạo. Bạn có thể đăng nhập bằng nút Google/Facebook.
-                var result = await _userManager.CreateAsync(user, "Tienvinh00@");
-                if (result.Succeeded)
-                {
-                    await _userManager.AddToRoleAsync(user, "User");
-                }
-            }
-
-            await _signInManager.SignInAsync(user, isPersistent: false);
-            await MergeSessionWishlistToDatabaseAsync(user);
-
-            returnUrl = returnUrl ?? Url.Content("~/");
-            return LocalRedirect(returnUrl);
+            var redirectUrl = Url.Action("ExternalLoginCallback", "Account", new { returnUrl });
+            var properties = _signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
+            return Challenge(properties, provider);
         }
 
         [AllowAnonymous]
