@@ -5,7 +5,7 @@ using Websitebanhang.Models;
 
 namespace Websitebanhang.Controllers
 {
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,NhanVien")]
     public class UnitController : Controller
     {
         private readonly AppDbContext _context;
@@ -67,6 +67,7 @@ namespace Websitebanhang.Controllers
             return View(model);
         }
 
+        [Authorize(Roles = "Admin")]
         public IActionResult Delete(int id)
         {
             var unit = _context.UnitsOfMeasure.Find(id);
@@ -75,6 +76,7 @@ namespace Websitebanhang.Controllers
         }
 
         [HttpPost, ActionName("Delete")]
+        [Authorize(Roles = "Admin")]
         [ValidateAntiForgeryToken]
         public IActionResult DeleteConfirmed(int id)
         {

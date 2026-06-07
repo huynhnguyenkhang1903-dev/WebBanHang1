@@ -10,7 +10,7 @@ using System;
 
 namespace Websitebanhang.Controllers
 {
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,NhanVien")]
     public class OrderController : Controller
     {
         private readonly AppDbContext _context;
@@ -31,13 +31,13 @@ namespace Websitebanhang.Controllers
             if (user == null)
                 return RedirectToAction("Login", "Account");
 
-            var isAdmin = await _userManager.IsInRoleAsync(user, "Admin");
+            var isAdminOrStaff = await _userManager.IsInRoleAsync(user, "Admin") || await _userManager.IsInRoleAsync(user, "NhanVien");
 
             IQueryable<Order> query = _context.Orders
                 .Include(o => o.Items)
                 .OrderByDescending(o => o.OrderDate);
 
-            if (!isAdmin)
+            if (!isAdminOrStaff)
             {
                 query = query.Where(o => o.UserId == user.Id);
             }
@@ -49,7 +49,7 @@ namespace Websitebanhang.Controllers
         // Các hàm dưới giữ nguyên của bạn
 
         [HttpPost]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,NhanVien")]
         public async Task<IActionResult> CapNhatTrangThai(int id, string trangThai)
         {
             var order = await _context.Orders

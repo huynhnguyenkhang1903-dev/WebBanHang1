@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Websitebanhang.Controllers
 {
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,NhanVien")]
     public class AdminSupportController : Controller
     {
         private readonly AppDbContext _context;
@@ -44,6 +44,7 @@ namespace Websitebanhang.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
         {
             var request = await _context.SupportRequests.FindAsync(id);

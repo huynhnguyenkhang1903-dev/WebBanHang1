@@ -194,5 +194,10 @@ namespace Websitebanhang.Controllers
 
             return View(model);
         }
+
+        public IActionResult DataDeletion()
+        {
+            return View();
+        }
     }
 }

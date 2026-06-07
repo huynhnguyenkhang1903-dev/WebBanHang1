@@ -111,11 +111,19 @@
                     @if (Model.Role == "Admin")
                     {
                         <option value="Admin" selected>Quản trị viên (Admin)</option>
+                        <option value="NhanVien">Nhân viên (NhanVien)</option>
+                        <option value="User">Người dùng (User)</option>
+                    }
+                    else if (Model.Role == "NhanVien")
+                    {
+                        <option value="Admin">Quản trị viên (Admin)</option>
+                        <option value="NhanVien" selected>Nhân viên (NhanVien)</option>
                         <option value="User">Người dùng (User)</option>
                     }
                     else
                     {
                         <option value="Admin">Quản trị viên (Admin)</option>
+                        <option value="NhanVien">Nhân viên (NhanVien)</option>
                         <option value="User" selected>Người dùng (User)</option>
                     }
                 </select>

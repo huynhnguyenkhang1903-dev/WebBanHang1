@@ -20,14 +20,14 @@ namespace Websitebanhang.Controllers
             return View(categories);
         }
 
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,NhanVien")]
         public IActionResult Add()
         {
             return View();
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,NhanVien")]
         [ValidateAntiForgeryToken]
         public IActionResult Add(Category category)
         {
@@ -39,7 +39,7 @@ namespace Websitebanhang.Controllers
             return View(category);
         }
 
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,NhanVien")]
         public IActionResult Update(int id)
         {
             var category = _categoryRepository.GetById(id);
@@ -48,7 +48,7 @@ namespace Websitebanhang.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,NhanVien")]
         [ValidateAntiForgeryToken]
         public IActionResult Update(Category category)
         {

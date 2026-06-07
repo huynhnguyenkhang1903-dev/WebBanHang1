@@ -6,7 +6,7 @@ using Websitebanhang.Models;
 
 namespace Websitebanhang.Controllers
 {
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,NhanVien")]
     public class AdminBannerController : Controller
     {
         private readonly AppDbContext _context;
@@ -140,6 +140,7 @@ namespace Websitebanhang.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
         {
             var banner = await _context.Banners.FindAsync(id);

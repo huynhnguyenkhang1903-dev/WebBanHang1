@@ -106,7 +106,7 @@
                                 <td>@item.Price.ToString("N0") ₫</td>
                                 <td>@(item.Price * item.Quantity) ₫</td>
                                 <td class="text-center">
-                                    @if (status != "Delivered" && status != "Cancelled")
+                                    @if (status != "Delivered" && status != "Cancelled" && User.IsInRole("Admin"))
                                     {
                                         <form asp-action="RemoveItem" method="post" onsubmit="return confirm('Xóa sản phẩm này khỏi đơn hàng?');">
                                             @Html.AntiForgeryToken()
@@ -167,7 +167,7 @@
 
     <div class="text-center">
 
-        @if (User.IsInRole("Admin"))
+        @if (User.IsInRole("Admin") || User.IsInRole("NhanVien"))
         {
             <!-- CẬP NHẬT TRẠNG THÁI NHANH -->
             <form asp-action="UpdateStatus" method="post" class="mb-4 p-3 border rounded bg-light text-start mx-auto" style="max-width: 500px;">
@@ -255,26 +255,35 @@
                             <p class="small text-muted mt-2"><i class="fa-solid fa-clock me-1"></i> Ngày yêu cầu: @Model.ReturnRequestedAt?.ToString("dd/MM/yyyy HH:mm")</p>
                         </div>
                         
-                        <form method="post" class="mt-4">
-                            @Html.AntiForgeryToken()
-                            <input type="hidden" name="id" value="@Model.Id" />
-                            <div class="mb-4">
-                                <label class="form-label fw-bold">Phản hồi của Admin (Sẽ hiển thị cho khách):</label>
-                                <textarea name="adminNote" class="form-control rounded-3" rows="3" placeholder="Ví dụ: Đồng ý hoàn tiền do sản phẩm lỗi / Từ chối do quá thời hạn trả hàng..."></textarea>
-                            </div>
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <button type="submit" asp-action="ApproveReturn" class="btn btn-success w-100 py-3 rounded-3 shadow-sm fw-bold" onclick="return confirm('Xác nhận Duyệt trả hàng? Hệ thống sẽ tự động hoàn kho và trừ điểm thưởng đã tích.')">
-                                        <i class="fa-solid fa-check-circle me-2"></i> DUYỆT TRẢ HÀNG
-                                    </button>
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <form method="post" class="mt-4">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@Model.Id" />
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold">Phản hồi của Admin (Sẽ hiển thị cho khách):</label>
+                                    <textarea name="adminNote" class="form-control rounded-3" rows="3" placeholder="Ví dụ: Đồng ý hoàn tiền do sản phẩm lỗi / Từ chối do quá thời hạn trả hàng..."></textarea>
                                 </div>
-                                <div class="col-md-6">
-                                    <button type="submit" asp-action="RejectReturn" class="btn btn-outline-danger w-100 py-3 rounded-3 shadow-sm fw-bold" onclick="return confirm('Xác nhận Từ chối yêu cầu này?')">
-                                        <i class="fa-solid fa-times-circle me-2"></i> TỪ CHỐI YÊU CẦU
-                                    </button>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <button type="submit" asp-action="ApproveReturn" class="btn btn-success w-100 py-3 rounded-3 shadow-sm fw-bold" onclick="return confirm('Xác nhận Duyệt trả hàng? Hệ thống sẽ tự động hoàn kho và trừ điểm thưởng đã tích.')">
+                                            <i class="fa-solid fa-check-circle me-2"></i> DUYỆT TRẢ HÀNG
+                                        </button>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <button type="submit" asp-action="RejectReturn" class="btn btn-outline-danger w-100 py-3 rounded-3 shadow-sm fw-bold" onclick="return confirm('Xác nhận Từ chối yêu cầu này?')">
+                                            <i class="fa-solid fa-times-circle me-2"></i> TỪ CHỐI YÊU CẦU
+                                        </button>
+                                    </div>
                                 </div>
+                            </form>
+                        }
+                        else
+                        {
+                            <div class="alert alert-warning mt-3">
+                                <i class="fa-solid fa-lock me-2"></i> Chỉ Admin mới có quyền duyệt yêu cầu trả hàng.
                             </div>
-                        </form>
+                        }
                     </div>
                 </div>
             }

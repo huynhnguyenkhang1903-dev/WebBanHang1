@@ -9,7 +9,7 @@ using Websitebanhang.Services;
 
 namespace Websitebanhang.Controllers
 {
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,NhanVien")]
     public class AdminVoucherController : Controller
     {
         private readonly AppDbContext _context;
@@ -71,6 +71,7 @@ namespace Websitebanhang.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
         {
             var voucher = await _context.Voucher.FindAsync(id);

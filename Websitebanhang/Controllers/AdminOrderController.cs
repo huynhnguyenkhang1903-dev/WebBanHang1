@@ -11,7 +11,7 @@ using Websitebanhang.Hubs;
 
 namespace Websitebanhang.Controllers
 {
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,NhanVien")]
     public class AdminOrderController : Controller
     {
         private readonly AppDbContext _context;
@@ -54,6 +54,7 @@ namespace Websitebanhang.Controllers
         }
 
         // ================= DOANH THU =================
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Revenue(DateTime? from, DateTime? to)
         {
             var start = (from ?? DateTime.Now.AddDays(-30)).Date;
@@ -387,6 +388,7 @@ namespace Websitebanhang.Controllers
         // ================= DUYỆT TRẢ HÀNG / HOÀN TIỀN =================
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> ApproveReturn(int id, string adminNote)
         {
             var order = await _context.Orders.Include(o => o.Items).FirstOrDefaultAsync(o => o.Id == id);
@@ -465,6 +467,7 @@ namespace Websitebanhang.Controllers
         // ================= TỪ CHỐI TRẢ HÀNG =================
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> RejectReturn(int id, string adminNote)
         {
             var order = await _context.Orders.FindAsync(id);
@@ -513,6 +516,7 @@ namespace Websitebanhang.Controllers
         // ================= XÓA SẢN PHẨM KHỎI ĐƠN =================
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> RemoveItem(int itemId, int orderId)
         {
             var order = await _context.Orders

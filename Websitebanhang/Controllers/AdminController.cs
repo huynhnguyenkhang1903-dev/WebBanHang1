@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Websitebanhang.Controllers
 {
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,NhanVien")]
     public class AdminController : Controller
     {
         private readonly AppDbContext _context;

@@ -9,7 +9,7 @@ using Websitebanhang.Services;
 
 namespace Websitebanhang.Controllers
 {
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,NhanVien")]
     public class PromotionController : Controller
     {
         private readonly AppDbContext _context;
@@ -75,6 +75,7 @@ namespace Websitebanhang.Controllers
         // DELETE (Using Post for direct deletion from Index or a separate Delete view)
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
         {
             var promo = await _context.Promotions.FindAsync(id);

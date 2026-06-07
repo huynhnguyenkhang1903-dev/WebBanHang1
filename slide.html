@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WebBanHang1 – Giới thiệu dự án</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Inter',sans-serif;background:#0a0e1a;color:#fff;overflow:hidden;height:100vh;}
+
+  /* SLIDES */
+  .slides{width:100%;height:100vh;position:relative;}
+  .slide{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:60px;opacity:0;transform:translateY(30px);transition:all .6s cubic-bezier(.4,0,.2,1);pointer-events:none;}
+  .slide.active{opacity:1;transform:translateY(0);pointer-events:all;}
+
+  /* NAV */
+  .nav{position:fixed;bottom:36px;left:50%;transform:translateX(-50%);display:flex;gap:10px;z-index:100;}
+  .dot{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,.25);cursor:pointer;transition:.3s;}
+  .dot.active{background:#6c63ff;transform:scale(1.3);}
+  .arrows{position:fixed;bottom:28px;z-index:100;}
+  .arr-left{left:40px;} .arr-right{right:40px;}
+  .arrows{position:fixed;bottom:28px;}
+  .arrow-btn{position:fixed;bottom:28px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:#fff;padding:10px 22px;border-radius:30px;cursor:pointer;font-size:16px;backdrop-filter:blur(8px);transition:.3s;}
+  .arrow-btn:hover{background:rgba(108,99,255,.4);}
+  #prevBtn{left:40px;} #nextBtn{right:40px;}
+
+  /* SLIDE 1 – COVER */
+  .slide-1{background:linear-gradient(135deg,#0a0e1a 0%,#12183a 50%,#0a0e1a 100%);}
+  .slide-1::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 30% 50%,rgba(108,99,255,.25) 0%,transparent 60%),radial-gradient(ellipse at 70% 50%,rgba(0,210,255,.15) 0%,transparent 60%);}
+  .logo-icon{font-size:72px;margin-bottom:20px;animation:float 3s ease-in-out infinite;}
+  @keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-12px);}}
+  .cover-title{font-size:56px;font-weight:800;background:linear-gradient(90deg,#6c63ff,#00d2ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-align:center;line-height:1.1;}
+  .cover-sub{font-size:20px;color:rgba(255,255,255,.6);margin-top:16px;text-align:center;}
+  .cover-badge{margin-top:32px;display:flex;gap:12px;flex-wrap:wrap;justify-content:center;}
+  .badge{padding:6px 18px;border-radius:20px;font-size:13px;font-weight:600;border:1px solid;}
+  .badge-blue{border-color:#6c63ff;color:#6c63ff;background:rgba(108,99,255,.1);}
+  .badge-cyan{border-color:#00d2ff;color:#00d2ff;background:rgba(0,210,255,.1);}
+  .badge-green{border-color:#00e676;color:#00e676;background:rgba(0,230,118,.1);}
+
+  /* SLIDE 2 – TỔNG QUAN */
+  .slide-2{background:linear-gradient(135deg,#0d1117,#161b2e);}
+  .section-title{font-size:38px;font-weight:800;margin-bottom:8px;text-align:center;}
+  .section-line{width:60px;height:4px;background:linear-gradient(90deg,#6c63ff,#00d2ff);border-radius:2px;margin:0 auto 40px;}
+  .overview-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;width:100%;max-width:1000px;}
+  .ov-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:28px 22px;text-align:center;transition:.3s;}
+  .ov-card:hover{background:rgba(108,99,255,.12);border-color:rgba(108,99,255,.4);transform:translateY(-4px);}
+  .ov-icon{font-size:38px;margin-bottom:12px;}
+  .ov-label{font-size:14px;color:rgba(255,255,255,.5);margin-bottom:6px;}
+  .ov-value{font-size:22px;font-weight:700;color:#fff;}
+
+  /* SLIDE 3 – TÍNH NĂNG */
+  .slide-3{background:linear-gradient(135deg,#0d1117,#0f1f0f);}
+  .feat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;width:100%;max-width:900px;}
+  .feat-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:22px;display:flex;align-items:flex-start;gap:16px;transition:.3s;}
+  .feat-card:hover{background:rgba(0,230,118,.08);border-color:rgba(0,230,118,.3);transform:translateX(4px);}
+  .feat-icon{font-size:30px;flex-shrink:0;}
+  .feat-title{font-size:15px;font-weight:700;margin-bottom:6px;}
+  .feat-desc{font-size:13px;color:rgba(255,255,255,.55);line-height:1.5;}
+
+  /* SLIDE 4 – KIẾN TRÚC */
+  .slide-4{background:linear-gradient(135deg,#0d1117,#1a0d2e);}
+  .arch-flow{display:flex;align-items:center;gap:0;width:100%;max-width:900px;margin-top:20px;}
+  .arch-box{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:22px 18px;text-align:center;flex:1;transition:.3s;}
+  .arch-box:hover{background:rgba(108,99,255,.15);border-color:rgba(108,99,255,.5);}
+  .arch-icon{font-size:32px;margin-bottom:8px;}
+  .arch-name{font-size:14px;font-weight:700;}
+  .arch-detail{font-size:11px;color:rgba(255,255,255,.45);margin-top:4px;}
+  .arch-arrow{font-size:24px;color:rgba(108,99,255,.6);padding:0 8px;flex-shrink:0;}
+  .tech-tags{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:28px;}
+  .tech-tag{padding:5px 14px;border-radius:20px;font-size:12px;font-weight:600;background:rgba(108,99,255,.15);border:1px solid rgba(108,99,255,.35);color:#a89fff;}
+
+  /* SLIDE 5 – ADMIN */
+  .slide-5{background:linear-gradient(135deg,#0d1117,#1a1000);}
+  .admin-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;width:100%;max-width:900px;}
+  .admin-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:20px;text-align:center;transition:.3s;}
+  .admin-card:hover{background:rgba(255,193,7,.08);border-color:rgba(255,193,7,.35);transform:scale(1.03);}
+  .admin-icon{font-size:32px;margin-bottom:10px;}
+  .admin-name{font-size:14px;font-weight:700;}
+  .admin-desc{font-size:12px;color:rgba(255,255,255,.45);margin-top:4px;}
+
+  /* SLIDE 6 – PHÂN QUYỀN */
+  .slide-6{background:linear-gradient(135deg,#0d1117,#001a1a);}
+  .role-row{display:flex;gap:20px;width:100%;max-width:900px;margin-top:10px;}
+  .role-card{flex:1;border-radius:16px;padding:28px 22px;text-align:center;transition:.3s;}
+  .role-card:hover{transform:translateY(-6px);}
+  .role-admin{background:linear-gradient(135deg,rgba(108,99,255,.2),rgba(108,99,255,.05));border:1px solid rgba(108,99,255,.4);}
+  .role-nv{background:linear-gradient(135deg,rgba(0,210,255,.2),rgba(0,210,255,.05));border:1px solid rgba(0,210,255,.4);}
+  .role-kh{background:linear-gradient(135deg,rgba(0,230,118,.2),rgba(0,230,118,.05));border:1px solid rgba(0,230,118,.4);}
+  .role-icon{font-size:44px;margin-bottom:12px;}
+  .role-name{font-size:20px;font-weight:800;margin-bottom:10px;}
+  .role-list{list-style:none;text-align:left;}
+  .role-list li{font-size:13px;color:rgba(255,255,255,.65);padding:4px 0;padding-left:16px;position:relative;}
+  .role-list li::before{content:'✓';position:absolute;left:0;color:#6c63ff;font-weight:700;}
+
+  /* SLIDE ĐẶT VẤN ĐỀ */
+  .slide-dvd{background:linear-gradient(135deg,#0d1117,#1a0a00);}
+  .dvd-layout{display:grid;grid-template-columns:1fr 1fr;gap:24px;width:100%;max-width:960px;}
+  .dvd-problem{background:rgba(255,80,80,.06);border:1px solid rgba(255,80,80,.25);border-radius:16px;padding:28px;}
+  .dvd-solution{background:rgba(0,210,255,.06);border:1px solid rgba(0,210,255,.25);border-radius:16px;padding:28px;}
+  .dvd-head{font-size:16px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+  .dvd-list{list-style:none;}
+  .dvd-list li{font-size:13px;color:rgba(255,255,255,.65);padding:7px 0;padding-left:20px;position:relative;border-bottom:1px solid rgba(255,255,255,.05);line-height:1.5;}
+  .dvd-list li:last-child{border-bottom:none;}
+  .dvd-list li::before{position:absolute;left:0;font-size:12px;}
+  .dvd-problem .dvd-list li::before{content:'⚠';color:#ff6b6b;}
+  .dvd-solution .dvd-list li::before{content:'✓';color:#00d2ff;font-weight:700;}
+
+  /* SLIDE MỤC TIÊU */
+  .slide-mt{background:linear-gradient(135deg,#0d1117,#001a12);}
+  .mt-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;width:100%;max-width:960px;}
+  .mt-card{border-radius:16px;padding:26px 20px;text-align:center;position:relative;overflow:hidden;transition:.3s;}
+  .mt-card::before{content:'';position:absolute;inset:0;opacity:.08;}
+  .mt-card:hover{transform:translateY(-6px);}
+  .mt-c1{background:linear-gradient(135deg,rgba(108,99,255,.15),rgba(108,99,255,.03));border:1px solid rgba(108,99,255,.35);}
+  .mt-c2{background:linear-gradient(135deg,rgba(0,230,118,.15),rgba(0,230,118,.03));border:1px solid rgba(0,230,118,.35);}
+  .mt-c3{background:linear-gradient(135deg,rgba(0,210,255,.15),rgba(0,210,255,.03));border:1px solid rgba(0,210,255,.35);}
+  .mt-c4{background:linear-gradient(135deg,rgba(255,193,7,.15),rgba(255,193,7,.03));border:1px solid rgba(255,193,7,.35);}
+  .mt-c5{background:linear-gradient(135deg,rgba(255,80,80,.15),rgba(255,80,80,.03));border:1px solid rgba(255,80,80,.35);}
+  .mt-c6{background:linear-gradient(135deg,rgba(180,0,255,.15),rgba(180,0,255,.03));border:1px solid rgba(180,0,255,.35);}
+  .mt-icon{font-size:36px;margin-bottom:12px;}
+  .mt-title{font-size:14px;font-weight:700;margin-bottom:8px;}
+  .mt-desc{font-size:12px;color:rgba(255,255,255,.5);line-height:1.5;}
+
+  /* SLIDE 7 – KẾT */
+  .slide-7{background:linear-gradient(135deg,#0a0e1a,#12183a);}
+  .slide-7::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 60%,rgba(108,99,255,.3) 0%,transparent 65%);}
+  .end-title{font-size:48px;font-weight:800;text-align:center;background:linear-gradient(90deg,#fff,#a89fff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+  .end-sub{font-size:18px;color:rgba(255,255,255,.55);text-align:center;margin-top:16px;max-width:600px;}
+  .end-cta{margin-top:40px;display:flex;gap:16px;}
+  .cta-btn{padding:14px 36px;border-radius:30px;font-size:15px;font-weight:700;cursor:pointer;transition:.3s;border:none;}
+  .cta-primary{background:linear-gradient(90deg,#6c63ff,#00d2ff);color:#fff;}
+  .cta-primary:hover{opacity:.85;transform:scale(1.05);}
+  .cta-secondary{background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.2);}
+  .cta-secondary:hover{background:rgba(255,255,255,.15);}
+
+  /* SLIDE NUMBER */
+  .slide-num{position:fixed;top:24px;right:36px;font-size:13px;color:rgba(255,255,255,.35);z-index:100;}
+</style>
+</head>
+<body>
+
+<div class="slide-num" id="slideNum">1 / 9</div>
+
+<div class="slides">
+
+  <!-- SLIDE 1: COVER -->
+  <div class="slide slide-1 active">
+    <div class="logo-icon">🛍️</div>
+    <div class="cover-title">WebBanHang1</div>
+    <div class="cover-sub">Website Bán Hàng Trực Tuyến — ASP.NET MVC</div>
+    <div class="cover-badge">
+      <span class="badge badge-blue">ASP.NET Core</span>
+      <span class="badge badge-cyan">Entity Framework</span>
+      <span class="badge badge-green">SQL Server</span>
+      <span class="badge badge-blue">SignalR</span>
+      <span class="badge badge-cyan">Identity</span>
+    </div>
+  </div>
+
+  <!-- SLIDE 2: ĐẶT VẤN ĐỀ -->
+  <div class="slide slide-dvd">
+    <div class="section-title">⚠️ Đặt Vấn Đề</div>
+    <div class="section-line"></div>
+    <div class="dvd-layout">
+      <div class="dvd-problem">
+        <div class="dvd-head" style="color:#ff6b6b;">🔴 Thực trạng hiện nay</div>
+        <ul class="dvd-list">
+          <li>Nhiều cửa hàng vẫn quản lý bán hàng <strong>thủ công</strong> bằng sổ sách, Excel</li>
+          <li>Không có kênh bán hàng trực tuyến, bỏ lỡ lượng lớn khách hàng tiềm năng</li>
+          <li>Thiếu hệ thống theo dõi <strong>tồn kho</strong> và đơn hàng theo thời gian thực</li>
+          <li>Không có công cụ <strong>khuyến mãi, voucher</strong> để giữ chân khách hàng</li>
+          <li>Quản lý nhiều nhân viên & phân quyền <strong>không rõ ràng</strong></li>
+          <li>Thiếu báo cáo, nhật ký hoạt động để kiểm soát vận hành</li>
+        </ul>
+      </div>
+      <div class="dvd-solution">
+        <div class="dvd-head" style="color:#00d2ff;">🔵 Vấn đề cần giải quyết</div>
+        <ul class="dvd-list">
+          <li>Xây dựng nền tảng <strong>thương mại điện tử</strong> đầy đủ tính năng</li>
+          <li>Cung cấp giao diện mua sắm trực tuyến <strong>thân thiện</strong> với người dùng</li>
+          <li>Tự động hóa quy trình quản lý <strong>đơn hàng & kho hàng</strong></li>
+          <li>Hệ thống <strong>voucher, điểm thưởng</strong> tăng trải nghiệm mua sắm</li>
+          <li>Phân quyền rõ ràng: <strong>Admin – Nhân viên – Khách hàng</strong></li>
+          <li>Dashboard & nhật ký giúp <strong>kiểm soát vận hành</strong> hiệu quả</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 3: MỤC TIÊU ĐỀ TÀI -->
+  <div class="slide slide-mt">
+    <div class="section-title">🎯 Mục Tiêu Đề Tài</div>
+    <div class="section-line"></div>
+    <div class="mt-grid">
+      <div class="mt-card mt-c1"><div class="mt-icon">🛒</div><div class="mt-title">Hệ thống mua sắm</div><div class="mt-desc">Xây dựng đầy đủ luồng mua sắm: duyệt sản phẩm → giỏ hàng → thanh toán → theo dõi đơn</div></div>
+      <div class="mt-card mt-c2"><div class="mt-icon">📦</div><div class="mt-title">Quản lý sản phẩm & kho</div><div class="mt-desc">CRUD sản phẩm, quản lý tồn kho, nhà cung cấp và lịch sử nhập xuất hàng</div></div>
+      <div class="mt-card mt-c3"><div class="mt-icon">🔐</div><div class="mt-title">Phân quyền người dùng</div><div class="mt-desc">Hệ thống 3 vai trò: Admin toàn quyền, Nhân viên nghiệp vụ, Khách hàng mua sắm</div></div>
+      <div class="mt-card mt-c4"><div class="mt-icon">🎁</div><div class="mt-title">Khuyến mãi & Điểm thưởng</div><div class="mt-desc">Voucher giảm giá, chương trình khuyến mãi và tích điểm thưởng cho khách hàng</div></div>
+      <div class="mt-card mt-c5"><div class="mt-icon">📊</div><div class="mt-title">Báo cáo & Nhật ký</div><div class="mt-desc">Dashboard thống kê, log hoạt động admin, hỗ trợ sao lưu & phục hồi dữ liệu</div></div>
+      <div class="mt-card mt-c6"><div class="mt-icon">🌐</div><div class="mt-title">Đa ngôn ngữ & Real-time</div><div class="mt-desc">Giao diện đa ngôn ngữ (i18n) và thông báo thời gian thực qua SignalR</div></div>
+    </div>
+  </div>
+
+  <!-- SLIDE 4: TỔNG QUAN -->
+  <div class="slide slide-2">
+    <div class="section-title">📊 Tổng Quan Dự Án</div>
+    <div class="section-line"></div>
+    <div class="overview-grid">
+      <div class="ov-card"><div class="ov-icon">📄</div><div class="ov-label">Controllers</div><div class="ov-value">26</div></div>
+      <div class="ov-card"><div class="ov-icon">🗃️</div><div class="ov-label">Models</div><div class="ov-value">22+</div></div>
+      <div class="ov-card"><div class="ov-icon">🎭</div><div class="ov-label">Vai trò người dùng</div><div class="ov-value">3</div></div>
+      <div class="ov-card"><div class="ov-icon">🌐</div><div class="ov-label">Đa ngôn ngữ</div><div class="ov-value">✔</div></div>
+      <div class="ov-card"><div class="ov-icon">⚡</div><div class="ov-label">Real-time (SignalR)</div><div class="ov-value">✔</div></div>
+      <div class="ov-card"><div class="ov-icon">🔒</div><div class="ov-label">Bảo mật Identity</div><div class="ov-value">✔</div></div>
+    </div>
+  </div>
+
+  <!-- SLIDE 3: TÍNH NĂNG CHÍNH -->
+  <div class="slide slide-3">
+    <div class="section-title">✨ Tính Năng Chính</div>
+    <div class="section-line"></div>
+    <div class="feat-grid">
+      <div class="feat-card"><div class="feat-icon">🛒</div><div><div class="feat-title">Giỏ hàng & Thanh toán</div><div class="feat-desc">Thêm/xóa sản phẩm, áp dụng voucher, xử lý thanh toán đầy đủ</div></div></div>
+      <div class="feat-card"><div class="feat-icon">📦</div><div><div class="feat-title">Quản lý Sản phẩm</div><div class="feat-desc">CRUD sản phẩm, nhiều ảnh, thuộc tính, danh mục, đơn vị đo</div></div></div>
+      <div class="feat-card"><div class="feat-icon">📋</div><div><div class="feat-title">Quản lý Đơn hàng</div><div class="feat-desc">Theo dõi trạng thái, xử lý hoàn trả, lịch sử đơn hàng</div></div></div>
+      <div class="feat-card"><div class="feat-icon">⭐</div><div><div class="feat-title">Đánh giá & Wishlist</div><div class="feat-desc">Review sản phẩm, danh sách yêu thích, so sánh sản phẩm</div></div></div>
+      <div class="feat-card"><div class="feat-icon">🎁</div><div><div class="feat-title">Khuyến mãi & Voucher</div><div class="feat-desc">Mã giảm giá, chương trình khuyến mãi, điểm thưởng tích lũy</div></div></div>
+      <div class="feat-card"><div class="feat-icon">🏪</div><div><div class="feat-title">Quản lý Kho hàng</div><div class="feat-desc">Tồn kho, lịch sử nhập xuất, nhà cung cấp</div></div></div>
+    </div>
+  </div>
+
+  <!-- SLIDE 4: KIẾN TRÚC -->
+  <div class="slide slide-4">
+    <div class="section-title">🏗️ Kiến Trúc Hệ Thống</div>
+    <div class="section-line"></div>
+    <div class="arch-flow">
+      <div class="arch-box"><div class="arch-icon">🌐</div><div class="arch-name">View (Razor)</div><div class="arch-detail">cshtml + Bootstrap</div></div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-box"><div class="arch-icon">⚙️</div><div class="arch-name">Controller</div><div class="arch-detail">26 Controllers</div></div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-box"><div class="arch-icon">📁</div><div class="arch-name">Repository</div><div class="arch-detail">Data Access Layer</div></div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-box"><div class="arch-icon">🗄️</div><div class="arch-name">SQL Server</div><div class="arch-detail">EF Core Migrations</div></div>
+    </div>
+    <div class="tech-tags">
+      <span class="tech-tag">ASP.NET Core MVC</span>
+      <span class="tech-tag">Entity Framework Core</span>
+      <span class="tech-tag">ASP.NET Identity</span>
+      <span class="tech-tag">SignalR</span>
+      <span class="tech-tag">SQL Server</span>
+      <span class="tech-tag">Repository Pattern</span>
+      <span class="tech-tag">Dependency Injection</span>
+    </div>
+  </div>
+
+  <!-- SLIDE 5: ADMIN PANEL -->
+  <div class="slide slide-5">
+    <div class="section-title">🖥️ Admin Panel</div>
+    <div class="section-line"></div>
+    <div class="admin-grid">
+      <div class="admin-card"><div class="admin-icon">📊</div><div class="admin-name">Dashboard</div><div class="admin-desc">Thống kê tổng quan doanh thu & đơn hàng</div></div>
+      <div class="admin-card"><div class="admin-icon">🖼️</div><div class="admin-name">Banner</div><div class="admin-desc">Quản lý banner quảng cáo trang chủ</div></div>
+      <div class="admin-card"><div class="admin-icon">📝</div><div class="admin-name">Nhật ký</div><div class="admin-desc">Log hoạt động của admin & nhân viên</div></div>
+      <div class="admin-card"><div class="admin-icon">💾</div><div class="admin-name">Sao lưu</div><div class="admin-desc">Backup & phục hồi dữ liệu</div></div>
+      <div class="admin-card"><div class="admin-icon">⚙️</div><div class="admin-name">Cài đặt</div><div class="admin-desc">Cấu hình thông tin website</div></div>
+      <div class="admin-card"><div class="admin-icon">🌍</div><div class="admin-name">Đa ngôn ngữ</div><div class="admin-desc">Hỗ trợ nhiều ngôn ngữ (SharedResource)</div></div>
+    </div>
+  </div>
+
+  <!-- SLIDE 6: PHÂN QUYỀN -->
+  <div class="slide slide-6">
+    <div class="section-title">🔐 Phân Quyền Hệ Thống</div>
+    <div class="section-line"></div>
+    <div class="role-row">
+      <div class="role-card role-admin">
+        <div class="role-icon">👑</div>
+        <div class="role-name" style="color:#a89fff;">Admin</div>
+        <ul class="role-list">
+          <li>Toàn quyền hệ thống</li>
+          <li>Quản lý người dùng & vai trò</li>
+          <li>Cấu hình website</li>
+          <li>Xem nhật ký & sao lưu</li>
+        </ul>
+      </div>
+      <div class="role-card role-nv">
+        <div class="role-icon">👨‍💼</div>
+        <div class="role-name" style="color:#00d2ff;">Nhân Viên</div>
+        <ul class="role-list">
+          <li>Quản lý đơn hàng</li>
+          <li>Quản lý sản phẩm</li>
+          <li>Xử lý khiếu nại</li>
+          <li>Quản lý kho hàng</li>
+        </ul>
+      </div>
+      <div class="role-card role-kh">
+        <div class="role-icon">🛍️</div>
+        <div class="role-name" style="color:#00e676;">Khách Hàng</div>
+        <ul class="role-list">
+          <li>Mua hàng & thanh toán</li>
+          <li>Xem lịch sử đơn hàng</li>
+          <li>Đánh giá sản phẩm</li>
+          <li>Quản lý wishlist</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 7: KẾT LUẬN -->
+  <div class="slide slide-7">
+    <div class="end-title">Giải Pháp Toàn Diện 🚀</div>
+    <div class="end-sub">WebBanHang1 là nền tảng thương mại điện tử hoàn chỉnh — từ quản lý sản phẩm, xử lý đơn hàng đến vận hành cửa hàng trực tuyến chuyên nghiệp.</div>
+    <div class="end-cta">
+      <button class="cta-btn cta-primary" onclick="goTo(0)">↩ Xem lại từ đầu</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- NAV DOTS -->
+<div class="nav" id="nav"></div>
+<button class="arrow-btn" id="prevBtn" onclick="changeSlide(-1)">← Trước</button>
+<button class="arrow-btn" id="nextBtn" onclick="changeSlide(1)">Tiếp →</button>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const nav = document.getElementById('nav');
+  let cur = 0;
+
+  slides.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === 0 ? ' active' : '');
+    d.onclick = () => goTo(i);
+    nav.appendChild(d);
+  });
+
+  function goTo(n) {
+    slides[cur].classList.remove('active');
+    document.querySelectorAll('.dot')[cur].classList.remove('active');
+    cur = (n + slides.length) % slides.length;
+    slides[cur].classList.add('active');
+    document.querySelectorAll('.dot')[cur].classList.add('active');
+    document.getElementById('slideNum').textContent = (cur + 1) + ' / ' + slides.length;
+    document.getElementById('prevBtn').style.display = cur === 0 ? 'none' : 'block';
+    document.getElementById('nextBtn').textContent = cur === slides.length - 1 ? '↩ Đầu' : 'Tiếp →';
+  }
+
+  function changeSlide(dir) {
+    if (dir === 1 && cur === slides.length - 1) { goTo(0); return; }
+    goTo(cur + dir);
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === ' ') changeSlide(1);
+    if (e.key === 'ArrowLeft') changeSlide(-1);
+  });
+
+  goTo(0);
+</script>
+</body>
+</html>

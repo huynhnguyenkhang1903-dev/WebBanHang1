@@ -1,12 +1,12 @@
 @model IEnumerable<Websitebanhang.Models.Order>
 
 @{
-    ViewData["Title"] = "Quản lý Đơn hàng";
+    ViewData["Title"] = "Quáº£n lÃ½ ÄÆ¡n hÃ ng";
 }
 
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold"><i class="fa fa-shopping-cart text-success me-2"></i> Quản Lý Đơn Hàng</h2>
+        <h2 class="fw-bold"><i class="fa fa-shopping-cart text-success me-2"></i> Quáº£n LÃ½ ÄÆ¡n HÃ ng</h2>
     </div>
 
     <div class="card shadow-sm">
@@ -15,15 +15,15 @@
                 <table class="table table-hover align-middle">
                     <thead class="table-light">
                         <tr>
-                            <th>Mã ĐH</th>
-                            <th>Khách hàng</th>
+                            <th>MÃ£ ÄH</th>
+                            <th>KhÃ¡ch hÃ ng</th>
                             <th>Email</th>
-                            <th>Số điện thoại</th>
-                            <th>Ngày đặt</th>
-                            <th>Thanh toán</th>
-                            <th>Tổng tiền</th>
-                            <th>Trạng thái</th>
-                            <th>Hành động</th>
+                            <th>Sá»‘ Ä‘iá»‡n thoáº¡i</th>
+                            <th>NgÃ y Ä‘áº·t</th>
+                            <th>Thanh toÃ¡n</th>
+                            <th>Tá»•ng tiá»n</th>
+                            <th>Tráº¡ng thÃ¡i</th>
+                            <th>HÃ nh Ä‘á»™ng</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -55,7 +55,7 @@
                                     {
                                         if (item.IsPaid)
                                         {
-                                            <span class="badge bg-success">VNPay ✓</span>
+                                            <span class="badge bg-success">VNPay âœ“</span>
                                         }
                                         else
                                         {
@@ -67,9 +67,9 @@
                                         <span class="badge bg-secondary">@item.PaymentMethod</span>
                                     }
                                 </td>
-                                <td class="text-danger fw-bold">@item.TotalAmount.ToString("N0") ₫</td>
+                                <td class="text-danger fw-bold">@item.TotalAmount.ToString("N0") â‚«</td>
                                 <td>
-                                    @if (User.IsInRole("Admin"))
+                                    @if (User.IsInRole("Admin") || User.IsInRole("NhanVien"))
                                     {
                                         <form method="post" action="/Order/CapNhatTrangThai" class="m-0 p-0">
                                             @Html.AntiForgeryToken()
@@ -82,12 +82,12 @@
                                                                               item.Status == "Delivering" ? "#E9D5FF" :
                                                                               item.Status == "Completed" ? "#D1FAE5" :
                                                                               item.Status == "Cancelled" ? "#FEE2E2" : "#f8f9fa");">
-                                                <option value="Waiting for confirmation" selected="@(item.Status == "Waiting for confirmation" ? "selected" : null)">⏳ Waiting for confirmation</option>
-                                                <option value="Approved" selected="@(item.Status == "Approved" ? "selected" : null)">✅ Approved</option>
-                                                <option value="Packed" selected="@(item.Status == "Packed" ? "selected" : null)">📦 Packed</option>
-                                                <option value="Delivering" selected="@(item.Status == "Delivering" ? "selected" : null)">🚚 Delivering</option>
-                                                <option value="Completed" selected="@(item.Status == "Completed" ? "selected" : null)">🎉 Completed</option>
-                                                <option value="Cancelled" selected="@(item.Status == "Cancelled" ? "selected" : null)">❌ Cancelled</option>
+                                                <option value="Waiting for confirmation" selected="@(item.Status == "Waiting for confirmation" ? "selected" : null)">â³ Waiting for confirmation</option>
+                                                <option value="Approved" selected="@(item.Status == "Approved" ? "selected" : null)">âœ… Approved</option>
+                                                <option value="Packed" selected="@(item.Status == "Packed" ? "selected" : null)">ðŸ“¦ Packed</option>
+                                                <option value="Delivering" selected="@(item.Status == "Delivering" ? "selected" : null)">ðŸšš Delivering</option>
+                                                <option value="Completed" selected="@(item.Status == "Completed" ? "selected" : null)">ðŸŽ‰ Completed</option>
+                                                <option value="Cancelled" selected="@(item.Status == "Cancelled" ? "selected" : null)">âŒ Cancelled</option>
                                             </select>
                                         </form>
                                     }
@@ -97,7 +97,7 @@
                                     }
                                 </td>
                                 <td>
-                                    @if (User.IsInRole("Admin"))
+                                    @if (User.IsInRole("Admin") || User.IsInRole("NhanVien"))
                                     {
                                         <div class="d-flex gap-1">
                                             @* Confirm *@
@@ -106,7 +106,7 @@
                                                 <form asp-controller="AdminOrder" asp-action="Confirm" method="post" class="m-0 p-0">
                                                     @Html.AntiForgeryToken()
                                                     <input type="hidden" name="id" value="@item.Id" />
-                                                    <button type="submit" class="btn btn-sm btn-success">Duyệt</button>
+                                                    <button type="submit" class="btn btn-sm btn-success">Duyá»‡t</button>
                                                 </form>
                                             }
 
@@ -126,7 +126,7 @@
                                                 <form asp-controller="AdminOrder" asp-action="Delivered" method="post" class="m-0 p-0">
                                                     @Html.AntiForgeryToken()
                                                     <input type="hidden" name="id" value="@item.Id" />
-                                                    <button type="submit" class="btn btn-sm btn-dark">Hoàn thành</button>
+                                                    <button type="submit" class="btn btn-sm btn-dark">HoÃ n thÃ nh</button>
                                                 </form>
                                             }
 
@@ -134,17 +134,17 @@
                                             @if (item.Status == OrderStatus.ReturnRequested || item.Status == OrderStatus.Delivered)
                                             {
                                                 <a asp-controller="AdminOrder" asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-warning">
-                                                    <i class="fa-solid fa-rotate-left"></i> Xử lý Trả/Hoàn tiền
+                                                    <i class="fa-solid fa-rotate-left"></i> Xá»­ lÃ½ Tráº£/HoÃ n tiá»n
                                                 </a>
                                             }
 
                                             @* Cancel (allow admin to cancel unless already delivered/refunded) *@
                                             @if (item.Status != "Delivered" && item.Status != "Cancelled" && item.Status != "Refunded")
                                             {
-                                                <form asp-controller="AdminOrder" asp-action="Cancel" method="post" class="m-0 p-0" onsubmit="return confirm('Bạn có chắc muốn hủy đơn này?');">
+                                                <form asp-controller="AdminOrder" asp-action="Cancel" method="post" class="m-0 p-0" onsubmit="return confirm('Báº¡n cÃ³ cháº¯c muá»‘n há»§y Ä‘Æ¡n nÃ y?');">
                                                     @Html.AntiForgeryToken()
                                                     <input type="hidden" name="id" value="@item.Id" />
-                                                    <button type="submit" class="btn btn-sm btn-danger">Hủy</button>
+                                                    <button type="submit" class="btn btn-sm btn-danger">Há»§y</button>
                                                 </form>
                                             }
                                         </div>

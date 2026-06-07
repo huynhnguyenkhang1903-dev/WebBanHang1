@@ -52,6 +52,20 @@ namespace Websitebanhang.Data
                 .HasForeignKey(p => p.SupplierId)
                 .OnDelete(DeleteBehavior.SetNull);
 
+            // Category - Product Relationship (Restrict category deletion if products exist)
+            modelBuilder.Entity<Product>()
+                .HasOne(p => p.Category)
+                .WithMany(c => c.Products)
+                .HasForeignKey(p => p.CategoryId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // CartItem - Product Relationship (Restrict product deletion if ordered)
+            modelBuilder.Entity<CartItem>()
+                .HasOne<Product>()
+                .WithMany()
+                .HasForeignKey(ci => ci.ProductId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             // Fix decimal warning for Price
             modelBuilder.Entity<Product>()
                 .Property(p => p.Price)

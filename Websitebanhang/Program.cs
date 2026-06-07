@@ -68,7 +68,8 @@ builder.Services.AddAuthentication()
         {
             OnRedirectToAuthorizationEndpoint = context =>
             {
-                context.Response.Redirect(context.RedirectUri + "&prompt=select_account");
+                var redirectUrl = context.RedirectUri.Replace("redirect_uri=http%3A%2F%2F", "redirect_uri=https%3A%2F%2F");
+                context.Response.Redirect(redirectUrl + "&prompt=select_account");
                 return Task.CompletedTask;
             },
             OnRemoteFailure = context =>
@@ -87,6 +88,12 @@ builder.Services.AddAuthentication()
         
         options.Events = new Microsoft.AspNetCore.Authentication.OAuth.OAuthEvents
         {
+            OnRedirectToAuthorizationEndpoint = context =>
+            {
+                var redirectUrl = context.RedirectUri.Replace("redirect_uri=http%3A%2F%2F", "redirect_uri=https%3A%2F%2F");
+                context.Response.Redirect(redirectUrl + "&auth_type=reauthenticate");
+                return Task.CompletedTask;
+            },
             OnRemoteFailure = context =>
             {
                 context.Response.Redirect("/Account/Login?remoteError=" + System.Net.WebUtility.UrlEncode(context.Failure?.Message ?? "Authentication failed"));
@@ -160,10 +167,24 @@ app.UseRequestLocalization(localizationOptions);
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    app.UseHsts();
+    // app.UseHsts(); // Tắt HSTS vì Somee không hỗ trợ HTTPS
 }
 
-app.UseHttpsRedirection();
+app.Use(async (context, next) =>
+{
+    if (context.Request.Headers.TryGetValue("X-Forwarded-Proto", out var forwardedProto))
+    {
+        context.Request.Scheme = forwardedProto;
+    }
+    // Tắt ép buộc HTTPS vì Somee free không có SSL
+    // else if (!app.Environment.IsDevelopment())
+    // {
+    //     context.Request.Scheme = "https";
+    // }
+    await next();
+});
+
+// app.UseHttpsRedirection(); // Tắt tự động chuyển hướng sang HTTPS
 app.UseStaticFiles();
 
 app.UseRouting();
@@ -197,15 +218,19 @@ using (var scope = app.Services.CreateScope())
     if (!await roleManager.RoleExistsAsync("Admin"))
         await roleManager.CreateAsync(new IdentityRole("Admin"));
 
+    if (!await roleManager.RoleExistsAsync("NhanVien"))
+        await roleManager.CreateAsync(new IdentityRole("NhanVien"));
+
     if (!await roleManager.RoleExistsAsync("User"))
         await roleManager.CreateAsync(new IdentityRole("User"));
 
     // ===== CREATE ADMIN =====
     var adminEmail = "admin@gmail.com";
 
-    if (await userManager.FindByEmailAsync(adminEmail) == null)
+    var admin = await userManager.FindByEmailAsync(adminEmail);
+    if (admin == null)
     {
-        var admin = new ApplicationUser
+        admin = new ApplicationUser
         {
             UserName = adminEmail,
             Email = adminEmail,
@@ -217,6 +242,14 @@ using (var scope = app.Services.CreateScope())
 
         await userManager.CreateAsync(admin, "Admin@123");
         await userManager.AddToRoleAsync(admin, "Admin");
+        await userManager.AddToRoleAsync(admin, "NhanVien");
+    }
+    else
+    {
+        if (!await userManager.IsInRoleAsync(admin, "NhanVien"))
+        {
+            await userManager.AddToRoleAsync(admin, "NhanVien");
+        }
     }
 
     // ===== SEED DATA =====

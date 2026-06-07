@@ -241,7 +241,7 @@ namespace Websitebanhang.Controllers
 
         // ================= ADMIN =================
 
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,NhanVien")]
         public IActionResult Manage(string sortOrder, string search, bool? hasPromotion, int? categoryId, int page = 1)
         {
             ViewBag.CurrentSort = sortOrder;
@@ -300,7 +300,7 @@ namespace Websitebanhang.Controllers
             return View(products.ToPagedList(page, pageSize));
         }
 
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,NhanVien")]
         public IActionResult Add()
         {
             ViewBag.Categories = _categoryRepository.GetAll();
@@ -311,7 +311,7 @@ namespace Websitebanhang.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,NhanVien")]
         public async Task<IActionResult> Add(ProductModel product, IFormFile? MainImage, List<IFormFile>? OtherImages)
         {
             if (ModelState.IsValid)
@@ -386,6 +386,7 @@ namespace Websitebanhang.Controllers
             return View(product);
         }
 
+        [Authorize(Roles = "Admin,NhanVien")]
         public IActionResult Update(int id)
         {
             var product = _productRepository.GetById(id);
@@ -399,7 +400,7 @@ namespace Websitebanhang.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,NhanVien")]
         public async Task<IActionResult> Update(ProductModel product, IFormFile? MainImage, List<IFormFile>? OtherImages)
         {
             if (ModelState.IsValid)
@@ -504,7 +505,7 @@ namespace Websitebanhang.Controllers
         }
 
         // ================= ATTRIBUTES =================
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,NhanVien")]
         public async Task<IActionResult> ManageAttributes(int id)
         {
             var product = await _context.Products
@@ -517,7 +518,7 @@ namespace Websitebanhang.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,NhanVien")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddAttribute(int productId, string name, string value)
         {
@@ -542,7 +543,7 @@ namespace Websitebanhang.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,NhanVien")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteAttribute(int attributeId, int productId)
         {

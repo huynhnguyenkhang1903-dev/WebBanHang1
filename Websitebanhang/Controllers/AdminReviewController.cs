@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Websitebanhang.Controllers
 {
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,NhanVien")]
     public class AdminReviewController : Controller
     {
         private readonly AppDbContext _context;
@@ -71,6 +71,7 @@ namespace Websitebanhang.Controllers
         // ================= XÓA (TỪ CHỐI - CHƯA DUYỆT) =================
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Reject(int id)
         {
             var review = await _context.Reviews.FindAsync(id);
@@ -116,6 +117,7 @@ namespace Websitebanhang.Controllers
         // ================= XÓA VĨNH VIỄN (ĐÃ DUYỆT) =================
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id, string returnTab = "approved")
         {
             var review = await _context.Reviews.FindAsync(id);
@@ -131,6 +133,7 @@ namespace Websitebanhang.Controllers
         // ================= XÓA DO BÁO CÁO =================
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteReported(int id)
         {
             var review = await _context.Reviews.FindAsync(id);

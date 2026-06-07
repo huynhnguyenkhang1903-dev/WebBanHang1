@@ -1,12 +1,12 @@
 @model IEnumerable<Websitebanhang.Models.Order>
 
 @{
-    ViewData["Title"] = "Qu?n l˝ ??n h‡ng";
+    ViewData["Title"] = "Qu?n l√Ω ??n h√†ng";
 }
 
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold"><i class="fa fa-shopping-cart text-success me-2"></i> Qu?n L˝ ??n H‡ng</h2>
+        <h2 class="fw-bold"><i class="fa fa-shopping-cart text-success me-2"></i> Qu?n L√Ω ??n H√†ng</h2>
     </div>
 
     <div class="card shadow-sm">
@@ -15,15 +15,15 @@
                 <table class="table table-hover align-middle">
                     <thead class="table-light">
                         <tr>
-                            <th>M„ ?H</th>
-                            <th>Kh·ch h‡ng</th>
+                            <th>M√£ ?H</th>
+                            <th>Kh√°ch h√†ng</th>
                             <th>Email</th>
                             <th>S? ?i?n tho?i</th>
-                            <th>Ng‡y ??t</th>
+                            <th>Ng√†y ??t</th>
                             <th>Ph??ng th?c</th>
                             <th>T?ng ti?n</th>
-                            <th>Tr?ng th·i</th>
-                            <th>H‡nh ??ng</th>
+                            <th>Tr?ng th√°i</th>
+                            <th>H√†nh ??ng</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -43,16 +43,18 @@
                                     </span>
                                 </td>
                                 <td>
-                                    @if (User.IsInRole("Admin"))
+                                    @if (User.IsInRole("Admin") || User.IsInRole("NhanVien"))
                                     {
                                         <div class="d-flex gap-1">
+                                            <a asp-controller="AdminOrder" asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-info">Chi ti·∫øt</a>
+
                                             @* Confirm *@
                                             @if (item.Status == "Pending")
                                             {
                                                 <form asp-controller="AdminOrder" asp-action="Confirm" method="post" class="m-0 p-0">
                                                     @Html.AntiForgeryToken()
                                                     <input type="hidden" name="id" value="@item.Id" />
-                                                    <button type="submit" class="btn btn-sm btn-success">Duy?t</button>
+                                                    <button type="submit" class="btn btn-sm btn-success">Duy·ªát</button>
                                                 </form>
                                             }
 
@@ -72,17 +74,17 @@
                                                 <form asp-controller="AdminOrder" asp-action="Delivered" method="post" class="m-0 p-0">
                                                     @Html.AntiForgeryToken()
                                                     <input type="hidden" name="id" value="@item.Id" />
-                                                    <button type="submit" class="btn btn-sm btn-dark">Ho‡n th‡nh</button>
+                                                    <button type="submit" class="btn btn-sm btn-dark">Ho√†n th√†nh</button>
                                                 </form>
                                             }
 
                                             @* Cancel (allow admin to cancel unless already delivered) *@
                                             @if (item.Status != "Delivered" && item.Status != "Cancelled")
                                             {
-                                                <form asp-controller="AdminOrder" asp-action="Cancel" method="post" class="m-0 p-0" onsubmit="return confirm('B?n cÛ ch?c mu?n h?y ??n n‡y?');">
+                                                <form asp-controller="AdminOrder" asp-action="Cancel" method="post" class="m-0 p-0" onsubmit="return confirm('B·∫°n c√≥ ch·∫Øc mu·ªën h·ªßy ƒë∆°n n√†y?');">
                                                     @Html.AntiForgeryToken()
                                                     <input type="hidden" name="id" value="@item.Id" />
-                                                    <button type="submit" class="btn btn-sm btn-danger">H?y</button>
+                                                    <button type="submit" class="btn btn-sm btn-danger">H·ªßy</button>
                                                 </form>
                                             }
                                         </div>
