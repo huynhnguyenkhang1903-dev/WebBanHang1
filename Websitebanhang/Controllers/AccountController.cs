@@ -577,6 +577,39 @@ namespace Websitebanhang.Controllers
         }
 
         [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> UploadAvatar()
+        {
+            var user = await _userManager.GetUserAsync(User!);
+            if (user == null) return RedirectToAction("Login");
+            ViewBag.CurrentAvatar = user.AvatarUrl;
+            return View();
+        }
+
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteAvatar()
+        {
+            var user = await _userManager.GetUserAsync(User!);
+            if (user == null) return RedirectToAction("Login");
+
+            if (!string.IsNullOrEmpty(user.AvatarUrl))
+            {
+                var filePath = Path.Combine(_env.WebRootPath, user.AvatarUrl.TrimStart('/'));
+                if (System.IO.File.Exists(filePath))
+                {
+                    System.IO.File.Delete(filePath);
+                }
+                user.AvatarUrl = "";
+                await _userManager.UpdateAsync(user);
+            }
+
+            TempData["SuccessMessage"] = "Đã xóa ảnh đại diện thành công.";
+            return RedirectToAction("Profile");
+        }
+
+        [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UploadAvatar(IFormFile avatarFile)
