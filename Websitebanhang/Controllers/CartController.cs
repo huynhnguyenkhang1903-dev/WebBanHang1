@@ -346,7 +346,7 @@ namespace Websitebanhang.Controllers
             await _hubContext.Clients.All.SendAsync("ReceiveAdminNotification", $"Có đơn hàng mới #{order.Id} từ {order.CustomerName}!", $"/AdminOrder/Details/{order.Id}");
 
             order.PaymentContent = $"ORDER{order.Id}";
-
+            
             try
             {
                 await _context.SaveChangesAsync();
